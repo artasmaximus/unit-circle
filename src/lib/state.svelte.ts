@@ -1,4 +1,5 @@
 // All app state in one place. Components read it and call its methods; nothing else holds state.
+import { Tween } from 'svelte/motion';
 import { SPECIAL, norm, rad, snapDeg, specialOf, wrapPi } from './trig.ts';
 import { makeChoices, pickQ, qKey, trigTexAnswer, type Question } from './quiz.ts';
 import { apply, atom, num, solvedForm, type Eq, type Op } from './algebra.ts';
@@ -62,6 +63,30 @@ export const ui = $state({
 /** Whether answers (colors, values, labels) may show. */
 export const revealed = () => ui.mode !== 'quiz' || ui.revealed;
 
+/* ---------- the pen motion ---------- */
+// One motion drives every reaction to a mode switch or a reveal: the segmented control's thumb and the
+// dots on the ring read the same progress value, so they move as one. Like a ballpoint pen's click it
+// leans back first, then snaps through with a small overshoot and settles.
+const LEAN = 0.08, OVER = 0.04;
+const easeIn = (t: number) => t * t * t, easeOut = (t: number) => 1 - (1 - t) ** 3;
+export function penEase(t: number) {
+  if (t < 0.28) return -LEAN * easeIn(t / 0.28) ** 0.6;
+  if (t < 0.72) return -LEAN + (1 + OVER + LEAN) * easeOut((t - 0.28) / 0.44);
+  return 1 + OVER - OVER * easeOut((t - 0.72) / 0.28);
+}
+export const pen = new Tween(1, { duration: reduce ? 0 : 460, easing: penEase });
+/** Whether answers showed before the latest pen motion; the dots keep that look until it is halfway through. */
+export const penFrom = $state({ revealed: true });
+/** Run `change`, and start the pen motion if it switched the mode or what is revealed. */
+function withPen(change: () => void) {
+  const before = revealed(), mode = ui.mode;
+  change();
+  if (revealed() !== before || ui.mode !== mode) {
+    penFrom.revealed = before;
+    pen.set(0, { duration: 0 }).then(() => (pen.target = 1));
+  }
+}
+
 /* ---------- quiz ---------- */
 type Saved = { best: number; missed: Question[] };
 function load(): Saved {
@@ -89,7 +114,7 @@ class Quiz {
   start(q: Question = pickQ(this.missed, this.cur)) {
     this.cur = q; this.answered = false; this.found = []; this.hint = false; this.picked = null; this.note = '';
     this.choices = q.t === 1 ? makeChoices(q) : [];
-    ui.highlight = []; ui.revealed = false;
+    withPen(() => { ui.highlight = []; ui.revealed = false; });
   }
   useHint() { if (this.cur && !this.answered) this.hint = true; }
   answer(i: number) {
@@ -118,15 +143,17 @@ class Quiz {
     this.#save();
     if (q.t === 1) point.set(q.a, true);
     else { ui.highlight = [...q.sols]; point.set(q.sols.find((s) => !this.found.includes(s)) ?? q.sols[q.sols.length - 1], true); }
-    ui.revealed = true;
+    withPen(() => (ui.revealed = true));
   }
 }
 export const quiz = new Quiz();
 
 export function setMode(m: 'explore' | 'quiz') {
-  ui.mode = m;
-  if (m === 'quiz') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
-  else { ui.highlight = []; ui.revealed = true; solver.close(); }
+  withPen(() => {
+    ui.mode = m;
+    if (m === 'quiz') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
+    else { ui.highlight = []; ui.revealed = true; solver.close(); }
+  });
 }
 
 /* ---------- equation solver ("interactive demo") ---------- */

@@ -2,7 +2,7 @@
      progressive blur fades out past its edge, so the grid stays visible and usable right up to the panel. -->
 <script lang="ts">
   import { camera } from '../lib/camera.svelte.ts';
-  import { point, setMode, ui } from '../lib/state.svelte.ts';
+  import { pen, point, setMode, ui } from '../lib/state.svelte.ts';
   import { degText, parseAngle } from '../lib/trig.ts';
   import Tex from '../ui/Tex.svelte';
   import Quiz from './Quiz.svelte';
@@ -32,7 +32,7 @@
     <header>
       <h1>Unit Circle</h1>
       <div class="tools">
-        <Segmented label="Mode" value={ui.mode} onchange={setMode}
+        <Segmented label="Mode" value={ui.mode} onchange={setMode} progress={pen.current}
           options={[{ value: 'explore', label: 'Explore' }, { value: 'quiz', label: 'Quiz' }]} />
         <button aria-pressed={ui.mirror} onclick={() => (ui.mirror = !ui.mirror)}
           data-tip="Shows the mirrored angles that share this point's reference angle. In a quiz it shows the other angle with the same sin, cos or tan, so you can see both answers.">Mirror</button>

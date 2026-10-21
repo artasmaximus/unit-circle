@@ -62,14 +62,14 @@
 <style>
   .home { position: relative; align-self: stretch; }
   .morph {
-    position: absolute; inset: 0; overflow: hidden; border-radius: 9px;
+    position: absolute; inset: 0; overflow: hidden; border-radius: 12px;
     color: var(--slope); background: color-mix(in srgb, var(--slope) 10%, transparent);
     border: 1px solid color-mix(in srgb, var(--slope) 35%, transparent);
-    transition: background 0.25s, border-radius 0.25s, box-shadow 0.25s;
+    transition: background 0.25s, box-shadow 0.25s;
   }
   .morph:hover:not(.floating) { background: color-mix(in srgb, var(--slope) 20%, transparent); border-color: var(--slope); }
   .floating {
-    position: fixed; inset: auto; z-index: 5; border-radius: 20px; color: var(--fg);
+    position: fixed; inset: auto; z-index: 5; color: var(--fg);
     background: color-mix(in srgb, var(--panel) 86%, transparent);
     -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
     border-color: color-mix(in srgb, var(--slope) 50%, transparent); box-shadow: 0 24px 60px -20px var(--sh);
@@ -77,5 +77,5 @@
   .inner { position: absolute; right: 0; top: 0; }
   .face { all: unset; display: grid; place-items: center; width: 100%; height: 100%; cursor: pointer; transition: transform 0.12s; }
   .face:active { transform: scale(0.94); }
-  .face:focus-visible { outline: 2px solid var(--slope); outline-offset: 2px; border-radius: 9px; }
+  .face:focus-visible { outline: 2px solid var(--slope); outline-offset: 2px; border-radius: 12px; }
 </style>
