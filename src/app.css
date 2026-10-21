@@ -58,3 +58,10 @@ button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+/* view transitions (see lib/transition.ts): only named elements morph; the rest of the page stays still */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(*) { animation-duration: var(--spring-ms, 500ms); animation-timing-function: var(--spring, ease); }
+/* the box morphs; its contents keep their size, pinned top-right, and are clipped by the box as it grows */
+::view-transition-image-pair(*) { overflow: hidden; border-radius: 12px; }
+::view-transition-old(*), ::view-transition-new(*) { height: auto; width: auto; object-fit: none; object-position: top right; inset: 0 0 auto auto; animation-duration: 180ms; }

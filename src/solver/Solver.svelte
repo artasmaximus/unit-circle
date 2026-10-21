@@ -12,6 +12,7 @@
   import { solver } from '../lib/state.svelte.ts';
   import { changes, eqTex, exactTex, type Op } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
+  import { morph } from '../lib/transition.ts';
 
   let { bare = false }: { bare?: boolean } = $props();
 
@@ -38,7 +39,7 @@
 
   const onkeydown = (e: KeyboardEvent) => {
     if (!solver.open) return;
-    if (e.key === 'Escape') return solver.close();
+    if (e.key === 'Escape') return morph(() => solver.close());
     if (!solver.target && /^[1-8]$/.test(e.key)) return press(KEYS[+e.key - 1]);
     if (e.key !== 'Enter' || (e.target as HTMLElement).tagName === 'BUTTON') return;
     e.preventDefault();
@@ -53,7 +54,7 @@
   <section class="card" class:bare aria-label="Solve" in:fly={{ y: 12, duration: bare ? 0 : 260 }}>
     <header>
       <span class="eyebrow">{solver.target ? 'Find θ on the circle' : 'Solve for θ'}</span>
-      <button class="icon" aria-label="Close" onclick={() => solver.close()}><X size={16} /></button>
+      <button class="icon" aria-label="Close" onclick={() => morph(() => solver.close())}><X size={16} /></button>
     </header>
 
     {#if !solver.target}

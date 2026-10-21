@@ -6,6 +6,7 @@
   import { DEFINITIONS, eqTex } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
   import Morph from '../ui/Morph.svelte';
+  import { morph } from '../lib/transition.ts';
   import Solver from '../solver/Solver.svelte';
   import { camera } from '../lib/camera.svelte.ts';
 
@@ -21,7 +22,7 @@
     <div class="card" style:--vc={HUE[k]}>
       <span class="eq"><Tex latex={eqTex(DEFINITIONS[k])} /></span>
       <span class="val"><Tex latex={'=' + recipTex(k, point.deg).r} /></span>
-      <Morph label="Solve a {NAMES[k]} problem" open={camera.wide && solver.open && solver.key === k} onopen={() => solver.start(k)}>
+      <Morph name="solve-{k}" label="Solve a {NAMES[k]} problem" open={camera.wide && solver.open && solver.key === k} onopen={() => morph(() => solver.start(k))}>
         {#snippet button()}<SquareFunction size={18} />{/snippet}
         <Solver bare />
       </Morph>
