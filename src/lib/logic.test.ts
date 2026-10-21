@@ -41,3 +41,12 @@ test('quiz choices hold the right answer once', () => {
     assert.equal(c.filter((x) => x === trigTex(q.fn, q.a)).length, 1);
   }
 });
+
+test('solving csc θ = 2 by reciprocal', async () => {
+  const { atom, num, solvedForm } = await import('./algebra.ts');
+  const e = { l: atom('csc'), r: num(2) };
+  const r = apply(e, { kind: 'reciprocal' });
+  assert.equal(eqTex(r), '\\frac{1}{\\csc\\theta}=\\frac{1}{2}');
+  const s = apply(r, { kind: 'simplify' });
+  assert.deepEqual(solvedForm(s), { fn: 'sin', v: 0.5 });
+});

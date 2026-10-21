@@ -1,13 +1,14 @@
 <script lang="ts">
   import Plane from './plane/Plane.svelte';
   import Panel from './panel/Panel.svelte';
+  import Solver from './solver/Solver.svelte';
   import { point, quiz, ui } from './lib/state.svelte.ts';
 
   if (ui.mode === 'quiz') quiz.start();
 
   // arrow keys turn the point by 1° (15° with Shift)
   const onkeydown = (e: KeyboardEvent) => {
-    if ((e.target as HTMLElement).tagName === 'INPUT') return;
+    if (e.defaultPrevented || (e.target as HTMLElement).tagName === 'INPUT') return;
     const step = e.shiftKey ? 15 : 1;
     if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') point.set(point.deg - step, true);
     if (e.key === 'ArrowRight' || e.key === 'ArrowUp') point.set(point.deg + step, true);
@@ -24,3 +25,4 @@
 
 <Plane />
 <Panel />
+<Solver />

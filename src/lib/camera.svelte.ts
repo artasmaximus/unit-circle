@@ -10,6 +10,8 @@ class Camera {
   vh = $state(typeof window === 'undefined' ? 768 : innerHeight);
   /** Pixels the panel covers: on the left (wide screens) or along the bottom (phones). */
   inset = $state({ left: 0, bottom: 0 });
+  /** Pixels covered along the top (the solver card while you find θ on the circle). */
+  top = $state(0);
   zoom = $state(1);
   pan = $state({ x: 0, y: 0 });
 
@@ -17,7 +19,7 @@ class Camera {
   /** The uncovered part of the viewport, minus a gutter where the panel's blur fades out. */
   free = $derived.by(() => {
     const left = this.inset.left && this.inset.left + GUTTER, bottom = this.inset.bottom && this.inset.bottom + GUTTER / 2;
-    return { x: left, y: 0, w: this.vw - left, h: this.vh - bottom };
+    return { x: left, y: this.top, w: this.vw - left, h: this.vh - bottom - this.top };
   });
   k = $derived(Math.min(2.6, Math.max(0.55, Math.min(this.free.w / NEED.w, this.free.h / NEED.h))) * this.zoom);
   ox = $derived(this.free.x + this.free.w / 2 + this.pan.x);
