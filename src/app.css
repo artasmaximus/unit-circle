@@ -1,0 +1,59 @@
+/* Layout: a full-viewport graph-paper plane with the unit circle on it; a panel floats over the left
+   (or bottom, on phones) behind a progressive blur. */
+@font-face { font-family: 'CMmain'; src: url('./assets/cmmain.woff2') format('woff2'); font-display: swap; }
+
+:root {
+  --bg: #f3f5f8; --panel: #ffffff; --fg: #1b2433; --muted: #667085; --line: #d5dbe5;
+  --glass: rgba(255, 255, 255, 0.45); --tipbg: rgba(255, 255, 255, 0.34); --tipfg: #12161d; --tipbd: rgba(255, 255, 255, 0.6);
+  --ok: #2f9e44; --bad: #e03131; --sh: rgba(20, 30, 50, 0.2); --refarc: #a9b2c1; --slope: #e0a100;
+  --c0: #f08c00; --c30: #9c36b5; --c45: #1c7ed6; --c60: #74b816; --c90: #f03a52;
+  --body: 'IBM Plex Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #141414; --panel: #1e1e1e; --fg: #ededed; --muted: #9c9c9c; --line: #353535;
+    --glass: rgba(30, 30, 30, 0.45); --tipbg: rgba(255, 255, 255, 0.1); --tipfg: #f5f7fa; --tipbd: rgba(255, 255, 255, 0.26);
+    --ok: #51cf66; --bad: #ff6b6b; --sh: rgba(0, 0, 0, 0.5); --refarc: #c8c8c8; --slope: #ffd43b;
+    --c0: #ff9f2e; --c30: #c77dff; --c45: #4dabf7; --c60: #a9e34b; --c90: #ff5c7a; color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #141414; --panel: #1e1e1e; --fg: #ededed; --muted: #9c9c9c; --line: #353535;
+  --glass: rgba(30, 30, 30, 0.45); --tipbg: rgba(255, 255, 255, 0.1); --tipfg: #f5f7fa; --tipbd: rgba(255, 255, 255, 0.26);
+  --ok: #51cf66; --bad: #ff6b6b; --sh: rgba(0, 0, 0, 0.5); --refarc: #c8c8c8; --slope: #ffd43b;
+  --c0: #ff9f2e; --c30: #c77dff; --c45: #4dabf7; --c60: #a9e34b; --c90: #ff5c7a; color-scheme: dark;
+}
+
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; }
+
+button {
+  font: inherit; font-size: 0.85rem; background: var(--bg); color: var(--fg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer;
+}
+button:hover { border-color: var(--muted); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--c45); outline-offset: 2px; }
+button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
+.primary { background: var(--fg); color: var(--bg); font-weight: 500; padding: 8px 18px; border-color: var(--fg); }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: var(--panel); padding: 5px 12px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
+
+/* frosted tooltips from data-tip; App flips them upward in the lower half of the window */
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip); position: absolute; left: 0; top: calc(100% + 10px); width: max-content; max-width: min(280px, 70vw);
+  padding: 9px 12px; border-radius: 9px; background: var(--tipbg); color: var(--tipfg); border: 1px solid var(--tipbd);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  font-size: 0.78rem; font-weight: 400; line-height: 1.4; text-align: left; white-space: normal;
+  box-shadow: 0 8px 20px -6px var(--sh); display: none; pointer-events: none; z-index: 20;
+}
+[data-tip]:hover::after, [data-tip]:focus-visible::after { display: block; animation: tipin 0.15s ease-out 0.2s both; }
+.tip-up::after { top: auto; bottom: calc(100% + 10px); }
+@keyframes tipin { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}
