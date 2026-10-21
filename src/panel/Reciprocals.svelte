@@ -18,7 +18,7 @@
       <span class="eq"><Tex latex={eqTex(DEFINITIONS[k])} /></span>
       <span class="val"><Tex latex={'=' + recipTex(k, point.deg).r} /></span>
       <button class="solve" aria-label="Solve a {NAMES[k]} problem" title="Solve a {k} problem"
-        onclick={(e) => solver.start(k, (e.currentTarget.closest('.card') as HTMLElement).getBoundingClientRect())}>
+        onclick={() => solver.start(k)}>
         <SquareFunction size={18} />
       </button>
     </div>
@@ -26,11 +26,11 @@
 </section>
 
 <style>
-  .defs { display: grid; gap: 10px; }
+  .defs { display: grid; gap: 8px; }
   h2 { margin: 0 0 2px; font-size: 0.72rem; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
   .card {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto 44px; gap: 14px; align-items: center;
-    padding: 10px 10px 10px 16px; min-height: 64px; font-size: 1.1rem;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto 38px; gap: 14px; align-items: center;
+    padding: 6px 6px 6px 14px; min-height: 52px; font-size: 1.02rem;
     border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 80%, transparent);
   }
   .eq { min-width: 0; overflow-x: auto; overflow-y: hidden; }

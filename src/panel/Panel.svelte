@@ -6,7 +6,10 @@
   import { degText, parseAngle } from '../lib/trig.ts';
   import Tex from '../ui/Tex.svelte';
   import Quiz from './Quiz.svelte';
+  import Segmented from '../ui/Segmented.svelte';
   import Reciprocals from './Reciprocals.svelte';
+  import Solver from '../solver/Solver.svelte';
+  import { solver } from '../lib/state.svelte.ts';
 
   let w = $state(0), h = $state(0);
   $effect(() => { camera.inset = camera.wide ? { left: w, bottom: 0 } : { left: 0, bottom: h }; });
@@ -24,13 +27,13 @@
     <div class="tint"></div>
   </div>
   <div class="content">
+    <!-- on phones a problem takes the whole sheet: grid on top, problem below -->
+    {#if !(solver.open && ui.mode === 'explore' && !camera.wide)}
     <header>
       <h1>Unit Circle</h1>
       <div class="tools">
-        <div class="seg" role="group" aria-label="Mode">
-          <button aria-pressed={ui.mode === 'explore'} onclick={() => setMode('explore')}>Explore</button>
-          <button aria-pressed={ui.mode === 'quiz'} onclick={() => setMode('quiz')}>Quiz</button>
-        </div>
+        <Segmented label="Mode" value={ui.mode} onchange={setMode}
+          options={[{ value: 'explore', label: 'Explore' }, { value: 'quiz', label: 'Quiz' }]} />
         <button aria-pressed={ui.mirror} onclick={() => (ui.mirror = !ui.mirror)}
           data-tip="Shows the mirrored angles that share this point's reference angle. In a quiz it shows the other angle with the same sin, cos or tan, so you can see both answers.">Mirror</button>
         <label class="angbox" title="Type degrees (135) or radians (pi/6, 2pi/3)">
@@ -44,7 +47,8 @@
         </label>
       </div>
     </header>
-    {#if ui.mode === 'quiz'}<Quiz />{:else}<Reciprocals />{/if}
+    {/if}
+    {#if ui.mode === 'quiz'}<Quiz />{:else if solver.open && !camera.huge}<Solver />{:else}<Reciprocals />{/if}
   </div>
 </aside>
 

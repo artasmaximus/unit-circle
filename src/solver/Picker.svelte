@@ -43,13 +43,13 @@
 
 <style>
   .picker {
-    --row: 46px; position: relative; height: calc(var(--row) * 5); overflow: hidden; touch-action: none; cursor: ns-resize;
-    -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
-    mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+    --row: 46px; position: relative; height: calc(var(--row) * 3); overflow: hidden; touch-action: none; cursor: ns-resize;
+    -webkit-mask-image: linear-gradient(transparent, #000 25%, #000 75%, transparent);
+    mask-image: linear-gradient(transparent, #000 25%, #000 75%, transparent);
     border-radius: 10px;
   }
   .picker:focus-visible { outline: 2px solid var(--slope); outline-offset: 2px; }
-  .track { position: absolute; left: 0; right: 0; top: calc(var(--row) * 2); transition: transform 0.28s cubic-bezier(0.22, 1.2, 0.36, 1); }
+  .track { position: absolute; left: 0; right: 0; top: var(--row); transition: transform 0.28s cubic-bezier(0.22, 1.2, 0.36, 1); }
   button {
     display: flex; align-items: center; width: 100%; height: var(--row); padding: 0 6px; border: 0; background: none;
     font-size: 1.15rem; color: var(--fg); text-align: left; white-space: nowrap; transform-origin: left center;
