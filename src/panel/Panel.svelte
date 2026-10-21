@@ -48,7 +48,7 @@
       </div>
     </header>
     {/if}
-    {#if ui.mode === 'quiz'}<Quiz />{:else if solver.open && !camera.huge}<Solver />{:else}<Reciprocals />{/if}
+    {#if ui.mode === 'quiz'}<Quiz />{:else if solver.open && !camera.wide}<Solver />{:else}<Reciprocals />{/if}
   </div>
 </aside>
 

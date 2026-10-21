@@ -1,6 +1,3 @@
-import { Tween } from 'svelte/motion';
-import { cubicInOut } from 'svelte/easing';
-
 // Maps world units (the unit circle has radius S) to screen pixels. The circle is centered in the part of
 // the viewport the panel leaves free. pan and zoom are plain state, ready for gestures later.
 export const S = 150;
@@ -13,18 +10,13 @@ class Camera {
   vh = $state(typeof window === 'undefined' ? 768 : innerHeight);
   /** Pixels the panel covers: on the left (wide screens) or along the bottom (phones). */
   inset = $state({ left: 0, bottom: 0 });
-  /** Width of an extra column beside the panel (the solver, on very wide screens). */
-  /** Eased, so the circle glides aside instead of jumping when the column opens; set `side.target`. */
-  side = new Tween(0, { duration: 480, easing: cubicInOut });
   zoom = $state(1);
   pan = $state({ x: 0, y: 0 });
 
   wide = $derived(this.vw >= 700 && this.vw >= this.vh);
-  /** Room for definitions, the solver card and a big circle side by side. */
-  huge = $derived(this.vw >= 1200 && this.vw >= this.vh * 1.5);
   /** The uncovered part of the viewport, minus a gutter where the panel's blur fades out. */
   free = $derived.by(() => {
-    const left = this.inset.left && this.inset.left + this.side.current + GUTTER, bottom = this.inset.bottom && this.inset.bottom + GUTTER / 2;
+    const left = this.inset.left && this.inset.left + GUTTER, bottom = this.inset.bottom && this.inset.bottom + GUTTER / 2;
     return { x: left, y: 0, w: this.vw - left, h: this.vh - bottom };
   });
   k = $derived(Math.min(2.6, Math.max(0.55, Math.min(this.free.w / NEED.w, this.free.h / NEED.h))) * this.zoom);
