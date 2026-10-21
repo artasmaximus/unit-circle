@@ -16,6 +16,8 @@
   const braceDraw = $derived(window01(0.15, 0.85));
   // one dash period per switch, on the pen's own lean-and-snap curve, so the dashes tick like the switch
   const tick = (period: number) => period * pen.current;
+  // the dashes snap first and change color only as the tick lands, like the click at the end of a pen press
+  const legCol = $derived(moving && t < 0.75 ? before : sc.col);
   const bob = $derived(1 + 0.12 * Math.sin(Math.PI * window01(0.45, 1)));
 </script>
 
@@ -25,14 +27,17 @@
   {#if moving}<path d={sc.wedge} fill="none" stroke={sc.col} stroke-width="1.25" pathLength="1" stroke-dasharray="{arcWash} 1" />{/if}
   {#if sc.wedgeHead}<path d={sc.wedgeHead} fill="none" stroke={moving && arcWash < 1 ? before : sc.col} stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />{/if}
   {#if sc.refArc}<path d={sc.refArc} fill="none" stroke={sc.col} stroke-width="1.75" stroke-linecap="round" />{/if}
-  <line class="leg" x1="0" y1="0" x2={sc.x} y2="0" stroke={sc.col} stroke-dashoffset={tick(9)} />
-  <line class="leg" x1={sc.sinLeg[0]} y1={sc.sinLeg[1]} x2={sc.sinLeg[2]} y2={sc.sinLeg[3]} stroke={sc.col} stroke-dashoffset={tick(9)} />
+  <line class="leg" x1="0" y1="0" x2={sc.x} y2="0" stroke={legCol} stroke-dashoffset={tick(9)} />
+  <line class="leg" x1={sc.sinLeg[0]} y1={sc.sinLeg[1]} x2={sc.sinLeg[2]} y2={sc.sinLeg[3]} stroke={legCol} stroke-dashoffset={tick(9)} />
   <line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={moving ? before : sc.col} stroke-width="1.75" stroke-linecap="round" />
   {#if moving}<line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={sc.col} stroke-width="1.75" stroke-linecap="round" pathLength="1" stroke-dasharray="{rayWash} 1" />{/if}
   {#each [sc.braceC, sc.braceS] as b}
-    <!-- drawn from both ends toward the tip in the middle -->
-    {#if b}<path class="brace" d={b.path} transform={b.transform} stroke={sc.col} pathLength="1"
-      stroke-dasharray={moving ? `${braceDraw / 2} ${1 - braceDraw} ${braceDraw / 2} 0` : 'none'} />{/if}
+    {#if b}
+      <path class="brace" d={b.path} transform={b.transform} stroke={moving ? before : sc.col} />
+      <!-- the brace stays put; only its new color draws in, from both ends toward the tip -->
+      {#if moving}<path class="brace" d={b.path} transform={b.transform} stroke={sc.col} pathLength="1"
+        stroke-dasharray="{braceDraw / 2} {1 - braceDraw} {braceDraw / 2} 0" />{/if}
+    {/if}
   {/each}
   {#if sc.refLabel}<SvgTex label={sc.refLabel} />{/if}
   {#each [sc.cosLabel, sc.sinLabel] as l}
