@@ -154,6 +154,8 @@ const fnValue = (fn: 'sin' | 'cos' | 'tan', a: number) => {
 class Solver {
   open = $state(false);
   key = $state<RecipKey>('csc');
+  /** The ƒ button that opened it: on wide screens the card grows out of it and stays beside it. */
+  from = $state<DOMRect | null>(null);
   steps = $state<Step[]>([]);
   found = $state<number[]>([]);
   note = $state('');
@@ -163,8 +165,8 @@ class Solver {
   sols = $derived(this.target ? SPECIAL.filter((a) => Math.abs(fnValue(this.target!.fn, a) - this.target!.v) < 1e-9) : []);
   done = $derived(this.sols.length > 0 && this.found.length === this.sols.length);
 
-  start(k: RecipKey) {
-    this.key = k; this.open = true;
+  start(k: RecipKey, from: DOMRect | null = null) {
+    this.key = k; this.from = from; this.open = true;
     this.#load(makeProblem(k));
   }
   next() { this.#load(makeProblem(this.key, (this.steps[0]?.eq.r as { v?: number })?.v)); }

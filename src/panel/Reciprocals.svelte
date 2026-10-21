@@ -19,7 +19,7 @@
       <span class="eq"><Tex latex={eqTex(DEFINITIONS[k])} /></span>
       <span class="val"><Tex latex={'=' + recipTex(k, point.deg).r} /></span>
       <button class="solve" aria-label="Solve a {NAMES[k]} problem" title="Solve a {k} problem"
-        onclick={() => solver.start(k)}>
+        onclick={(e) => solver.start(k, e.currentTarget.getBoundingClientRect())}>
         <SquareFunction size={18} />
       </button>
     </div>
