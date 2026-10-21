@@ -34,7 +34,7 @@
 </div>
 
 <style>
-  .seg { position: relative; display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--panel) 70%, transparent); }
+  .seg { position: relative; display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 70%, transparent); }
   .thumb {
     position: absolute; left: 0; top: 3px; bottom: 3px; border-radius: 7px; background: var(--fg);
     box-shadow: 0 2px 6px -1px var(--sh), 0 6px 14px -6px var(--sh); transition: scale 0.12s ease-out;

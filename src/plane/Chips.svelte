@@ -6,6 +6,7 @@
   import { ui } from '../lib/state.svelte.ts';
   import type { Chip, Scene } from '../lib/scene.ts';
   import Tex from '../ui/Tex.svelte';
+  import AngleInput from '../ui/AngleInput.svelte';
   let { scene }: { scene: Scene } = $props();
 
   const box = (c: Chip) => {
@@ -21,9 +22,16 @@
   onkeydown={(e) => { if (e.key === 'Escape' && ui.slopeOpen) close(); }} />
 
 <div class="layer">
-  {#if scene.coords}
-    <div class="chip" style={box(scene.coords)} transition:scale={{ start: 0.6, duration: 200 }}>
-      <span class="parts">{#each scene.coords.parts ?? [{ latex: scene.coords.latex, color: 'var(--fg)' }] as part}<span style:color={part.color}><Tex latex={part.latex} /></span>{/each}</span>
+  {#if scene.tag}
+    {@const t = scene.tag}
+    <!-- no card: a soft blur behind the values keeps them readable over the grid and lines -->
+    <div class="tag" class:below={!t.thetaAbove} style={box(t)}>
+      <AngleInput />
+      {#if t.values}
+        <span class="values" transition:scale={{ start: 0.6, duration: 200 }}>
+          {#each t.parts ?? [] as part}<span style:color={part.color}><Tex latex={part.latex} /></span>{/each}
+        </span>
+      {/if}
     </div>
   {/if}
   {#if scene.slope}
@@ -36,7 +44,19 @@
 </div>
 
 <style>
-  .parts { display: inline-flex; align-items: center; }
+  .tag {
+    position: absolute; left: 0; top: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    font-size: 13px; transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1);
+  }
+  .tag.below { flex-direction: column-reverse; }
+  .values { position: relative; display: inline-flex; align-items: center; padding: 6px 12px; }
+  /* a blur that fades out at its edges, behind the values only (masking the text itself would fade it too) */
+  .values::before {
+    content: ''; position: absolute; inset: -6px -10px; z-index: -1;
+    background: color-mix(in srgb, var(--bg) 35%, transparent);
+    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+    -webkit-mask-image: radial-gradient(closest-side, #000 50%, transparent); mask-image: radial-gradient(closest-side, #000 50%, transparent);
+  }
   .layer { position: fixed; inset: 0; pointer-events: none; }
   .chip {
     position: absolute; left: 0; top: 0; box-sizing: border-box; display: grid; place-items: center;

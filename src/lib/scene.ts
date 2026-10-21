@@ -123,15 +123,17 @@ export function buildScene(p: SceneInput) {
   const slope = p.revealed
     ? place({ ax: x / 2, ay: y / 2, fixed: true, gap: 0, pref: [0, 0], segs, place: onH ? 'above' : onV ? 'left' : undefined }, slopeTex, 34, 28, 60, 'b', 'var(--slope)')
     : null;
-  const coords = p.showCoords
-    ? place({ ax: x, ay: y, gap: p.dotR + 5, pref: onH ? [0, -1] : [c, -s], up2: onH && slope ? slope.h + 12 : 0, segs,
+  // the point's tag: the θ box always, the coordinates too when they may show. θ sits on the side away
+  // from the x-axis: above the coordinates in quadrants I and II, below them in III and IV.
+  const THETA_H = 40;
+  const coords = place({ ax: x, ay: y, gap: p.dotR + 5, pref: onH ? [0, -1] : [c, -s], up2: onH && slope ? slope.h + 12 : 0, segs,
         extra: slope ? [{ x: slope.x - slope.w / 2, y: slope.y - slope.h / 2, w: slope.w, h: slope.h }] : [] },
-        `\\left(${cx},\\ ${sx}\\right)`, 32, 20, 0, 'a', col)
-    : null;
+        p.showCoords ? `\\left(${cx},\\ ${sx}\\right)` : '\\theta=\\ 000.0^\\circ', 24, p.showCoords ? 16 + THETA_H : 12, 96, 'a', col);
+  const tag = coords && { ...coords, values: p.showCoords, thetaAbove: y <= 0 };
   // coordinates read (cos, sin): gray brackets and comma, each value in its function's color
-  if (coords) {
+  if (tag?.values) {
     const tall = `\\vphantom{${cx}${sx}}`, gray = 'var(--muted)';
-    coords.parts = [
+    tag.parts = [
       { latex: `\\left(${tall}\\right.`, color: gray }, { latex: cx, color: 'var(--cos)' }, { latex: ',\\ ', color: gray },
       { latex: sx, color: 'var(--sin)' }, { latex: `\\left.${tall}\\right)`, color: gray },
     ];
@@ -148,7 +150,7 @@ export function buildScene(p: SceneInput) {
     };
   }) : [];
 
-  return { x, y, col, trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, coords, slope };
+  return { x, y, col, trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, tag, slope };
 }
 
 /** Chip text size in px; chips keep their size on screen whatever the zoom. */

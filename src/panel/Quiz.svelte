@@ -84,4 +84,14 @@
   .explain { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); line-height: 1.5; }
   .explain p { margin: 0; overflow-x: auto; overflow-y: hidden; }
   .explain p:last-child { font-size: 1.1rem; }
+  /* phones: tighter, so the circle above keeps its room */
+  @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
+    .quiz { gap: 10px; }
+    .pill { height: 26px; padding: 0 10px; font-size: 0.78rem; }
+    .prompt { font-size: 1.35rem; min-height: 0; }
+    .task { font-size: 0.88rem; line-height: 1.4; }
+    .choices { gap: 8px; }
+    .choices button { min-height: 50px; padding: 8px; font-size: 1.05rem; }
+    .actions { min-height: 0; }
+  }
 </style>
