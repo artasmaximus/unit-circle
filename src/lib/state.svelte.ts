@@ -74,7 +74,10 @@ export function penEase(t: number) {
   if (t < 0.72) return -LEAN + (1 + OVER + LEAN) * easeOut((t - 0.28) / 0.44);
   return 1 + OVER - OVER * easeOut((t - 0.72) / 0.28);
 }
-export const pen = new Tween(1, { duration: reduce ? 0 : 460, easing: penEase });
+export const PEN_MS = reduce ? 0 : 460;
+export const pen = new Tween(1, { duration: PEN_MS, easing: penEase });
+/** The same motion's plain clock (0 → 1, linear), for things that run their own timing inside it. */
+export const penClock = new Tween(1, { duration: PEN_MS });
 /** Whether answers showed before the latest pen motion; the dots keep that look until it is halfway through. */
 export const penFrom = $state({ revealed: true });
 /** Run `change`, and start the pen motion if it switched the mode or what is revealed. */
@@ -84,6 +87,7 @@ function withPen(change: () => void) {
   if (revealed() !== before || ui.mode !== mode) {
     penFrom.revealed = before;
     pen.set(0, { duration: 0 }).then(() => (pen.target = 1));
+    penClock.set(0, { duration: 0 }).then(() => (penClock.target = 1));
   }
 }
 
