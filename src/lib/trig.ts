@@ -1,3 +1,5 @@
+import { math } from './algebra.ts';
+
 // Pure unit-circle math: special angles, exact values as LaTeX, angle parsing and snapping.
 // Angles are in degrees unless a name says otherwise.
 
@@ -82,20 +84,15 @@ export function recipTex(kind: Recip, deg: number): { sub: string; r: string } {
   return { sub: `\\frac{1}{${kind === 'csc' ? sT : cT}}`, r };
 }
 
-/** "135", "pi/6", "2π/3", "1.5 rad pi" → degrees, or null. */
+/** "135", "135°", "pi/6", "2π/3", "0.5 rad" → degrees, or null. Plain numbers are degrees; anything with π is radians. */
 export function parseAngle(t: string): number | null {
-  t = t.trim().replace(/°/g, '').replace(/π/g, 'pi');
+  t = t.trim().replace(/°/g, ' deg').replace(/π/g, 'pi');
   if (!t) return null;
-  if (/pi/i.test(t)) {
-    t = t.replace(/rad/gi, '').replace(/pi/gi, `(${Math.PI})`).replace(/(\d|\))\s*\(/g, '$1*(');
-    if (!/^[\d.+\-*/() eE]+$/.test(t)) return null;
-    try {
-      const v = Function(`"use strict";return (${t})`)();
-      return Number.isFinite(v) ? (v * 180) / Math.PI : null;
-    } catch { return null; }
-  }
-  const n = Number(t.replace(/deg$/i, ''));
-  return Number.isFinite(n) ? n : null;
+  try {
+    const v = math.evaluate(/pi/i.test(t) ? t.replace(/rad/gi, '') : t);
+    const d = typeof v === 'number' ? (/pi/i.test(t) ? (v * 180) / Math.PI : v) : v?.toNumber?.('deg');
+    return Number.isFinite(d) ? d : null;
+  } catch { return null; }
 }
 
 /** How the angle box shows deg: exact at special angles, whole degrees when close, else one decimal. */
