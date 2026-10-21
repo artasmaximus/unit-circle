@@ -5,23 +5,24 @@
 :root {
   --bg: #f3f5f8; --panel: #ffffff; --fg: #1b2433; --muted: #667085; --line: #d5dbe5;
   --glass: rgba(255, 255, 255, 0.45); --tipbg: rgba(255, 255, 255, 0.34); --tipfg: #12161d; --tipbd: rgba(255, 255, 255, 0.6);
-  --ok: #2f9e44; --bad: #e03131; --sh: rgba(20, 30, 50, 0.2); --refarc: #a9b2c1; --slope: #e0a100;
-  --c0: #f08c00; --c30: #9c36b5; --c45: #1c7ed6; --c60: #74b816; --c90: #f03a52;
+  --ok: #2f9e44; --bad: #e03131; --sh: rgba(20, 30, 50, 0.2); --slope: #e0a100;
+  /* three themes: cos (x, blue), sin (y, magenta), tan (slope, amber); points blend cos and sin by angle */
+  --cos: #1c7ed6; --sin: #d6336c;
   --body: 'IBM Plex Sans', system-ui, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --bg: #141414; --panel: #1e1e1e; --fg: #ededed; --muted: #9c9c9c; --line: #353535;
     --glass: rgba(30, 30, 30, 0.45); --tipbg: rgba(255, 255, 255, 0.1); --tipfg: #f5f7fa; --tipbd: rgba(255, 255, 255, 0.26);
-    --ok: #51cf66; --bad: #ff6b6b; --sh: rgba(0, 0, 0, 0.5); --refarc: #c8c8c8; --slope: #ffd43b;
-    --c0: #ff9f2e; --c30: #c77dff; --c45: #4dabf7; --c60: #a9e34b; --c90: #ff5c7a; color-scheme: dark;
+    --ok: #51cf66; --bad: #ff6b6b; --sh: rgba(0, 0, 0, 0.5); --slope: #ffd43b;
+    --cos: #4dabf7; --sin: #f06595; color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
   --bg: #141414; --panel: #1e1e1e; --fg: #ededed; --muted: #9c9c9c; --line: #353535;
   --glass: rgba(30, 30, 30, 0.45); --tipbg: rgba(255, 255, 255, 0.1); --tipfg: #f5f7fa; --tipbd: rgba(255, 255, 255, 0.26);
-  --ok: #51cf66; --bad: #ff6b6b; --sh: rgba(0, 0, 0, 0.5); --refarc: #c8c8c8; --slope: #ffd43b;
-  --c0: #ff9f2e; --c30: #c77dff; --c45: #4dabf7; --c60: #a9e34b; --c90: #ff5c7a; color-scheme: dark;
+  --ok: #51cf66; --bad: #ff6b6b; --sh: rgba(0, 0, 0, 0.5); --slope: #ffd43b;
+  --cos: #4dabf7; --sin: #f06595; color-scheme: dark;
 }
 
 html, body { margin: 0; height: 100%; overflow: hidden; }
@@ -32,7 +33,7 @@ button {
   border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer;
 }
 button:hover { border-color: var(--muted); }
-button:focus-visible, input:focus-visible { outline: 2px solid var(--c45); outline-offset: 2px; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--cos); outline-offset: 2px; }
 button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
 .primary { background: var(--fg); color: var(--bg); font-weight: 500; padding: 8px 18px; border-color: var(--fg); }
 

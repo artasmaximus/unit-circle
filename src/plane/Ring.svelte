@@ -1,12 +1,11 @@
-<!-- The unit circle with its 16 snap points. Hovering a point grows it and its label; clicking sends the point there. -->
+<!-- The unit circle with its 16 snap points, each in its heat-map color. -->
 <script lang="ts">
   import { S } from '../lib/camera.svelte.ts';
   import { SPECIAL, colorOf, rad } from '../lib/trig.ts';
   import { texRect } from '../lib/tex.svelte.ts';
-  import { point, ui, revealed } from '../lib/state.svelte.ts';
+  import { ui, revealed } from '../lib/state.svelte.ts';
   import SvgTex from '../ui/SvgTex.svelte';
 
-  let hover = $state<number | null>(null);
 
   // when colors come or go (switching mode, answering), each dot dips toward the center, springs out
   // past the ring and settles back, like the mode switch; the color lands as it returns
@@ -37,18 +36,10 @@
 
 <circle r={S} fill="none" stroke="var(--muted)" stroke-width="1" />
 {#each spots as p, i (p.a)}
-  <circle bind:this={dots[i]} class="dot" cx={p.x} cy={p.y} r={ui.highlight.includes(p.a) ? 6.5 : 3.5} style:fill={p.color} style:scale={hover === p.a ? 1.9 : 1} />
-  {#if p.label}
-    {@const r = p.label.rect}
-    <g class="lbl" style:scale={hover === p.a ? 1.1 : 1} style:transform-origin="{r.x + r.w / 2}px {r.y + r.h / 2}px"><SvgTex label={p.label} /></g>
-  {/if}
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <circle cx={p.x} cy={p.y} r="13" fill="transparent" style="cursor:pointer"
-    onpointerenter={() => (hover = p.a)} onpointerleave={() => (hover = null)}
-    onpointerdown={(e) => { e.stopPropagation(); point.set(p.a, true); }} />
+  <circle bind:this={dots[i]} class="dot" cx={p.x} cy={p.y} r={ui.highlight.includes(p.a) ? 6.5 : 3.5} style:fill={p.color} />
+  {#if p.label}<SvgTex label={p.label} />{/if}
 {/each}
 
 <style>
-  .dot { transform-box: fill-box; transform-origin: center; transition: scale 0.16s cubic-bezier(0.22, 0.9, 0.3, 1), fill 0.2s 0.3s; }
-  .lbl { transition: scale 0.09s ease-out; pointer-events: none; }
+  .dot { transition: fill 0.2s 0.3s; pointer-events: none; }
 </style>

@@ -22,7 +22,9 @@
 
 <div class="layer">
   {#if scene.coords}
-    <div class="chip" style={box(scene.coords)} transition:scale={{ start: 0.6, duration: 200 }}><Tex latex={scene.coords.latex} /></div>
+    <div class="chip" style={box(scene.coords)} transition:scale={{ start: 0.6, duration: 200 }}>
+      <span class="parts">{#each scene.coords.parts ?? [{ latex: scene.coords.latex, color: 'var(--fg)' }] as part}<span style:color={part.color}><Tex latex={part.latex} /></span>{/each}</span>
+    </div>
   {/if}
   {#if scene.slope}
     <button bind:this={slopeEl} class="chip slope" style={box(scene.slope)} aria-expanded={ui.slopeOpen}
@@ -34,6 +36,7 @@
 </div>
 
 <style>
+  .parts { display: inline-flex; align-items: center; }
   .layer { position: fixed; inset: 0; pointer-events: none; }
   .chip {
     position: absolute; left: 0; top: 0; box-sizing: border-box; display: grid; place-items: center;

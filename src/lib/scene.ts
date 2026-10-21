@@ -1,12 +1,13 @@
 // Everything drawn on the plane for one frame, as plain data. Components only render what this returns.
 // World units: the circle has radius S, y points down (so sin is drawn as -y).
 import { S } from './camera.svelte.ts';
-import { colorOf, nearestSpecial, norm, refOf, specialOf, trigTex, type Fn } from './trig.ts';
+import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from './trig.ts';
 import { texBox, texRect, type Rect } from './tex.svelte.ts';
 
 export type Seg = [number, number, number, number];
 export type Label = { latex: string; size: number; rect: Rect; color: string };
-export type Chip = { latex: string; x: number; y: number; w: number; h: number; ax: number; ay: number; color: string };
+/** `parts`, when set, render in place of `latex`, each in its own color (it is sized by `latex`). */
+export type Chip = { latex: string; parts?: { latex: string; color: string }[]; x: number; y: number; w: number; h: number; ax: number; ay: number; color: string };
 export type Scene = ReturnType<typeof buildScene>;
 
 export type SceneInput = {
@@ -48,7 +49,7 @@ export function buildScene(p: SceneInput) {
   const { ang, hit } = p;
   const c = Math.cos(ang), s = Math.sin(ang), x = c * S, y = -s * S;
   const deg = hit ?? norm((ang * 180) / Math.PI);
-  const col = hit !== undefined && p.revealed ? colorOf(hit) : 'var(--fg)';
+  const col = p.revealed ? colorOf(deg) : 'var(--fg)';
 
   // angle arc with a small open arrowhead whose tip sits on the terminal side
   const r = S / 5;
@@ -85,7 +86,7 @@ export function buildScene(p: SceneInput) {
       mid = phiA + diff / 2;
     } else if (hit > 90) mid = (hit * Math.PI) / 180;
     else { mid = ang / 2; rr = 46; }
-    refLabel = label(`${ref}^\\circ`, 12, rr * Math.cos(mid), -rr * Math.sin(mid) + (ref === 0 ? -9 : 0), 'var(--refarc)');
+    refLabel = label(`${ref}^\\circ`, 12, rr * Math.cos(mid), -rr * Math.sin(mid) + (ref === 0 ? -9 : 0), col);
   }
 
   // leg labels sit past a curly brace on the outside of each leg, so they read as lengths
@@ -95,11 +96,11 @@ export function buildScene(p: SceneInput) {
   let cosLabel: Label | null = null, sinLabel: Label | null = null;
   if (braceC) {
     const h = (texBox('x=\\cos\\theta')?.h ?? 0) * 12;
-    cosLabel = label('x=\\cos\\theta', 12, x / 2, ncy * (braceC.m + braceC.d + 4 + h / 2), 'var(--fg)');
+    cosLabel = label('x=\\cos\\theta', 12, x / 2, ncy * (braceC.m + braceC.d + 4 + h / 2), p.revealed ? 'var(--cos)' : 'var(--fg)');
     obstacles.push({ x: Math.min(0, x), y: Math.min(ncy * braceC.m, ncy * (braceC.m + braceC.d)), w: Math.abs(x), h: braceC.d });
   }
   if (braceS) {
-    sinLabel = label('y=\\sin\\theta', 12, x + ncx * (braceS.m + braceS.d + 5), y / 2, 'var(--fg)', ncx > 0 ? 0 : 1, 0.5);
+    sinLabel = label('y=\\sin\\theta', 12, x + ncx * (braceS.m + braceS.d + 5), y / 2, p.revealed ? 'var(--sin)' : 'var(--fg)', ncx > 0 ? 0 : 1, 0.5);
     obstacles.push({ x: Math.min(x + ncx * braceS.m, x + ncx * (braceS.m + braceS.d)), y: Math.min(0, y), w: braceS.d, h: Math.abs(y) });
   }
   if (cosLabel) obstacles.push(cosLabel.rect);
@@ -127,6 +128,14 @@ export function buildScene(p: SceneInput) {
         extra: slope ? [{ x: slope.x - slope.w / 2, y: slope.y - slope.h / 2, w: slope.w, h: slope.h }] : [] },
         `\\left(${cx},\\ ${sx}\\right)`, 32, 20, 0, 'a', col)
     : null;
+  // coordinates read (cos, sin): gray brackets and comma, each value in its function's color
+  if (coords) {
+    const tall = `\\vphantom{${cx}${sx}}`, gray = 'var(--muted)';
+    coords.parts = [
+      { latex: `\\left(${tall}\\right.`, color: gray }, { latex: cx, color: 'var(--cos)' }, { latex: ',\\ ', color: gray },
+      { latex: sx, color: 'var(--sin)' }, { latex: `\\left.${tall}\\right)`, color: gray },
+    ];
+  }
 
   // the trail: short segments from the tail up to the point, thickening and taking the nearest snap color
   const TRAIL_N = 28;
@@ -134,7 +143,7 @@ export function buildScene(p: SceneInput) {
     const u0 = i / TRAIL_N, u1 = (i + 1) / TRAIL_N, a0 = ang - p.tail * (1 - u0), a1 = ang - p.tail * (1 - u1);
     return {
       seg: [S * Math.cos(a0), -S * Math.sin(a0), S * Math.cos(a1), -S * Math.sin(a1)] as Seg,
-      color: p.revealed ? colorOf(nearestSpecial(norm((a1 * 180) / Math.PI))) : 'var(--muted)',
+      color: p.revealed ? colorOf((a1 * 180) / Math.PI) : 'var(--muted)',
       width: 0.8 + 3.4 * u1, opacity: 0.9 * Math.pow(u1, 1.3),
     };
   }) : [];

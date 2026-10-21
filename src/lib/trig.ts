@@ -31,8 +31,11 @@ export function snapDeg(d: number) {
   return Math.abs(norm(d - s + 180) - 180) <= SNAP_RANGE ? s : d;
 }
 
-/** Color token for a special angle, by its reference angle. */
-export const colorOf = (a: number) => `var(--c${refOf(a)})`;
+/** Heat-map color for any angle: pure cos hue on the x-axis, pure sin hue on the y-axis, mixed between. */
+export const colorOf = (a: number) => {
+  // cos² as the weight: 30° reads mostly blue, 45° half and half, 60° mostly magenta
+  return `color-mix(in oklch, var(--cos) ${(Math.cos(rad(a)) ** 2 * 100).toFixed(1)}%, var(--sin))`;
+};
 
 const COS_E: Record<number, string> = { 0: '1', 30: '\\frac{\\sqrt{3}}{2}', 45: '\\frac{\\sqrt{2}}{2}', 60: '\\frac{1}{2}', 90: '0' };
 const TAN_E: Record<number, string> = { 0: '0', 30: '\\frac{\\sqrt{3}}{3}', 45: '1', 60: '\\sqrt{3}' };

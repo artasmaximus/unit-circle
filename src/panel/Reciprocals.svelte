@@ -2,19 +2,20 @@
 <script lang="ts">
   import SquareFunction from '@lucide/svelte/icons/square-function';
   import { point, solver, type RecipKey } from '../lib/state.svelte.ts';
-  import { colorOf, recipTex } from '../lib/trig.ts';
+  import { recipTex } from '../lib/trig.ts';
   import { DEFINITIONS, eqTex } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
 
   const KEYS: RecipKey[] = ['csc', 'sec', 'cot'];
   const NAMES: Record<RecipKey, string> = { csc: 'cosecant', sec: 'secant', cot: 'cotangent' };
-  const color = $derived(point.hit !== undefined ? colorOf(point.hit) : 'var(--muted)');
+  // each reciprocal wears the color of the function it is built from
+  const HUE: Record<RecipKey, string> = { csc: 'var(--sin)', sec: 'var(--cos)', cot: 'var(--slope)' };
 </script>
 
-<section class="defs" aria-labelledby="defs-h" style:--vc={color}>
+<section class="defs" aria-labelledby="defs-h">
   <h2 id="defs-h">Definitions</h2>
   {#each KEYS as k (k)}
-    <div class="card">
+    <div class="card" style:--vc={HUE[k]}>
       <span class="eq"><Tex latex={eqTex(DEFINITIONS[k])} /></span>
       <span class="val"><Tex latex={'=' + recipTex(k, point.deg).r} /></span>
       <button class="solve" aria-label="Solve a {NAMES[k]} problem" title="Solve a {k} problem"
