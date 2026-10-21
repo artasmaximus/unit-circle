@@ -32,7 +32,7 @@
   .card {
     display: grid; grid-template-columns: minmax(0, 1fr) auto 38px; gap: 14px; align-items: center;
     padding: 6px 6px 6px 14px; min-height: 52px; font-size: 1.02rem;
-    border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 80%, transparent);
+    border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 50%, transparent); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
   }
   .eq { min-width: 0; overflow-x: auto; overflow-y: hidden; }
   .val { color: var(--vc); white-space: nowrap; }

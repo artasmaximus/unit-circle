@@ -6,7 +6,7 @@
 
   const WIDTH = 380;
   const show = $derived(solver.open && camera.huge);
-  $effect(() => { camera.side = show ? WIDTH + 24 : 0; });
+  $effect(() => { camera.side.target = show ? WIDTH + 24 : 0; });
 </script>
 
 {#if show}

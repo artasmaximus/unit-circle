@@ -3,43 +3,45 @@
      Vertical, so it fits the panel (in place of the definitions) or a column of its own on very wide screens. -->
 <script lang="ts">
   import { fly } from 'svelte/transition';
-  import ArrowDown from '@lucide/svelte/icons/arrow-down';
+  import ArrowUpDown from '@lucide/svelte/icons/arrow-up-down';
+  import Shrink from '@lucide/svelte/icons/shrink';
+  import Replace from '@lucide/svelte/icons/replace';
+  import XIcon from '@lucide/svelte/icons/x';
+  import Undo2 from '@lucide/svelte/icons/undo-2';
   import X from '@lucide/svelte/icons/x';
   import { solver } from '../lib/state.svelte.ts';
   import { changes, eqTex, exactTex, type Op } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
-  import Picker from './Picker.svelte';
 
-  type Choice = Op | 'undo';
-  const OPS: [Op, string][] = [
-    [{ kind: 'reciprocal' }, 'Reciprocal of both sides'],
-    [{ kind: 'simplify' }, 'Simplify'],
-    [{ kind: 'inSinCos' }, 'Write in sin & cos'],
-    [{ kind: 'times', by: 'sin' }, '× sin θ'],
-    [{ kind: 'times', by: 'cos' }, '× cos θ'],
-    [{ kind: 'times', by: 'tan' }, '× tan θ'],
-    [{ kind: 'times', by: 2 }, '× 2'],
+  // operations are keys: press one and it happens, no separate Apply step. Keys 1-8 work too.
+  type Key = { op: Op | 'undo'; label: string; icon: typeof XIcon; mono?: boolean };
+  const KEYS: Key[] = [
+    { op: { kind: 'reciprocal' }, label: 'Flip both sides', icon: ArrowUpDown },
+    { op: { kind: 'simplify' }, label: 'Simplify', icon: Shrink },
+    { op: { kind: 'inSinCos' }, label: 'Write in sin & cos', icon: Replace },
+    { op: { kind: 'times', by: 'sin' }, label: 'sin θ', icon: XIcon, mono: true },
+    { op: { kind: 'times', by: 'cos' }, label: 'cos θ', icon: XIcon, mono: true },
+    { op: { kind: 'times', by: 'tan' }, label: 'tan θ', icon: XIcon, mono: true },
+    { op: { kind: 'times', by: 2 }, label: '2', icon: XIcon, mono: true },
+    { op: 'undo', label: 'Undo', icon: Undo2 },
   ];
-  let pick = $state(0);
-  const items = $derived(solver.current ? [
-    ...OPS.map(([op, label]) => ({ label, value: op as Choice, disabled: !changes(solver.current!, op) })),
-    { label: 'Undo', value: 'undo' as Choice, disabled: solver.steps.length < 2 },
-  ] : []);
-  const run = (c: Choice) => {
-    if (c === 'undo') return solver.undo();
-    const it = items.find((x) => x.value === c);
-    if (it && !it.disabled) solver.apply(c, it.label);
+  const enabled = (k: Key) => (k.op === 'undo' ? solver.steps.length > 1 : !!solver.current && changes(solver.current, k.op));
+  const press = (k: Key) => {
+    if (!enabled(k)) return;
+    if (k.op === 'undo') solver.undo();
+    else solver.apply(k.op, k.mono ? `× ${k.label}` : k.label);
+    navigator.vibrate?.(6);
   };
   const fn = $derived(solver.target ? `\\${solver.target.fn}\\theta` : '');
 
   const onkeydown = (e: KeyboardEvent) => {
     if (!solver.open) return;
     if (e.key === 'Escape') return solver.close();
+    if (!solver.target && /^[1-8]$/.test(e.key)) return press(KEYS[+e.key - 1]);
     if (e.key !== 'Enter' || (e.target as HTMLElement).tagName === 'BUTTON') return;
     e.preventDefault();
     if (solver.done) solver.next();
     else if (solver.target) solver.check();
-    else if (items[pick]) run(items[pick].value);
   };
 </script>
 
@@ -61,13 +63,14 @@
           </li>
         {/each}
       </ol>
-      <div class="controls">
-        <Picker {items} bind:index={pick} onpick={run} />
-        <div class="apply">
-          <span class="lbl">Apply</span>
-          <button class="go" aria-label="Apply {items[pick]?.label}" disabled={!items[pick] || items[pick].disabled} onclick={() => items[pick] && run(items[pick].value)}><ArrowDown size={20} /></button>
-          <kbd>Enter</kbd>
-        </div>
+      <div class="keys">
+        {#each KEYS as k, i}
+          {@const Icon = k.icon}
+          {#if i === 3}<span class="times">Multiply both sides by</span>{/if}
+          <button class="key" class:mono={k.mono} disabled={!enabled(k)} onclick={() => press(k)} title="Key {i + 1}">
+            <Icon size={k.mono ? 13 : 16} /><span>{k.label}</span><kbd>{i + 1}</kbd>
+          </button>
+        {/each}
       </div>
     {:else}
       <div class="find">
@@ -92,27 +95,33 @@
   .card {
     box-sizing: border-box; display: grid; gap: 16px; align-content: start; padding: 14px 18px 20px;
     border: 1px solid color-mix(in srgb, var(--slope) 45%, transparent); border-radius: 20px;
-    background: color-mix(in srgb, var(--panel) 70%, transparent);
-    -webkit-backdrop-filter: blur(22px) saturate(1.2); backdrop-filter: blur(22px) saturate(1.2);
+    background: color-mix(in srgb, var(--panel) 45%, transparent);
+    -webkit-backdrop-filter: blur(6px) saturate(1.2); backdrop-filter: blur(6px) saturate(1.2);
     box-shadow: 0 24px 60px -24px var(--sh);
   }
   header { display: flex; justify-content: space-between; align-items: center; }
-  .eyebrow, .op, .lbl { font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  .eyebrow, .op { font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
   .icon { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; background: transparent; }
   .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
   .steps li { display: grid; gap: 2px; }
   .m { font-size: 1rem; opacity: 0.55; overflow-x: auto; overflow-y: hidden; }
   .m.now { font-size: 1.45rem; opacity: 1; }
-  .controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; border-top: 1px solid var(--line); padding-top: 8px; }
-  .apply { display: grid; justify-items: center; gap: 6px; }
-  kbd { font: inherit; font-size: 0.72rem; color: var(--muted); }
-  .go {
-    display: grid; place-items: center; width: 60px; height: 40px; padding: 0; border: 0; border-radius: 10px;
-    background: var(--slope); color: #1b1300; box-shadow: 0 3px 0 color-mix(in srgb, var(--slope) 55%, #000);
-    transition: transform 0.08s, box-shadow 0.08s;
+  .keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .times { grid-column: 1 / -1; margin-top: 6px; font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+  /* keycaps: a lip underneath that the key presses down into */
+  .key {
+    position: relative; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; text-align: left;
+    font-size: 0.92rem; border: 1px solid var(--line); border-radius: 10px;
+    background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--fg);
+    box-shadow: 0 3px 0 var(--line); transition: transform 0.07s, box-shadow 0.07s, border-color 0.15s;
   }
-  .go:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 transparent; }
-  .go:disabled { opacity: 0.35; cursor: default; }
+  .key:hover:not(:disabled) { border-color: var(--slope); box-shadow: 0 3px 0 color-mix(in srgb, var(--slope) 60%, var(--line)); }
+  .key:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 transparent; }
+  .key :global(svg) { flex: none; color: var(--slope); }
+  .key span { flex: 1; min-width: 0; }
+  .key.mono span { font-family: 'CMmain', 'Latin Modern Roman', Georgia, serif; font-size: 1.05rem; }
+  .key kbd { font: inherit; font-size: 0.68rem; color: var(--muted); }
+  .key:disabled { opacity: 0.35; box-shadow: none; cursor: default; }
   .find { display: grid; gap: 12px; justify-items: start; }
   .find p { margin: 0; line-height: 1.5; color: var(--muted); }
   .find .ok { color: var(--ok); font-weight: 500; }

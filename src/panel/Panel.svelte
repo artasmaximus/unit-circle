@@ -15,7 +15,7 @@
   $effect(() => { camera.inset = camera.wide ? { left: w, bottom: 0 } : { left: 0, bottom: h }; });
 
   // blur layers from strongest to weakest; each reaches a little further out, so the blur thins toward the edge
-  const LAYERS = [[16, 62, 80], [8, 70, 87], [4, 78, 93], [2, 85, 97], [1, 90, 100]];
+  const LAYERS = [[6, 62, 80], [4, 70, 87], [2, 78, 93], [1, 86, 100]];
 
   let editing = $state(false), draft = $state('');
   const shown = $derived(editing ? draft : degText(point.deg));
@@ -67,7 +67,7 @@
     -webkit-mask-image: linear-gradient(var(--dir), #000 var(--a), transparent var(--z));
     mask-image: linear-gradient(var(--dir), #000 var(--a), transparent var(--z));
   }
-  .tint { background: linear-gradient(var(--dir), color-mix(in srgb, var(--bg) 78%, transparent) 55%, transparent 100%); }
+  .tint { background: linear-gradient(var(--dir), color-mix(in srgb, var(--bg) 45%, transparent) 55%, transparent 100%); }
   .content {
     position: relative; height: 100%; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain;
     display: grid; align-content: start; gap: 22px;
