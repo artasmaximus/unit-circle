@@ -1,7 +1,6 @@
 <script lang="ts">
   import Plane from './plane/Plane.svelte';
   import Panel from './panel/Panel.svelte';
-  import SolverColumn from './solver/SolverColumn.svelte';
   import { point, quiz, ui } from './lib/state.svelte.ts';
 
   if (ui.mode === 'quiz') quiz.start();
@@ -25,4 +24,3 @@
 
 <Plane />
 <Panel />
-<SolverColumn />

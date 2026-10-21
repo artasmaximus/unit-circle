@@ -13,6 +13,8 @@
   import { changes, eqTex, exactTex, type Op } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
 
+  let { bare = false }: { bare?: boolean } = $props();
+
   // operations are keys: press one and it happens, no separate Apply step. Keys 1-8 work too.
   type Key = { op: Op | 'undo'; label: string; icon: typeof XIcon; mono?: boolean };
   const KEYS: Key[] = [
@@ -48,7 +50,7 @@
 <svelte:window {onkeydown} />
 
 {#if solver.current}
-  <section class="card" aria-label="Solve" in:fly={{ y: 12, duration: 260 }}>
+  <section class="card" class:bare aria-label="Solve" in:fly={{ y: 12, duration: bare ? 0 : 260 }}>
     <header>
       <span class="eyebrow">{solver.target ? 'Find θ on the circle' : 'Solve for θ'}</span>
       <button class="icon" aria-label="Close" onclick={() => solver.close()}><X size={16} /></button>
@@ -99,6 +101,8 @@
     -webkit-backdrop-filter: blur(6px) saturate(1.2); backdrop-filter: blur(6px) saturate(1.2);
     box-shadow: 0 24px 60px -24px var(--sh);
   }
+  /* inside a Morph the surrounding box already draws the card */
+  .bare { border: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   header { display: flex; justify-content: space-between; align-items: center; }
   .eyebrow, .op { font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
   .icon { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; background: transparent; }

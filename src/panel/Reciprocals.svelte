@@ -5,6 +5,9 @@
   import { recipTex } from '../lib/trig.ts';
   import { DEFINITIONS, eqTex } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
+  import Morph from '../ui/Morph.svelte';
+  import Solver from '../solver/Solver.svelte';
+  import { camera } from '../lib/camera.svelte.ts';
 
   const KEYS: RecipKey[] = ['csc', 'sec', 'cot'];
   const NAMES: Record<RecipKey, string> = { csc: 'cosecant', sec: 'secant', cot: 'cotangent' };
@@ -18,10 +21,10 @@
     <div class="card" style:--vc={HUE[k]}>
       <span class="eq"><Tex latex={eqTex(DEFINITIONS[k])} /></span>
       <span class="val"><Tex latex={'=' + recipTex(k, point.deg).r} /></span>
-      <button class="solve" aria-label="Solve a {NAMES[k]} problem" title="Solve a {k} problem"
-        onclick={(e) => solver.start(k, e.currentTarget.getBoundingClientRect())}>
-        <SquareFunction size={18} />
-      </button>
+      <Morph label="Solve a {NAMES[k]} problem" open={camera.wide && solver.open && solver.key === k} onopen={() => solver.start(k)}>
+        {#snippet button()}<SquareFunction size={18} />{/snippet}
+        <Solver bare />
+      </Morph>
     </div>
   {/each}
 </section>
@@ -32,17 +35,8 @@
   .card {
     display: grid; grid-template-columns: minmax(0, 1fr) auto 38px; gap: 14px; align-items: center;
     padding: 6px 6px 6px 14px; min-height: 52px; font-size: 1.02rem;
-    border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 50%, transparent); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 50%, transparent);
   }
   .eq { min-width: 0; overflow-x: auto; overflow-y: hidden; }
   .val { color: var(--vc); white-space: nowrap; }
-  /* a tall, tactile strip down the card's right edge */
-  .solve {
-    align-self: stretch; display: grid; place-items: center; padding: 0; border-radius: 9px;
-    color: var(--slope); background: color-mix(in srgb, var(--slope) 10%, transparent);
-    border: 1px solid color-mix(in srgb, var(--slope) 35%, transparent);
-    transition: transform 0.12s ease-out, background 0.15s;
-  }
-  .solve:hover { background: color-mix(in srgb, var(--slope) 20%, transparent); border-color: var(--slope); }
-  .solve:active { transform: scale(0.94); }
 </style>
