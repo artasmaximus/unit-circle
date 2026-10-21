@@ -5,8 +5,8 @@
   import type { Snippet } from 'svelte';
   import { camera } from '../lib/camera.svelte.ts';
 
-  let { open, name, onopen, label, button, children }: {
-    open: boolean; name: string; onopen: () => void; label: string; button: Snippet; children: Snippet;
+  let { open, active, name, onopen, label, button, children }: {
+    open: boolean; active: boolean; name: string; onopen: () => void; label: string; button: Snippet; children: Snippet;
   } = $props();
 
   const W = 400, MIN_ROOM = 560, EDGE = 16;
@@ -23,9 +23,10 @@
 
 <div class="home" bind:this={home}>
   {#if open}
-    <div class="card" style="{place};view-transition-name:{name}">{@render children()}</div>
+    <div class="card" style="{place};view-transition-name:{name};view-transition-class:morph">{@render children()}</div>
   {:else}
-    <button class="face" style:view-transition-name={name} aria-label={label} title={label} onclick={onopen}>{@render button()}</button>
+    <!-- only the button that is (or was last) open is named: other named elements would be lifted above the card mid-morph -->
+    <button class="face" style:view-transition-name={active ? name : 'none'} style:view-transition-class="morph" aria-label={label} title={label} onclick={onopen}>{@render button()}</button>
   {/if}
 </div>
 
@@ -40,8 +41,8 @@
   .face:active { scale: 0.94; }
   .card {
     position: fixed; z-index: 5; overflow-y: auto; border-radius: 12px;
-    background: color-mix(in srgb, var(--panel) 86%, transparent);
-    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    /* no backdrop-filter: view-transition snapshots can't carry it, so the card would flash at both ends */
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
     border: 1px solid color-mix(in srgb, var(--slope) 50%, transparent); box-shadow: 0 24px 60px -20px var(--sh);
   }
 </style>

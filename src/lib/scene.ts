@@ -150,7 +150,7 @@ export function buildScene(p: SceneInput) {
     };
   }) : [];
 
-  return { x, y, col, trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, tag, slope };
+  return { x, y, col, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, tag, slope };
 }
 
 /** Chip text size in px; chips keep their size on screen whatever the zoom. */
