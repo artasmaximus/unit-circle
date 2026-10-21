@@ -18,6 +18,8 @@
   const tick = (period: number) => period * pen.current;
   // the dashes snap first and change color only as the tick lands, like the click at the end of a pen press
   const legCol = $derived(moving && t < 0.75 ? before : sc.col);
+  // the x / y labels recolor on the same click
+  const labelBefore = (l: { latex: string }) => (penFrom.revealed ? (l.latex.includes('cos') ? 'var(--cos)' : 'var(--sin)') : 'var(--fg)');
   const bob = $derived(1 + 0.12 * Math.sin(Math.PI * window01(0.45, 1)));
 </script>
 

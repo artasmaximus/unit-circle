@@ -56,7 +56,6 @@ export const ui = $state({
   mirror: false,
   /** In a quiz, answers stay hidden until the question is answered. */
   revealed: true,
-  slopeOpen: false,
   /** Snap points drawn larger: the angles found in a quiz. */
   highlight: [] as number[],
 });

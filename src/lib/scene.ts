@@ -15,7 +15,7 @@ export type SceneInput = {
   /** Signed arc (radians) of the trail behind the point. */
   tail: number;
   revealed: boolean; mirror: boolean; mirrorOnly: Fn | null;
-  showCoords: boolean; slopeOpen: boolean;
+  showCoords: boolean;
   /** Px per world unit and the uncovered area in world units, for sizing and keeping chips on screen. */
   k: number; bounds: Rect;
   memo: { a: number; b: number };
@@ -110,9 +110,9 @@ export function buildScene(p: SceneInput) {
   const cx = trigTex('cos', deg), sx = trigTex('sin', deg), tv = trigTex('tan', deg);
   const segs: Seg[] = [[0, 0, x, y], [0, 0, x, 0], [x, 0, x, y]];
   const onH = Math.abs(s) < 0.02, onV = Math.abs(c) < 0.02;
-  const slopeTex = p.slopeOpen
-    ? `\\begin{aligned}\\tan\\theta&=\\frac{\\sin\\theta}{\\cos\\theta}\\\\[1.6ex]&=\\frac{${sx}}{${cx}}\\\\[1.6ex]&=${tv}\\end{aligned}`
-    : `\\tan\\theta=${tv}`;
+  const slopeTex = `\\tan\\theta=${tv}`;
+  // the working behind it, shown in a tooltip on hover
+  const slopeCalc = `\\tan\\theta=\\frac{\\sin\\theta}{\\cos\\theta}=\\frac{${sx}}{${cx}}=${tv}`;
   const place = (o: PlaceOpts, latex: string, padX: number, padY: number, minW: number, key: 'a' | 'b', color: string): Chip | null => {
     const b = texBox(latex);
     if (!b) return null;
@@ -121,7 +121,7 @@ export function buildScene(p: SceneInput) {
     return { latex, x: at.x, y: at.y, w, h, ax: o.ax, ay: o.ay, color };
   };
   const slope = p.revealed
-    ? place({ ax: x / 2, ay: y / 2, fixed: true, gap: 0, pref: [0, 0], segs, place: onH ? 'above' : onV ? 'left' : undefined }, slopeTex, 34, 28, 60, 'b', 'var(--slope)')
+    ? place({ ax: x / 2, ay: y / 2, fixed: true, gap: 0, pref: [0, 0], segs, place: onH ? 'above' : onV ? 'left' : undefined }, slopeTex, 28, 16, 0, 'b', 'var(--slope)')
     : null;
   // the point's tag: the θ box always, the coordinates too when they may show. θ sits on the side away
   // from the x-axis: above the coordinates in quadrants I and II, below them in III and IV.
@@ -150,7 +150,7 @@ export function buildScene(p: SceneInput) {
     };
   }) : [];
 
-  return { x, y, col, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, tag, slope };
+  return { x, y, col, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, tag, slope, slopeCalc };
 }
 
 /** Chip text size in px; chips keep their size on screen whatever the zoom. */

@@ -1,9 +1,8 @@
-<!-- Frosted labels floating over the plane: the point's coordinates, and the slope on the radius,
+<!-- Labels floating over the plane: the point's θ and coordinates, and the slope on the radius,
      which unfolds its working when clicked. Positions come from the scene, in world units. -->
 <script lang="ts">
   import { scale } from 'svelte/transition';
   import { camera } from '../lib/camera.svelte.ts';
-  import { ui } from '../lib/state.svelte.ts';
   import type { Chip, Scene } from '../lib/scene.ts';
   import Tex from '../ui/Tex.svelte';
   import AngleInput from '../ui/AngleInput.svelte';
@@ -13,13 +12,7 @@
     const k = camera.k;
     return `transform:translate(${camera.ox + (c.x - c.w / 2) * k}px,${camera.oy + (c.y - c.h / 2) * k}px);width:${c.w * k}px;height:${c.h * k}px;--c:${c.color}`;
   };
-  let slopeEl = $state<HTMLButtonElement>();
-  const close = () => (ui.slopeOpen = false);
 </script>
-
-<svelte:window
-  onpointerdown={(e) => { if (ui.slopeOpen && !slopeEl?.contains(e.target as Node)) close(); }}
-  onkeydown={(e) => { if (e.key === 'Escape' && ui.slopeOpen) close(); }} />
 
 <div class="layer">
   {#if scene.tag}
@@ -35,10 +28,10 @@
     </div>
   {/if}
   {#if scene.slope}
-    <button bind:this={slopeEl} class="chip slope" style={box(scene.slope)} aria-expanded={ui.slopeOpen}
-      title="Click to show the calculation" onclick={() => (ui.slopeOpen = !ui.slopeOpen)} onblur={close}
-      transition:scale={{ start: 0.6, duration: 200 }}>
-      <span class="cap">slope</span><Tex latex={scene.slope.latex} />
+    <!-- just tan θ = value; hovering (or focusing) shows how it is worked out -->
+    <button type="button" class="chip slope" style={box(scene.slope)} aria-label="Slope: hover to see how it is worked out">
+      <Tex latex={scene.slope.latex} />
+      <span class="calc" role="tooltip"><Tex latex={scene.slopeCalc} /></span>
     </button>
   {/if}
 </div>
@@ -66,13 +59,17 @@
     -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
     transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1), width 0.24s cubic-bezier(0.22, 0.9, 0.3, 1), height 0.24s cubic-bezier(0.22, 0.9, 0.3, 1), border-color 0.15s;
   }
-  .slope { pointer-events: auto; cursor: pointer; padding: 10px 0 0; font: inherit; font-size: 13px; }
-  .slope:hover, .slope:focus-visible { border-color: var(--slope); outline: none; }
-  .cap { position: absolute; left: 8px; top: 4px; font-size: 8px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
-  .slope::after {
-    content: ''; position: absolute; right: 7px; top: 6px; width: 4px; height: 4px;
-    border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(45deg); opacity: 0; transition: opacity 0.15s;
+  /* amber-tinted glass with a soft amber edge */
+  .slope {
+    pointer-events: auto; cursor: help; outline: none; font: inherit; font-size: 13px; padding: 0;
+    border-color: color-mix(in srgb, var(--slope) 35%, transparent);
+    background: color-mix(in srgb, var(--slope) 12%, var(--glass));
   }
-  .slope:hover::after, .slope:focus-visible::after { opacity: 1; }
-  .slope[aria-expanded='true']::after { opacity: 1; transform: rotate(-135deg); top: 9px; }
+  .calc {
+    position: absolute; left: 50%; top: calc(100% + 8px); translate: -50% 0; padding: 8px 12px; border-radius: 9px; white-space: nowrap;
+    background: color-mix(in srgb, var(--panel) 92%, transparent); color: var(--fg); border: 1px solid var(--line); box-shadow: 0 8px 20px -6px var(--sh);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  }
+  .slope:hover .calc, .slope:focus-visible .calc { opacity: 1; }
 </style>

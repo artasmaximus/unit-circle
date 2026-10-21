@@ -17,7 +17,7 @@
     revealed: revealed(), mirror: ui.mirror,
     mirrorOnly: ui.mode === 'quiz' && quiz.cur ? quiz.cur.fn : null,
     showCoords: revealed() || (ui.mode === 'quiz' && quiz.hint),
-    slopeOpen: ui.slopeOpen, k: camera.k, bounds: camera.freeWorld, memo,
+    k: camera.k, bounds: camera.freeWorld, memo,
   }));
 
   let dragging = $state(false);
