@@ -18,6 +18,8 @@
     const x = u * F.refSettle;
     return 1 - Math.exp(-F.refDamping * F.refFreq * x) * (Math.cos(WD * x) + ((F.refDamping * F.refFreq) / WD) * Math.sin(WD * x));
   };
+  /** Grows 0 → 1 with a little overshoot, for a dot that pops in. */
+  const popOut = (u: number) => 1 + 2.7 * (u - 1) ** 3 + 1.7 * (u - 1) ** 2;
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   type Brace = NonNullable<Scene['braceC']>;
   type Item = { b: Brace | null; l: Label | null };
@@ -106,6 +108,7 @@
       <line class="leg" x1={seg[0]} y1={seg[1]} x2={seg[2]} y2={seg[3]} stroke={leg.now()} stroke-dashoffset={tick(9)} />
     {/if}
   {/each}
+  {#if sc.sinExt}<line class="leg" x1={sc.sinExt[0]} y1={sc.sinExt[1]} x2={sc.sinExt[2]} y2={sc.sinExt[3]} stroke={sc.sinCol} stroke-dashoffset={tick(9)} />{/if}
   <line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={moving ? before : sc.col} stroke-width={1.75 * camera.boost} stroke-linecap="round" />
   {#if moving}<line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={sc.col} stroke-width={1.75 * camera.boost} stroke-linecap="round" pathLength="1" stroke-dasharray="{rayWash} 1" />{/if}
   {#each legs as leg}
@@ -139,8 +142,8 @@
   {/each}
   {#each sc.mirrors as m}
     {#if m.line}<line x1={m.line[0]} y1={m.line[1]} x2={m.line[2]} y2={m.line[3]} stroke={sc.col} stroke-width={1 * camera.boost} stroke-dasharray="2 4" opacity=".8" />{/if}
-    <circle cx={m.dot[0]} cy={m.dot[1]} r="4.5" fill="var(--bg)" stroke={sc.col} stroke-width={1.5 * camera.boost} />
-    {#if m.label}<SvgTex label={m.label} />{/if}
+    {#if m.e > 0.001}<circle cx={m.dot[0]} cy={m.dot[1]} r={4.5 * popOut(m.e)} fill="var(--bg)" stroke={sc.col} stroke-width={1.5 * camera.boost} />{/if}
+    {#if m.label}<g opacity={m.e}><SvgTex label={m.label} /></g>{/if}
   {/each}
   {#if sc.guide2}
     <line x1={sc.guide2[0]} y1={sc.guide2[1]} x2={sc.guide2[2]} y2={sc.guide2[3]} stroke={sc.col} stroke-width={.75 * camera.boost} stroke-dasharray="3 4" stroke-dashoffset={Math.abs(sc.x) % 7 + tick(7)} />

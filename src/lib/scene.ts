@@ -1,7 +1,7 @@
 // Everything drawn on the plane for one frame, as plain data. Components only render what this returns.
 // World units: the circle has radius S, y points down (so sin is drawn as -y).
 import { S } from './camera.svelte.ts';
-import { tag as tagT } from './tuning.ts';
+import { figure as tuning, tag as tagT } from './tuning.ts';
 import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from './trig.ts';
 import { texBox, texRect, type Rect } from './tex.svelte.ts';
 
@@ -15,7 +15,7 @@ export type SceneInput = {
   ang: number; hit: number | undefined; dotR: number;
   /** Signed arc (radians) of the trail behind the point. */
   tail: number;
-  revealed: boolean; mirror: boolean; mirrorOnly: Fn | null;
+  revealed: boolean; mirror: number; mirrorOnly: Fn | null;
   showCoords: boolean; slopeOpen: boolean;
   /** Px per world unit and the uncovered area in world units, for sizing and keeping chips on screen. */
   k: number; bounds: Rect; boost: number;
@@ -59,20 +59,24 @@ export function buildScene(p: SceneInput) {
   const wedgeHead = ang > 0.16 && ang < 2 * Math.PI - 0.02
     ? `M ${px - tx * L - ty * W} ${py - ty * L + tx * W} L ${px} ${py} L ${px - tx * L + ty * W} ${py - ty * L - tx * W}` : null;
 
-  // legs of the triangle; mirror mode stretches them to the reflected points
-  let sinLeg: Seg = [x, 0, x, y];
+  // legs of the triangle; mirror mode draws each one on out to its reflected point (`p.mirror` runs 0 → 1, so the
+  // lines grow from where they start), with the reflected dot riding the tip
+  const sinLeg: Seg = [x, 0, x, y];
+  let sinExt: Seg | null = null;
   let guide2: Seg | null = null;
-  const mirrors: { line: Seg | null; dot: [number, number]; label: Label | null }[] = [];
+  const mirrors: { line: Seg | null; dot: [number, number]; label: Label | null; e: number }[] = [];
+  // the lines take the first part of the run and the dots pop in once they have arrived (and go first on the way back)
+  const e = p.mirror, grow = 1 - (1 - Math.min(1, e / 0.7)) ** tuning.mirrorEase, pop = Math.min(1, Math.max(0, (e - 0.7) / 0.3));
   REFL.forEach((rf, i) => {
-    if (!p.mirror || (p.mirrorOnly && p.mirrorOnly !== rf.fn)) return;
+    if (e <= 0.001 || (p.mirrorOnly && p.mirrorOnly !== rf.fn)) return;
     const a = rf.ang(ang), gx = S * Math.cos(a), gy = -S * Math.sin(a), gd = norm(Math.round(rf.deg(deg)));
-    let line: Seg | null = null;
-    if (i === 0) sinLeg = [x, gy, x, y];
-    else if (i === 1) guide2 = [0, y, gx, y];
-    else line = [x, y, gx, gy];
+    let line: Seg | null = null, tip: [number, number] = [gx, gy];
+    if (i === 0) { tip = [x, gy * grow]; sinExt = [x, 0, ...tip]; }
+    else if (i === 1) { tip = [gx * grow, y]; guide2 = [0, y, ...tip]; }
+    else { tip = [x + (gx - x) * grow, y + (gy - y) * grow]; line = [x, y, ...tip]; }
     // a ghost on a snap point is already named by the ring label
     const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11 * p.boost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
-    mirrors.push({ line, dot: [gx, gy], label: lb });
+    mirrors.push({ line, dot: tip, label: lb, e: pop });
   });
 
   // reference angle: quadrants II–IV get a small arc from the nearest x-axis; in quadrant I the label rides the θ arc
@@ -99,8 +103,8 @@ export function buildScene(p: SceneInput) {
   // leg labels sit past a curly brace on the outside of each leg, so they read as lengths
   const ncy = s >= 0 ? 1 : -1, ncx = c >= 0 ? 1 : -1;
   const cosCol = p.revealed ? 'var(--cos)' : 'var(--fg)', sinCol = p.revealed ? 'var(--sin)' : 'var(--fg)';
-  // each leg's label bounces away from its brace; leaving, the cosine label continues that way and the sine label goes left
-  const cosDir: [number, number] = [0, ncy], sinDir: [number, number] = [ncx, 0], cosExit = cosDir, sinExit: [number, number] = [-1, 0];
+  // each leg's label bounces away from its brace; leaving, the cosine label continues that way and the sine label goes right
+  const cosDir: [number, number] = [0, ncy], sinDir: [number, number] = [ncx, 0], cosExit = cosDir, sinExit: [number, number] = [1, 0];
   const braceC = brace(0, 0, x, 0, 0, ncy, 30), braceS = brace(x, 0, x, y, ncx, 0, 24);
   const obstacles: (Rect & { k?: number })[] = [];
   let cosLabel: Label | null = null, sinLabel: Label | null = null;
@@ -160,7 +164,7 @@ export function buildScene(p: SceneInput) {
     };
   }) : [];
 
-  return { x, y, col, cosCol, sinCol, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArcAt, refLabel, refPolar, braceC, braceS, cosLabel, sinLabel, cosDir, sinDir, cosExit, sinExit, tag, slope };
+  return { x, y, col, cosCol, sinCol, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, sinExt, guide2, mirrors, refArcAt, refLabel, refPolar, braceC, braceS, cosLabel, sinLabel, cosDir, sinDir, cosExit, sinExit, tag, slope };
 }
 
 /** Chip text size in px; chips keep their size on screen whatever the zoom. */

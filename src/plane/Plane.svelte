@@ -2,7 +2,8 @@
      pressing elsewhere drags the whole view. Scroll (or pinch) zooms about the pointer. -->
 <script lang="ts">
   import { camera, S, LABEL_R } from '../lib/camera.svelte.ts';
-  import { input } from '../lib/tuning.ts';
+  import { Tween } from 'svelte/motion';
+  import { figure, input } from '../lib/tuning.ts';
   import { aim, point, quiz, revealed, ui } from '../lib/state.svelte.ts';
   import { buildScene } from '../lib/scene.ts';
   import { SPECIAL, colorOf, rad, snapDeg } from '../lib/trig.ts';
@@ -15,10 +16,13 @@
 
   /** How close (px) to the circle a press must be to grab the point. */
   const BAND = input.grabBand;
+  // mirror mode draws its lines on and takes them back as this runs 0 ↔ 1
+  const mirrorP = new Tween(0, { duration: figure.mirrorMs });
+  $effect(() => { const want = ui.mirror ? 1 : 0; if (mirrorP.target !== want) mirrorP.target = want; });
   const memo = { b: -1 };
   const scene = $derived(buildScene({
     ang: point.ang, hit: point.hit, dotR: point.dotR, tail: point.tail,
-    revealed: revealed(), mirror: ui.mirror,
+    revealed: revealed(), mirror: mirrorP.current,
     mirrorOnly: ui.mode === 'quiz' && quiz.cur ? quiz.cur.fn : null,
     showCoords: revealed() || (ui.mode === 'quiz' && quiz.hint),
     slopeOpen: ui.slopeOpen, k: camera.k, boost: camera.textBoost, bounds: camera.freeWorld, memo,

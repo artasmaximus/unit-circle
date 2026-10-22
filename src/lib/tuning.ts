@@ -26,8 +26,12 @@ export const figure = {
   refLabel: [0.4, 1] as [number, number],
   /** The x / y labels bounce away from their braces and back by this much (px) over [0, bobEnd], then recolor. */
   bob: 8, bobEnd: 0.6,
+  /** Mirror mode draws its reflected lines on (and takes them back) over this long (ms). */
+  mirrorMs: 700,
+  /** How hard the line eases out as it draws: 1 is linear, 3 a cubic ease-out, higher lunges out and settles slowly. */
+  mirrorEase: 5,
   /** A brace and its label leaving (the brace undraws, the label blurs away): duration, and how far (world) the label shoots. */
-  legExitMs: 180, legShoot: 12,
+  legExitMs: 180, legShoot: 8,
   /** The reference angle is fully opaque once its pop reaches this fraction, and fades below it. */
   refFadeBy: 0.7,
   /** The reference angle's spring: seconds to settle, natural frequency (rad/s), damping ratio (lower = bouncier). */
