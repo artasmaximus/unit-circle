@@ -2,6 +2,8 @@
   import Plane from './plane/Plane.svelte';
   import Panel from './panel/Panel.svelte';
   import SolverLab from './lab/SolverLab.svelte';
+  import TabBar from './ui/TabBar.svelte';
+  import { camera } from './lib/camera.svelte.ts';
   import { point, quiz, ui } from './lib/state.svelte.ts';
 
   // ?lab=solver opens the equation solver's test bench in place of the panel
@@ -27,4 +29,4 @@
 <svelte:document onpointerover={flipTip} onfocusin={flipTip} />
 
 <Plane />
-{#if lab}<SolverLab />{:else}<Panel />{/if}
+{#if lab}<SolverLab />{:else}<Panel />{#if camera.wide}<TabBar />{/if}{/if}

@@ -61,6 +61,8 @@ export const point = new Point();
 export const aim = $state<{ deg: number | null }>({ deg: null });
 
 export const ui = $state({
+  /** The concept on the plane, picked in the tab bar. */
+  topic: 'circle' as 'circle' | 'inverse',
   mode: 'quiz' as 'explore' | 'quiz',
   mirror: false,
   /** In a quiz, answers stay hidden until the question is answered. */

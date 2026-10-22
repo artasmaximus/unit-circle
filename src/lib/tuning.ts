@@ -90,6 +90,8 @@ export const panel = {
   enter: { y: 10, ms: 280, delay: 140 }, exit: { y: -10, ms: 180 },
   /** On phones the plane re-fits to the panel this long (ms) after a view change settles. */
   settleMs: 450,
+  /** Room (px) the circle leaves along the bottom on wide screens, for the tab bar floating there. */
+  tabBarRoom: 64,
   /** Progressive blur layers [blur px, solid up to %, gone by %], strongest first. */
   blur: [[6, 62, 80], [4, 70, 87], [2, 78, 93], [1, 86, 100]] as [number, number, number][],
 };

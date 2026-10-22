@@ -20,7 +20,7 @@
   $effect(() => {
     void `${ui.mode}|${camera.vw}|${camera.vh}`;
     clearTimeout(settle);
-    if (camera.wide) { camera.inset = { left: w, bottom: 0 }; placed = false; return; }
+    if (camera.wide) { camera.inset = { left: w, bottom: panelT.tabBarRoom }; placed = false; return; }
     if (!placed) return;
     settle = window.setTimeout(() => { camera.inset = { left: 0, bottom: untrack(() => h) }; }, panelT.settleMs);
     return () => clearTimeout(settle);
