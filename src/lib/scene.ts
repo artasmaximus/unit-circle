@@ -19,6 +19,8 @@ export type SceneInput = {
   showCoords: boolean; slopeOpen: boolean;
   /** Px per world unit and the uncovered area in world units, for sizing and keeping chips on screen. */
   k: number; bounds: Rect; boost: number;
+  /** Multipliers for in-plane label sizes, and for line widths and brace size (see camera.stroke / camera.labelBoost). */
+  labelBoost: number; stroke: number;
   memo: { b: number };
 };
 
@@ -35,10 +37,10 @@ const REFL: { ang: (a: number) => number; deg: (d: number) => number; fn: Fn }[]
 ];
 
 /** A curly brace beside segment (x1,y1)-(x2,y2), tip along the outward normal (nx,ny). */
-function brace(x1: number, y1: number, x2: number, y2: number, nx: number, ny: number, minLen: number) {
+function brace(x1: number, y1: number, x2: number, y2: number, nx: number, ny: number, minLen: number, sf: number) {
   const L = Math.hypot(x2 - x1, y2 - y1);
   if (L < minLen) return null;
-  const ux = (x2 - x1) / L, uy = (y2 - y1) / L, d = Math.min(7, L / 6), m = 5, h = L / 2;
+  const ux = (x2 - x1) / L, uy = (y2 - y1) / L, d = Math.min(7 * sf, L / 6), m = 5 * sf, h = L / 2;
   return {
     d, m,
     path: `M 0 0 Q 0 ${-d / 2} ${d} ${-d / 2} H ${h - d} Q ${h} ${-d / 2} ${h} ${-d} Q ${h} ${-d / 2} ${h + d} ${-d / 2} H ${L - d} Q ${L} ${-d / 2} ${L} 0`,
@@ -55,7 +57,7 @@ export function buildScene(p: SceneInput) {
   // angle arc with a small open arrowhead whose tip sits on the terminal side
   const r = S / 5;
   const wedge = `M ${r} 0 A ${r} ${r} 0 ${ang > Math.PI ? 1 : 0} 0 ${r * Math.cos(-ang)} ${r * Math.sin(-ang)}`;
-  const px = r * c, py = -r * s, tx = -s, ty = -c, L = 4.6, W = 2.6;
+  const px = r * c, py = -r * s, tx = -s, ty = -c, L = 4.6 * p.stroke, W = 2.6 * p.stroke;
   const wedgeHead = ang > 0.16 && ang < 2 * Math.PI - 0.02
     ? `M ${px - tx * L - ty * W} ${py - ty * L + tx * W} L ${px} ${py} L ${px - tx * L + ty * W} ${py - ty * L - tx * W}` : null;
 
@@ -66,7 +68,9 @@ export function buildScene(p: SceneInput) {
   let guide2: Seg | null = null;
   const mirrors: { line: Seg | null; dot: [number, number]; label: Label | null; e: number }[] = [];
   // the lines take the first part of the run and the dots pop in once they have arrived (and go first on the way back)
-  const e = p.mirror, grow = 1 - (1 - Math.min(1, e / 0.7)) ** tuning.mirrorEase, pop = Math.min(1, Math.max(0, (e - 0.7) / 0.3));
+  // an ease-out line looks finished well before its run is, so the dot starts popping when the line is 97% drawn
+  const e = p.mirror, grow = 1 - (1 - Math.min(1, e / tuning.mirrorLineShare)) ** tuning.mirrorEase;
+  const popFrom = tuning.mirrorLineShare * (1 - 0.03 ** (1 / tuning.mirrorEase)), pop = Math.min(1, Math.max(0, (e - popFrom) / (1 - popFrom)));
   REFL.forEach((rf, i) => {
     if (e <= 0.001 || (p.mirrorOnly && p.mirrorOnly !== rf.fn)) return;
     const a = rf.ang(ang), gx = S * Math.cos(a), gy = -S * Math.sin(a), gd = norm(Math.round(rf.deg(deg)));
@@ -75,7 +79,7 @@ export function buildScene(p: SceneInput) {
     else if (i === 1) { tip = [gx * grow, y]; guide2 = [0, y, ...tip]; }
     else { tip = [x + (gx - x) * grow, y + (gy - y) * grow]; line = [x, y, ...tip]; }
     // a ghost on a snap point is already named by the ring label
-    const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11 * p.boost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
+    const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11 * p.labelBoost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
     mirrors.push({ line, dot: tip, label: lb, e: pop });
   });
 
@@ -97,7 +101,7 @@ export function buildScene(p: SceneInput) {
     else { mid = ang / 2; rr = tagT.refRadius - 4; }
     const dy = ref === 0 ? -9 : 0;
     refPolar = { rr, from, to: mid, dy };
-    refLabel = label(`${ref}^\\circ`, tagT.refFont * p.boost, rr * Math.cos(mid), -rr * Math.sin(mid) + dy, col);
+    refLabel = label(`${ref}^\\circ`, tagT.refFont * p.labelBoost, rr * Math.cos(mid), -rr * Math.sin(mid) + dy, col);
   }
 
   // leg labels sit past a curly brace on the outside of each leg, so they read as lengths
@@ -105,16 +109,16 @@ export function buildScene(p: SceneInput) {
   const cosCol = p.revealed ? 'var(--cos)' : 'var(--fg)', sinCol = p.revealed ? 'var(--sin)' : 'var(--fg)';
   // each leg's label bounces away from its brace; leaving, the cosine label continues that way and the sine label goes right
   const cosDir: [number, number] = [0, ncy], sinDir: [number, number] = [ncx, 0], cosExit = cosDir, sinExit: [number, number] = [1, 0];
-  const braceC = brace(0, 0, x, 0, 0, ncy, 30), braceS = brace(x, 0, x, y, ncx, 0, 24);
+  const braceC = brace(0, 0, x, 0, 0, ncy, tuning.braceMinPx[0] / p.k, p.stroke), braceS = brace(x, 0, x, y, ncx, 0, tuning.braceMinPx[1] / p.k, p.stroke);
   const obstacles: (Rect & { k?: number })[] = [];
   let cosLabel: Label | null = null, sinLabel: Label | null = null;
   if (braceC) {
-    const h = (texBox('x=\\cos\\theta')?.h ?? 0) * 12;
-    cosLabel = label('x=\\cos\\theta', 12 * p.boost, x / 2, ncy * (braceC.m + braceC.d + 4 + h / 2), cosCol);
+    const h = (texBox('x=\\cos\\theta')?.h ?? 0) * 12 * p.labelBoost;
+    cosLabel = label('x=\\cos\\theta', 12 * p.labelBoost, x / 2, ncy * (braceC.m + braceC.d + 4 * p.stroke + h / 2), cosCol);
     obstacles.push({ x: Math.min(0, x), y: Math.min(ncy * braceC.m, ncy * (braceC.m + braceC.d)), w: Math.abs(x), h: braceC.d });
   }
   if (braceS) {
-    sinLabel = label('y=\\sin\\theta', 12 * p.boost, x + ncx * (braceS.m + braceS.d + 5), y / 2, sinCol, ncx > 0 ? 0 : 1, 0.5);
+    sinLabel = label('y=\\sin\\theta', 12 * p.labelBoost, x + ncx * (braceS.m + braceS.d + 5 * p.stroke), y / 2, sinCol, ncx > 0 ? 0 : 1, 0.5);
     obstacles.push({ x: Math.min(x + ncx * braceS.m, x + ncx * (braceS.m + braceS.d)), y: Math.min(0, y), w: braceS.d, h: Math.abs(y) });
   }
   if (cosLabel) obstacles.push(cosLabel.rect);

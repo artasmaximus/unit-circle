@@ -28,6 +28,13 @@ class Camera {
   boost = $derived(this.wide ? 1 : 1.35);
   /** Text and chips grow less than strokes do: the figure has to fit them around the circle. */
   textBoost = $derived(this.wide ? 1 : 1.1);
+  /** What world-unit line widths, dashes, dots and braces are multiplied by: the phone boost, eased against zoom so that
+   *  zooming in does not fatten them in step with the circle. */
+  stroke = $derived(this.boost * this.zoom ** (T.strokeZoom - 1));
+  /** Decimal places the angle reads and drags to: none at the default zoom, more as you zoom in, up to three. */
+  thetaDecimals = $derived(T.decimalsAtZoom.filter((z) => this.zoom >= z).length);
+  /** The same for the labels drawn on the plane (the chips are screen-sized already). */
+  labelBoost = $derived(this.textBoost * this.zoom ** (T.textZoom - 1));
   /** The uncovered part of the viewport, minus a gutter where the panel's blur fades out. */
   free = $derived.by(() => {
     const { left: l, bottom: b } = this.inset, left = l && l + (this.wide ? T.gutterWide : T.gutter), bottom = b && b + T.gutter / 2;

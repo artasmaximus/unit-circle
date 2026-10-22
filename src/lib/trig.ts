@@ -28,10 +28,10 @@ export const nearestSpecial = (d: number) => {
   return best % 360;
 };
 export const SNAP_RANGE = input.snapRange;
-export function snapDeg(d: number) {
+export function snapDeg(d: number, range = SNAP_RANGE) {
   d = norm(d);
   const s = nearestSpecial(d);
-  return Math.abs(norm(d - s + 180) - 180) <= SNAP_RANGE ? s : d;
+  return Math.abs(norm(d - s + 180) - 180) <= range ? s : d;
 }
 
 /** Heat-map color for any angle: pure cos hue on the x-axis, pure sin hue on the y-axis, mixed between. */
@@ -98,9 +98,8 @@ export function parseAngle(t: string): number | null {
 }
 
 /** How the angle box shows deg: exact at special angles, whole degrees when close, else one decimal. */
-export const degText = (deg: number) => {
-  const hit = specialOf(deg);
-  if (hit !== undefined) return String(hit);
-  const d = norm(deg);
-  return Math.abs(d - Math.round(d)) < 0.05 ? String(Math.round(d) % 360) : d.toFixed(1);
+export const degText = (deg: number, decimals = 1) => {
+  const half = 0.5 * 10 ** -decimals, hit = specialOf(deg), d = norm(deg);
+  if (hit !== undefined && Math.abs(d - hit) < half) return String(hit);
+  return Math.abs(d - Math.round(d)) < half ? String(Math.round(d) % 360) : d.toFixed(decimals);
 };

@@ -27,9 +27,13 @@ export const figure = {
   /** The x / y labels bounce away from their braces and back by this much (px) over [0, bobEnd], then recolor. */
   bob: 8, bobEnd: 0.6,
   /** Mirror mode draws its reflected lines on (and takes them back) over this long (ms). */
-  mirrorMs: 700,
+  mirrorMs: 400,
   /** How hard the line eases out as it draws: 1 is linear, 3 a cubic ease-out, higher lunges out and settles slowly. */
   mirrorEase: 5,
+  /** The line takes this share of the run (the dot pops in as it lands, and takes the rest). */
+  mirrorLineShare: 0.5,
+  /** A leg shows its brace once it is this long on screen (px): the cosine leg, then the sine leg. */
+  braceMinPx: [42, 34] as [number, number],
   /** A brace and its label leaving (the brace undraws, the label blurs away): duration, and how far (world) the label shoots. */
   legExitMs: 180, legShoot: 8,
   /** The reference angle is fully opaque once its pop reaches this fraction, and fades below it. */
@@ -55,13 +59,19 @@ export const camera = {
   /** World-unit box the drawing needs around the circle, on wide screens and on phones. */
   need: { w: 410, h: 400 }, needNarrow: { w: 400, h: 380 },
   /** Smallest and largest automatic circle scale, and the zoom a user may reach on top of it. */
-  fitMin: 0.55, fitMax: 2.6, zoomMin: 0.3, zoomMax: 8,
+  fitMin: 0.55, fitMax: 2.6, zoomMin: 0.3, zoomMax: 16,
   /** Width (px) kept clear beside the panel: where its blur fades, on phones and on wide screens. */
   gutter: 48, gutterWide: 16,
   /** Wide screens nudge the circle this far (px) left of center. */
   wideShift: -24,
   /** How long the view takes to ease to a new panel size. */
   easeMs: 380,
+  /** How the drawing responds when you zoom in or out. 1 = scales with the circle, 0 = keeps its on-screen size, below 0 shrinks
+   *  on screen as you zoom in. `strokeZoom` covers line widths, dash lengths, dots and brace size; `textZoom` the labels on the plane. */
+  strokeZoom: 0.15, textZoom: 0,
+  /** The angle is whole degrees at the default zoom, then reads (and drags) to 1, 2 and 3 decimals once the zoom reaches
+   *  these. The snap range shrinks with zoom too. */
+  decimalsAtZoom: [2, 5, 10],
 };
 
 /** The point's tag and the floating chips (scene.ts). */

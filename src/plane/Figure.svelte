@@ -80,7 +80,7 @@
   };
   const refArcFn = $derived(sc.refLabel ? sc.refArcAt : goneRef ? lastRef?.arcAt ?? null : null);
   // one dash period per switch, on the pen's own lean-and-snap curve, so the dashes tick like the switch
-  const tick = (period: number) => period * pen.current;
+  const tick = (period: number) => period * camera.stroke * pen.current;
   // each leg and its brace wear their function's color (x blue, y magenta), so the triangle's mix reads at a glance
   const legBefore = (fn: 'cos' | 'sin') => (penFrom.revealed ? `var(--${fn})` : 'var(--fg)');
   // the new color fills the dashes along each leg in step with the shift (the pen motion, without its lean and overshoot)
@@ -93,11 +93,11 @@
 </script>
 
 <g class="figure">
-  <line x1={sc.x} y1={sc.y} x2="0" y2={sc.y} stroke="var(--muted)" stroke-width={.75 * camera.boost} stroke-dasharray="3 4" stroke-dashoffset={tick(7)} />
-  <path d={sc.wedge} fill="none" stroke={moving ? before : sc.col} stroke-width={1.25 * camera.boost} />
-  {#if moving}<path d={sc.wedge} fill="none" stroke={sc.col} stroke-width={1.25 * camera.boost} pathLength="1" stroke-dasharray="{arcWash} 1" />{/if}
-  {#if sc.wedgeHead}<path d={sc.wedgeHead} fill="none" stroke={moving && arcWash < 1 ? before : sc.col} stroke-width={1.25 * camera.boost} stroke-linecap="round" stroke-linejoin="round" />{/if}
-  {#if refArcFn && refLabelScale > 0.001}<path d={refArcFn(refLabelScale)} fill="none" stroke={sc.col} stroke-width={1.75 * camera.boost} stroke-linecap="round" opacity={refFade} />{/if}
+  <line x1={sc.x} y1={sc.y} x2="0" y2={sc.y} stroke="var(--muted)" stroke-width={.75 * camera.stroke} stroke-dasharray="{3 * camera.stroke} {4 * camera.stroke}" stroke-dashoffset={tick(7)} />
+  <path d={sc.wedge} fill="none" stroke={moving ? before : sc.col} stroke-width={1.25 * camera.stroke} />
+  {#if moving}<path d={sc.wedge} fill="none" stroke={sc.col} stroke-width={1.25 * camera.stroke} pathLength="1" stroke-dasharray="{arcWash} 1" />{/if}
+  {#if sc.wedgeHead}<path d={sc.wedgeHead} fill="none" stroke={moving && arcWash < 1 ? before : sc.col} stroke-width={1.25 * camera.stroke} stroke-linecap="round" stroke-linejoin="round" />{/if}
+  {#if refArcFn && refLabelScale > 0.001}<path d={refArcFn(refLabelScale)} fill="none" stroke={sc.col} stroke-width={1.75 * camera.stroke} stroke-linecap="round" opacity={refFade} />{/if}
   {#each legs as leg}
     {@const seg = leg.seg()}
     {#if moving}
@@ -109,8 +109,8 @@
     {/if}
   {/each}
   {#if sc.sinExt}<line class="leg" x1={sc.sinExt[0]} y1={sc.sinExt[1]} x2={sc.sinExt[2]} y2={sc.sinExt[3]} stroke={sc.sinCol} stroke-dashoffset={tick(9)} />{/if}
-  <line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={moving ? before : sc.col} stroke-width={1.75 * camera.boost} stroke-linecap="round" />
-  {#if moving}<line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={sc.col} stroke-width={1.75 * camera.boost} stroke-linecap="round" pathLength="1" stroke-dasharray="{rayWash} 1" />{/if}
+  <line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={moving ? before : sc.col} stroke-width={1.75 * camera.stroke} stroke-linecap="round" />
+  {#if moving}<line x1="0" y1="0" x2={sc.x} y2={sc.y} stroke={sc.col} stroke-width={1.75 * camera.stroke} stroke-linecap="round" pathLength="1" stroke-dasharray="{rayWash} 1" />{/if}
   {#each legs as leg}
     {@const it = leg.pres.item}
     {#if it?.b}
@@ -132,26 +132,26 @@
       {@const out = leg.exit()}
       <!-- leaving, the label blurs out as it shoots off -->
       <g transform="translate({dir[0] * bob + out[0] * (1 - e) * F.legShoot} {dir[1] * bob + out[1] * (1 - e) * F.legShoot})" opacity={e} style:filter={e < 0.999 ? `blur(${(1 - e) * 4}px)` : null}>
-        <rect x={l.rect.x - 3} y={l.rect.y - 1.5} width={l.rect.w + 6} height={l.rect.h + 3} rx="3" fill="var(--panel)" opacity=".72" />
+        <rect x={l.rect.x - 3 * camera.labelBoost} y={l.rect.y - 1.5 * camera.labelBoost} width={l.rect.w + 6 * camera.labelBoost} height={l.rect.h + 3 * camera.labelBoost} rx={3 * camera.labelBoost} fill="var(--panel)" opacity=".72" />
         <SvgTex label={{ ...l, color: t < F.bobEnd ? legBefore(leg.fn) : l.color }} />
       </g>
     {/if}
   {/each}
   {#each sc.trail as tr}
-    <line x1={tr.seg[0]} y1={tr.seg[1]} x2={tr.seg[2]} y2={tr.seg[3]} stroke={tr.color} stroke-width={tr.width * camera.boost} opacity={tr.opacity} stroke-linecap="round" />
+    <line x1={tr.seg[0]} y1={tr.seg[1]} x2={tr.seg[2]} y2={tr.seg[3]} stroke={tr.color} stroke-width={tr.width * camera.stroke} opacity={tr.opacity} stroke-linecap="round" />
   {/each}
   {#each sc.mirrors as m}
-    {#if m.line}<line x1={m.line[0]} y1={m.line[1]} x2={m.line[2]} y2={m.line[3]} stroke={sc.col} stroke-width={1 * camera.boost} stroke-dasharray="2 4" opacity=".8" />{/if}
-    {#if m.e > 0.001}<circle cx={m.dot[0]} cy={m.dot[1]} r={4.5 * popOut(m.e)} fill="var(--bg)" stroke={sc.col} stroke-width={1.5 * camera.boost} />{/if}
+    {#if m.line}<line x1={m.line[0]} y1={m.line[1]} x2={m.line[2]} y2={m.line[3]} stroke={sc.col} stroke-width={1 * camera.stroke} stroke-dasharray="{2 * camera.stroke} {4 * camera.stroke}" opacity=".8" />{/if}
+    {#if m.e > 0.001}<circle cx={m.dot[0]} cy={m.dot[1]} r={4.5 * camera.stroke * popOut(m.e)} fill="var(--bg)" stroke={sc.col} stroke-width={1.5 * camera.stroke} />{/if}
     {#if m.label}<g opacity={m.e}><SvgTex label={m.label} /></g>{/if}
   {/each}
   {#if sc.guide2}
-    <line x1={sc.guide2[0]} y1={sc.guide2[1]} x2={sc.guide2[2]} y2={sc.guide2[3]} stroke={sc.col} stroke-width={.75 * camera.boost} stroke-dasharray="3 4" stroke-dashoffset={Math.abs(sc.x) % 7 + tick(7)} />
+    <line x1={sc.guide2[0]} y1={sc.guide2[1]} x2={sc.guide2[2]} y2={sc.guide2[3]} stroke={sc.col} stroke-width={.75 * camera.stroke} stroke-dasharray="{3 * camera.stroke} {4 * camera.stroke}" stroke-dashoffset={Math.abs(sc.x) % (7 * camera.stroke) + tick(7)} />
   {/if}
 </g>
 
 <style>
   .figure { pointer-events: none; }
-  .leg { stroke-width: calc(2px * var(--sw, 1)); stroke-linecap: round; stroke-dasharray: 3 6; opacity: 0.7; }
-  .brace { fill: none; stroke-width: calc(1px * var(--sw, 1)); stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; }
+  .leg { stroke-width: calc(2px * var(--wk, 1)); stroke-linecap: round; stroke-dasharray: calc(3px * var(--wk, 1)) calc(6px * var(--wk, 1)); opacity: 0.7; }
+  .brace { fill: none; stroke-width: calc(1px * var(--wk, 1)); stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; }
 </style>

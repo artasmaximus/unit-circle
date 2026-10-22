@@ -15,15 +15,15 @@
     SPECIAL.map((a, i) => {
       const q = local(i), shown = q >= 0.5 ? revealed() : penFrom.revealed;
       const c = Math.cos(rad(a)), s = -Math.sin(rad(a)), color = shown ? colorOf(a) : "var(--muted)";
-      const rect = texRect(`${a}^\\circ`, 10 * camera.textBoost, c * LABEL_R, s * LABEL_R);
-      return { a, x: c * S, y: s * S, scale: 1 + GROW * Math.sin(Math.PI * q), color, label: rect && { latex: `${a}^\\circ`, size: 10 * camera.textBoost, rect, color } };
+      const rect = texRect(`${a}^\\circ`, 10 * camera.labelBoost, c * LABEL_R, s * LABEL_R);
+      return { a, x: c * S, y: s * S, scale: 1 + GROW * Math.sin(Math.PI * q), color, label: rect && { latex: `${a}^\\circ`, size: 10 * camera.labelBoost, rect, color } };
     }),
   );
 </script>
 
-<circle r={S} fill="none" stroke="var(--muted)" stroke-width={1 * camera.boost} />
+<circle r={S} fill="none" stroke="var(--muted)" stroke-width={1 * camera.stroke} />
 {#each spots as p (p.a)}
-  <circle class="dot" cx={p.x} cy={p.y} style:r="{(ui.highlight.includes(p.a) ? 6.5 : 3.5) * p.scale * (aim.deg === p.a ? input.aimGrow : 1) * camera.boost}px" style:fill={p.color}
+  <circle class="dot" cx={p.x} cy={p.y} style:r="{(ui.highlight.includes(p.a) ? 6.5 : 3.5) * p.scale * (aim.deg === p.a ? input.aimGrow : 1) * camera.stroke}px" style:fill={p.color}
     style:transition={penClock.current < 1 ? "none" : null} />
   {#if p.label && aim.deg !== p.a}<SvgTex label={p.label} />{/if}
 {/each}

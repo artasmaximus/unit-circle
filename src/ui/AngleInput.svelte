@@ -1,17 +1,18 @@
 <!-- θ = [angle]°: shows the point's angle and accepts degrees (135) or radians (pi/6, 2pi/3). -->
 <script lang="ts">
+  import { camera } from '../lib/camera.svelte.ts';
   import { point } from '../lib/state.svelte.ts';
   import { degText, parseAngle } from '../lib/trig.ts';
   import Tex from './Tex.svelte';
 
   let editing = $state(false), draft = $state('');
-  const shown = $derived(editing ? draft : degText(point.deg));
+  const shown = $derived(editing ? draft : degText(point.deg, camera.thetaDecimals));
 </script>
 
 <label class="angbox" title="Type degrees (135) or radians (pi/6, 2pi/3)">
   <Tex latex={'\\theta ='} />
   <input type="text" inputmode="decimal" autocomplete="off" spellcheck="false" value={shown} size={Math.max(2, shown.length)}
-    onfocus={() => { draft = degText(point.deg); editing = true; }}
+    onfocus={() => { draft = degText(point.deg, camera.thetaDecimals); editing = true; }}
     oninput={(e) => { draft = e.currentTarget.value; const d = parseAngle(draft); if (d !== null) point.set(d, true); }}
     onkeydown={(e) => { e.stopPropagation(); if (e.key === 'Enter') e.currentTarget.blur(); }}
     onblur={() => (editing = false)} />

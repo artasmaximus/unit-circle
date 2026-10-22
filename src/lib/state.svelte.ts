@@ -23,8 +23,9 @@ class Point {
   #k = T.point.stiffness; #c = T.point.damping;
   #vel = 0; #dotV = 0; #raf = 0; #last = 0; #prevAng = rad(45);
 
-  set(deg: number, free = false) {
-    this.target = rad(norm(free ? deg : snapDeg(deg)));
+  /** `range` is how close (degrees) a press must be to a special angle to snap to it. */
+  set(deg: number, free = false, range?: number) {
+    this.target = rad(norm(free ? deg : snapDeg(deg, range)));
     const slow = 1 + T.point.jumpSlowdown * (Math.abs(wrapPi(this.target - this.ang)) / Math.PI);
     this.#k = T.point.stiffness / slow ** 2; this.#c = T.point.damping / slow;
     this.#kick();

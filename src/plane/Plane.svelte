@@ -6,7 +6,7 @@
   import { figure, input } from '../lib/tuning.ts';
   import { aim, point, quiz, revealed, ui } from '../lib/state.svelte.ts';
   import { buildScene } from '../lib/scene.ts';
-  import { SPECIAL, colorOf, rad, snapDeg } from '../lib/trig.ts';
+  import { SPECIAL, colorOf, degText, rad, snapDeg } from '../lib/trig.ts';
   import { texRect } from '../lib/tex.svelte.ts';
   import SvgTex from '../ui/SvgTex.svelte';
   import Grid from './Grid.svelte';
@@ -25,7 +25,7 @@
     revealed: revealed(), mirror: mirrorP.current,
     mirrorOnly: ui.mode === 'quiz' && quiz.cur ? quiz.cur.fn : null,
     showCoords: revealed() || (ui.mode === 'quiz' && quiz.hint),
-    slopeOpen: ui.slopeOpen, k: camera.k, boost: camera.textBoost, bounds: camera.freeWorld, memo,
+    slopeOpen: ui.slopeOpen, k: camera.k, boost: camera.textBoost, labelBoost: camera.labelBoost, stroke: camera.stroke, bounds: camera.freeWorld, memo,
   }));
 
   let dragging = $state(false), panning = $state(false);
@@ -33,8 +33,12 @@
   let ghost = $state<number | null>(null);
   const ghostAt = (e: PointerEvent) => {
     const w = camera.toWorld(e.clientX, e.clientY);
-    return snapDeg((Math.atan2(-w.y, w.x) * 180) / Math.PI);
+    return snapDeg(grain((Math.atan2(-w.y, w.x) * 180) / Math.PI), snapRange());
   };
+  /** Zoomed in, a degree is a lot of screen, so the snap range tightens with it. */
+  const snapRange = () => input.snapRange / Math.max(1, camera.zoom);
+  /** The angle lands on whole degrees at the default zoom, and on finer steps as you zoom in. */
+  const grain = (deg: number) => { const f = 10 ** camera.thetaDecimals; return Math.round(deg * f) / f; };
   const nearRing = (e: { clientX: number; clientY: number }) =>
     Math.abs(Math.hypot(e.clientX - camera.ox, e.clientY - camera.oy) - S * camera.k) <= BAND;
   const touches = new Map<number, { x: number; y: number }>();
@@ -74,8 +78,8 @@
   // the ghost sits exactly where the pointer aims; its label rides out to the ring label's own spot on a snap angle, and takes that label's place there
   const ghostDraw = $derived.by(() => {
     if (ghost === null || dragging || Math.abs(ghost - point.deg) < 0.5) return null;
-    const a = rad(ghost), x = S * Math.cos(a), y = -S * Math.sin(a), latex = `${Math.round(ghost * 10) / 10}^\\circ`;
-    const special = SPECIAL.includes(ghost), size = 10 * camera.textBoost;
+    const a = rad(ghost), x = S * Math.cos(a), y = -S * Math.sin(a), latex = `${degText(ghost, camera.thetaDecimals)}^\\circ`;
+    const special = SPECIAL.includes(ghost), size = 10 * camera.labelBoost;
     const rect = texRect(latex, size, LABEL_R * Math.cos(a), -LABEL_R * Math.sin(a));
     const color = special && revealed() ? colorOf(ghost) : 'var(--muted)';
     return { x, y, special, label: rect && { latex, size, rect, color } };
@@ -83,11 +87,11 @@
   $effect(() => { aim.deg = ghostDraw?.special ? ghost : null; });
   const aimAt = (e: PointerEvent) => {
     const w = camera.toWorld(e.clientX, e.clientY);
-    point.set((Math.atan2(-w.y, w.x) * 180) / Math.PI);
+    point.set(grain((Math.atan2(-w.y, w.x) * 180) / Math.PI), false, snapRange());
   };
 </script>
 
-<svg class="plane" style="--sw:{camera.boost}" class:dragging width={camera.vw} height={camera.vh} role="slider" aria-label="Angle θ" aria-valuemin={0} aria-valuemax={360}
+<svg class="plane" style="--sw:{camera.boost}; --wk:{camera.stroke}" class:dragging width={camera.vw} height={camera.vh} role="slider" aria-label="Angle θ" aria-valuemin={0} aria-valuemax={360}
   aria-valuenow={Math.round(point.deg)} tabindex="0"
   bind:this={svg} class:panning class:overRing={ghost !== null}
   onpointerdown={down} onpointermove={move} onpointerleave={() => (ghost = null)} onpointerup={up} onpointercancel={up}>
@@ -97,13 +101,13 @@
     {#if ghostDraw}
       <g class="ghost" class:snapped={ghostDraw.special}>
         <line x1="0" y1="0" x2={ghostDraw.x} y2={ghostDraw.y} />
-        {#if !ghostDraw.special}<circle cx={ghostDraw.x} cy={ghostDraw.y} r={6 * camera.boost} />{/if}
+        {#if !ghostDraw.special}<circle cx={ghostDraw.x} cy={ghostDraw.y} r={6 * camera.stroke} />{/if}
         {#if ghostDraw.label}<g class="glabel"><SvgTex label={ghostDraw.label} /></g>{/if}
       </g>
     {/if}
     <Figure {scene} />
     <circle cx={scene.x} cy={scene.y} r="28" fill="transparent" class="grab" />
-    <circle cx={scene.x} cy={scene.y} r={point.dotR * camera.boost} fill={scene.col} stroke="var(--panel)" stroke-width="2" pointer-events="none" />
+    <circle cx={scene.x} cy={scene.y} r={point.dotR * camera.stroke} fill={scene.col} stroke="var(--panel)" stroke-width={2 * camera.stroke} pointer-events="none" />
   </g>
 </svg>
 <Chips {scene} />
@@ -118,7 +122,7 @@
   .ghost { pointer-events: none; }
   .ghost line, .ghost circle, .glabel { opacity: 0.45; }
   .snapped .glabel { opacity: 1; }
-  .ghost line { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 4; }
+  .ghost line { stroke: var(--muted); stroke-width: calc(1px * var(--wk, 1)); stroke-dasharray: calc(2px * var(--wk, 1)) calc(4px * var(--wk, 1)); }
   .ghost circle { fill: var(--muted); stroke: none; }
   .dragging, .dragging .grab { cursor: grabbing; }
 </style>
