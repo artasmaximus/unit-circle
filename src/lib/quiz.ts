@@ -45,8 +45,8 @@ export function pickQ(missed: Question[], prev: Question | null): Question {
   return q;
 }
 
-const MAGS_SC = ['\\frac{1}{2}', '\\frac{\\sqrt{2}}{2}', '\\frac{\\sqrt{3}}{2}', '1', '0'];
-const MAGS_T = ['\\frac{\\sqrt{3}}{3}', '1', '\\sqrt{3}', '0', UNDEF];
+const MAGS_SC = ['\\frac{1}{2}', '\\frac{1}{\\sqrt{2}}', '\\frac{\\sqrt{3}}{2}', '1', '0'];
+const MAGS_T = ['\\frac{1}{\\sqrt{3}}', '1', '\\sqrt{3}', '0', UNDEF];
 /** The right value plus three plausible wrong ones (sign flip, the other function, random magnitudes). */
 export function makeChoices(q: Extract<Question, { t: 1 }>): string[] {
   const right = trigTex(q.fn, q.a), seen = new Set([right]);

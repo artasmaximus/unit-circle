@@ -20,8 +20,8 @@ const hasTheta = (n: MathNode) => n.filter((c) => c.type === 'SymbolNode' && (c 
 // Exact forms for the values the unit circle produces; anything else shows as a decimal.
 const R2 = Math.SQRT2, R3 = Math.sqrt(3);
 const EXACT: [number, string][] = [
-  [1 / 2, '\\frac{1}{2}'], [R2 / 2, '\\frac{\\sqrt{2}}{2}'], [R3 / 2, '\\frac{\\sqrt{3}}{2}'], [R3 / 3, '\\frac{\\sqrt{3}}{3}'],
-  [R2, '\\sqrt{2}'], [R3, '\\sqrt{3}'], [(2 * R3) / 3, '\\frac{2\\sqrt{3}}{3}'],
+  [1 / 2, '\\frac{1}{2}'], [R2 / 2, '\\frac{1}{\\sqrt{2}}'], [R3 / 2, '\\frac{\\sqrt{3}}{2}'], [R3 / 3, '\\frac{1}{\\sqrt{3}}'],
+  [R2, '\\sqrt{2}'], [R3, '\\sqrt{3}'], [(2 * R3) / 3, '\\frac{2}{\\sqrt{3}}'],
 ];
 export function exactTex(v: number): string {
   const m = Math.abs(v), sign = v < 0 ? '-' : '';

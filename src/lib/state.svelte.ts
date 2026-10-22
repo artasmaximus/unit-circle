@@ -1,11 +1,12 @@
 // All app state in one place. Components read it and call its methods; nothing else holds state.
 import { Tween } from 'svelte/motion';
 import { SPECIAL, norm, rad, snapDeg, specialOf, wrapPi } from './trig.ts';
-import { makeChoices, pickQ, qKey, trigTexAnswer, type Question } from './quiz.ts';
+import { makeChoices, pickQ, qKey, trigTexAnswer, type Question, type Rich } from './quiz.ts';
 import { apply, atom, num, solvedForm, type Eq, type Op } from './algebra.ts';
+import { reduce } from './transition.ts';
+import * as T from './tuning.ts';
 
-const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-const TRAIL_MAX = 1.5;
+const TRAIL_MAX = T.point.trailMax;
 
 /** The point on the circle. `target` is where it is headed; `ang` springs toward it (radians). */
 class Point {
@@ -18,10 +19,14 @@ class Point {
   deg = $derived(norm((this.target * 180) / Math.PI));
   hit = $derived(specialOf(this.deg));
 
+  /** Spring stiffness and damping: they ease off for bigger jumps, so a long swing takes longer, not just goes faster. */
+  #k = T.point.stiffness; #c = T.point.damping;
   #vel = 0; #dotV = 0; #raf = 0; #last = 0; #prevAng = rad(45);
 
   set(deg: number, free = false) {
     this.target = rad(norm(free ? deg : snapDeg(deg)));
+    const slow = 1 + T.point.jumpSlowdown * (Math.abs(wrapPi(this.target - this.ang)) / Math.PI);
+    this.#k = T.point.stiffness / slow ** 2; this.#c = T.point.damping / slow;
     this.#kick();
   }
   #kick() {
@@ -34,12 +39,12 @@ class Point {
     const rT = this.hit !== undefined ? 7 : 4.5, n = 3, h = dt / n;
     let ang = this.ang, dotR = this.dotR;
     for (let i = 0; i < n; i++) {
-      this.#vel += (700 * wrapPi(this.target - ang) - 41 * this.#vel) * h; ang += this.#vel * h;
-      this.#dotV += (800 * (rT - dotR) - 40 * this.#dotV) * h; dotR += this.#dotV * h;
+      this.#vel += (this.#k * wrapPi(this.target - ang) - this.#c * this.#vel) * h; ang += this.#vel * h;
+      this.#dotV += (T.point.dotStiffness * (rT - dotR) - T.point.dotDamping * this.#dotV) * h; dotR += this.#dotV * h;
     }
     ang = ((ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
     // the tail grows with the distance travelled and reels back in when the point stops
-    const tail = Math.max(-TRAIL_MAX, Math.min(TRAIL_MAX, this.tail + wrapPi(ang - this.#prevAng))) * Math.exp(-dt * 3.6);
+    const tail = Math.max(-TRAIL_MAX, Math.min(TRAIL_MAX, this.tail + wrapPi(ang - this.#prevAng))) * Math.exp(-dt * T.point.trailReel);
     this.#prevAng = ang;
     const settled = Math.abs(wrapPi(this.target - ang)) < 2e-4 && Math.abs(this.#vel) < 2e-3 && Math.abs(rT - dotR) < 0.02 && Math.abs(this.#dotV) < 0.05;
     this.ang = settled ? this.target : ang;
@@ -51,11 +56,15 @@ class Point {
 }
 export const point = new Point();
 
+/** The snap angle the pointer is aiming at: its ring label is drawn by the hover ghost, so the ring skips it. */
+export const aim = $state<{ deg: number | null }>({ deg: null });
+
 export const ui = $state({
   mode: 'quiz' as 'explore' | 'quiz',
   mirror: false,
   /** In a quiz, answers stay hidden until the question is answered. */
   revealed: true,
+  slopeOpen: false,
   /** Snap points drawn larger: the angles found in a quiz. */
   highlight: [] as number[],
 });
@@ -66,14 +75,14 @@ export const revealed = () => ui.mode !== 'quiz' || ui.revealed;
 // One motion drives every reaction to a mode switch or a reveal: the segmented control's thumb and the
 // dots on the ring read the same progress value, so they move as one. Like a ballpoint pen's click it
 // leans back first, then snaps through with a small overshoot and settles.
-const LEAN = 0.08, OVER = 0.04;
+const LEAN = T.pen.lean, OVER = T.pen.over;
 const easeIn = (t: number) => t * t * t, easeOut = (t: number) => 1 - (1 - t) ** 3;
 export function penEase(t: number) {
   if (t < 0.28) return -LEAN * easeIn(t / 0.28) ** 0.6;
   if (t < 0.72) return -LEAN + (1 + OVER + LEAN) * easeOut((t - 0.28) / 0.44);
   return 1 + OVER - OVER * easeOut((t - 0.72) / 0.28);
 }
-export const PEN_MS = reduce ? 0 : 460;
+export const PEN_MS = reduce ? 0 : T.pen.ms;
 export const pen = new Tween(1, { duration: PEN_MS, easing: penEase });
 /** The same motion's plain clock (0 → 1, linear), for things that run their own timing inside it. */
 export const penClock = new Tween(1, { duration: PEN_MS });
@@ -109,7 +118,7 @@ class Quiz {
   hint = $state(false);
   ok = $state(false);
   /** Short message in the action row (progress on type 2, "already found that one"). */
-  note = $state<string | (string | { m: string })[]>('');
+  note = $state<Rich | string>('');
 
   constructor() { const s = load(); this.best = s.best; this.missed = s.missed; }
   #save() { try { localStorage.setItem('ucq', JSON.stringify({ best: this.best, missed: this.missed })); } catch {} }
@@ -186,7 +195,7 @@ class Solver {
   key = $state<RecipKey>('csc');
   steps = $state<Step[]>([]);
   found = $state<number[]>([]);
-  note = $state('');
+  note = $state<Rich | string>('');
   current = $derived(this.steps.at(-1)?.eq);
   /** Set once sin, cos or tan stands alone: the algebra is done and the circle takes over. */
   target = $derived(this.current ? solvedForm(this.current) : null);
@@ -212,7 +221,7 @@ class Solver {
     if (hit === undefined) { this.note = 'Not there. Look where the value matches.'; return; }
     if (this.found.includes(hit)) { this.note = 'Already found. Look for the other angle.'; return; }
     this.found.push(hit); ui.highlight = [...this.found];
-    this.note = this.done ? '' : `Yes, ${hit}°. One more.`;
+    this.note = this.done ? '' : ["Yes, ", { m: `${hit}^\\circ` }, ". One more."];
   }
 }
 export const solver = new Solver();

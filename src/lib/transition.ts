@@ -3,7 +3,7 @@
 // landing exactly on the final layout. Where the API is missing (or motion is reduced) the change just happens.
 import { tick } from 'svelte';
 
-const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function morph(change: () => void) {
   const doc = document as Document & { startViewTransition?: (cb: () => Promise<void>) => unknown };

@@ -1,4 +1,5 @@
 import { math } from './algebra.ts';
+import { input } from './tuning.ts';
 
 // Pure unit-circle math: special angles, exact values as LaTeX, angle parsing and snapping.
 // Angles are in degrees unless a name says otherwise.
@@ -26,7 +27,7 @@ export const nearestSpecial = (d: number) => {
   for (const a of [...SPECIAL, 360]) if (Math.abs(a - d) < bd) { bd = Math.abs(a - d); best = a; }
   return best % 360;
 };
-export const SNAP_RANGE = 3;
+export const SNAP_RANGE = input.snapRange;
 export function snapDeg(d: number) {
   d = norm(d);
   const s = nearestSpecial(d);
@@ -39,10 +40,11 @@ export const colorOf = (a: number) => {
   return `color-mix(in oklch, var(--cos) ${(Math.cos(rad(a)) ** 2 * 100).toFixed(1)}%, var(--sin))`;
 };
 
-const COS_E: Record<number, string> = { 0: '1', 30: '\\frac{\\sqrt{3}}{2}', 45: '\\frac{\\sqrt{2}}{2}', 60: '\\frac{1}{2}', 90: '0' };
-const TAN_E: Record<number, string> = { 0: '0', 30: '\\frac{\\sqrt{3}}{3}', 45: '1', 60: '\\sqrt{3}' };
-const CSC_R: Record<string, string> = { '1': '1', '\\frac{\\sqrt{3}}{2}': '\\frac{2\\sqrt{3}}{3}', '\\frac{\\sqrt{2}}{2}': '\\sqrt{2}', '\\frac{1}{2}': '2' };
-const COT_E: Record<number, string> = { 30: '\\sqrt{3}', 45: '1', 60: '\\frac{\\sqrt{3}}{3}' };
+const COS_E: Record<number, string> = { 0: '1', 30: '\\frac{\\sqrt{3}}{2}', 45: '\\frac{1}{\\sqrt{2}}', 60: '\\frac{1}{2}', 90: '0' };
+const TAN_E: Record<number, string> = { 0: '0', 30: '\\frac{1}{\\sqrt{3}}', 45: '1', 60: '\\sqrt{3}' };
+// values stay un-rationalized (1/√2, not √2/2), so a reciprocal reads as the flip of its partner
+const CSC_R: Record<string, string> = { '1': '1', '\\frac{\\sqrt{3}}{2}': '\\frac{2}{\\sqrt{3}}', '\\frac{1}{\\sqrt{2}}': '\\sqrt{2}', '\\frac{1}{2}': '2' };
+const COT_E: Record<number, string> = { 30: '\\sqrt{3}', 45: '1', 60: '\\frac{1}{\\sqrt{3}}' };
 export const UNDEF = '\\text{undefined}';
 
 export const dec = (v: number, d = 3) => {

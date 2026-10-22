@@ -3,6 +3,9 @@
   import { explain, hintMsg, hintTip, qTex, task, trigTexAnswer } from '../lib/quiz.ts';
   import Tex from '../ui/Tex.svelte';
   import Rich from '../ui/Rich.svelte';
+  import type { Snippet } from 'svelte';
+
+  let { trailing }: { trailing?: Snippet } = $props();
 
   let showMissed = $state(false);
   const q = $derived(quiz.cur);
@@ -22,15 +25,19 @@
       <span class="pill" style="--c:var(--ok)">Streak <b>{quiz.streak}</b></span>
       <span class="pill" style="--c:var(--slope)">Best <b>{quiz.best}</b></span>
       <button class="pill" style="--c:var(--bad)" disabled={!quiz.missed.length} aria-expanded={showMissed} onclick={() => (showMissed = !showMissed)}>Missed <b>{quiz.missed.length}</b></button>
+      {@render trailing?.()}
     </div>
     {#if showMissed && quiz.missed.length}
       <div class="missed">{#each quiz.missed as m}<button onclick={() => { quiz.start(m); showMissed = false; }}><Tex latex={qTex(m)} /></button>{/each}</div>
     {/if}
-    <div>
+    <div class="qa" class:split={q.t === 1}>
+    <div class="ask">
+      <div>
       <div class="label">{q.t === 1 ? 'Find the value' : `Find both angles${quiz.found.length ? ` · ${quiz.found.length} of 2 found` : ''}`}</div>
       <div class="prompt"><Tex latex={q.t === 1 ? `${qTex(q)}=\\ ?` : qTex(q)} /></div>
     </div>
     <p class="task"><Rich parts={task(q)} /></p>
+    </div>
     {#if q.t === 1}
       <div class="choices">
         {#each quiz.choices as c, i}
@@ -38,6 +45,7 @@
         {/each}
       </div>
     {/if}
+    </div>
     <div class="actions">
       {#if !quiz.answered}
         {#if q.t === 2}<button class="primary" onclick={() => quiz.check()}>Check</button>{/if}
@@ -55,7 +63,9 @@
 
 <style>
   .quiz { display: grid; gap: 16px; container-type: inline-size; }
-  .hud { display: flex; gap: 8px; flex-wrap: wrap; }
+  .qa { display: grid; gap: 16px; }
+  .ask { display: grid; gap: 16px; align-content: start; }
+  .hud { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .pill {
     box-sizing: border-box; height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 13px;
     border: 1px solid color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: 999px;
@@ -87,6 +97,9 @@
   /* phones: tighter, so the circle above keeps its room */
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .quiz { gap: 10px; }
+    .qa, .ask { gap: 10px; }
+    .qa.split { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 12px; align-items: start; }
+    .qa.split .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .pill { height: 26px; padding: 0 10px; font-size: 0.78rem; }
     .prompt { font-size: 1.35rem; min-height: 0; }
     .task { font-size: 0.88rem; line-height: 1.4; }

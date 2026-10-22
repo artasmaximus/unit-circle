@@ -1,58 +1,90 @@
 <!-- The panel floats over the plane: on the left on wide screens, along the bottom on phones. Behind it a
      progressive blur fades out past its edge, so the grid stays visible and usable right up to the panel. -->
 <script lang="ts">
+  import { fly } from 'svelte/transition';
+  import { cubicIn, cubicOut } from 'svelte/easing';
+  import { untrack } from 'svelte';
+  import { panel as panelT } from '../lib/tuning.ts';
   import { camera } from '../lib/camera.svelte.ts';
   import { pen, setMode, ui } from '../lib/state.svelte.ts';
   import Quiz from './Quiz.svelte';
   import Segmented from '../ui/Segmented.svelte';
+  import AngleInput from '../ui/AngleInput.svelte';
   import Reciprocals from './Reciprocals.svelte';
-  import Solver from '../solver/Solver.svelte';
-  import { solver } from '../lib/state.svelte.ts';
 
   let w = $state(0), h = $state(0);
-  $effect(() => { camera.inset = camera.wide ? { left: w, bottom: 0 } : { left: 0, bottom: h }; });
+  // The plane is its own layer under the UI: the panel never resizes it as its content changes (a value turning
+  // into a tall fraction at a snap angle would otherwise shift the whole circle). On phones the room the panel
+  // takes is read once per view, after the view has settled, and again when the window resizes.
+  let placed = false, settle = 0;
+  $effect(() => {
+    void `${ui.mode}|${camera.vw}|${camera.vh}`;
+    clearTimeout(settle);
+    if (camera.wide) { camera.inset = { left: w, bottom: 0 }; placed = false; return; }
+    if (!placed) return;
+    settle = window.setTimeout(() => { camera.inset = { left: 0, bottom: untrack(() => h) }; }, panelT.settleMs);
+    return () => clearTimeout(settle);
+  });
+  // the very first reading goes straight in, so the circle starts where it belongs
+  $effect(() => { if (!camera.wide && h && !placed) { camera.inset = { left: 0, bottom: h }; placed = true; } });
+  // on phones the blur starts under the header
+  let headH = $state(0);
 
   // blur layers from strongest to weakest; each reaches a little further out, so the blur thins toward the edge
-  const LAYERS = [[6, 62, 80], [4, 70, 87], [2, 78, 93], [1, 86, 100]];
+  const LAYERS = panelT.blur;
 
+  const IN = { y: panelT.enter.y, duration: panelT.enter.ms, delay: panelT.enter.delay, easing: cubicOut }, OUT = { y: panelT.exit.y, duration: panelT.exit.ms, easing: cubicIn };
   let contentH = $state(0);
 </script>
 
+{#snippet mirror()}
+  <button class="switch" role="switch" aria-checked={ui.mirror} onclick={() => (ui.mirror = !ui.mirror)}
+    data-tip="Shows the mirrored angles that share this point's reference angle. In a quiz it shows the other angle with the same sin, cos or tan, so you can see both answers.">
+    Mirror Point<span class="track"><span class="knob"></span></span>
+  </button>
+{/snippet}
+
 <aside class="panel" bind:clientWidth={w} bind:clientHeight={h}>
   <!-- the blur hugs the content: it ends a little below the last element and fades out past the panel edge -->
-  <div class="blur" aria-hidden="true" style:--content-h="{contentH}px">
+  <div class="blur" aria-hidden="true" style:--content-h="{contentH}px" style:--head="{headH}px">
     {#each LAYERS as [b, a, z]}<div style="--b:{b}px;--a:{a}%;--z:{z}%"></div>{/each}
     <div class="tint"></div>
   </div>
   <div class="content" bind:clientHeight={contentH}>
-    <!-- on phones a problem takes the whole sheet: grid on top, problem below -->
-    {#if !(solver.open && ui.mode === 'explore' && !camera.wide)}
-    <header>
-      <h1>Unit Circle</h1>
-      <div class="tools">
+    <header bind:clientHeight={headH}>
+      <div class="title">
+        <h1>Unit Circle</h1>
         <Segmented label="Mode" value={ui.mode} onchange={setMode} progress={pen.current}
           options={[{ value: 'explore', label: 'Explore' }, { value: 'quiz', label: 'Quiz' }]} />
-        <button aria-pressed={ui.mirror} onclick={() => (ui.mirror = !ui.mirror)}
-          data-tip="Shows the mirrored angles that share this point's reference angle. In a quiz it shows the other angle with the same sin, cos or tan, so you can see both answers.">Mirror</button>
       </div>
     </header>
-    {/if}
-    {#if ui.mode === 'quiz'}<Quiz />{:else if solver.open && !camera.wide}<Solver />{:else}<Reciprocals />{/if}
+    <!-- the views share one grid cell, so the old one fades away under the new one as it rises in -->
+    <div class="stage">
+      {#if ui.mode === 'quiz'}<div class="view" in:fly={IN} out:fly={OUT}><Quiz trailing={mirror} /></div>
+      {:else}<div class="view" in:fly={IN} out:fly={OUT}><Reciprocals trailing={mirror} /></div>{/if}
+    </div>
   </div>
 </aside>
+
+
+<!-- the angle reads and edits here, in the plane's top-right corner; "Reset view" appears under it once the view has moved -->
+<div class="corner">
+  <AngleInput />
+  {#if camera.moved}<button class="reset" onclick={camera.reset}>Reset view</button>{/if}
+</div>
 
 <style>
   /* the panel only positions things; empty space in it lets the grid through, to the pointer too */
   .panel {
     position: fixed; z-index: 2; left: 0; top: 0; bottom: 0; width: clamp(340px, 32vw, 460px); pointer-events: none;
-    --dir: to right; --side: 120px; --below: 110px;
+    --dir: to right; --side: 56px; --below: 110px;
   }
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
-    .panel { top: auto; right: 0; width: auto; height: 44svh; --dir: to top; --side: 0px; }
+    .panel { top: auto; right: 0; width: auto; height: auto; --dir: to top; --side: 0px; }
   }
   /* sized to the content plus a feather past the panel's edge and below its last element */
   .blur { position: absolute; left: 0; top: 0; width: calc(100% + var(--side)); height: calc(var(--content-h) + var(--below)); pointer-events: none; }
-  @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) { .blur { top: -90px; height: calc(100% + 90px); } }
+  @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) { .blur { top: calc(12px + var(--head)); height: calc(100% - 12px - var(--head)); } }
   .blur > div { position: absolute; inset: 0; }
   .blur > div:not(.tint) {
     -webkit-backdrop-filter: blur(var(--b)); backdrop-filter: blur(var(--b));
@@ -74,16 +106,29 @@
     display: grid; align-content: start; gap: 22px;
     padding: max(28px, env(safe-area-inset-top, 0px)) 24px max(28px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
   }
-  /* phones: the sheet is short, so everything tightens and the title goes */
+  /* phones: the sheet is short, so everything tightens */
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
-    .content { height: 100%; padding: 12px max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); gap: 12px; font-size: 0.93rem; }
-    h1 { display: none; }
-    header { gap: 0; }
+    .content { max-height: 44svh; padding: 12px max(14px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); gap: 12px; font-size: 0.93rem; }
   }
-  header { display: grid; gap: 14px; }
+  /* the title and the mode switch share a row, the switch right-aligned */
+  .title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .stage { display: grid; }
+  .view { grid-area: 1 / 1; min-width: 0; }
   /* the panel scrolls, which would clip tooltips: anchor them to their row instead, at the row's full width */
   .content :global([data-tip]) { position: static; }
   .content :global([data-tip]::after) { max-width: 100%; box-sizing: border-box; }
   h1 { font-weight: 600; font-size: 1.6rem; letter-spacing: -0.03em; line-height: 1.15; margin: 0; }
-  .tools { position: relative; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .switch {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; color: var(--fg);
+    font-size: 0.85rem; cursor: pointer;
+  }
+  /* the angle readout and reset button, floating in the plane's top-right corner */
+  .corner { position: fixed; z-index: 3; top: max(14px, env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); display: grid; justify-items: end; gap: 8px; }
+  .reset { padding: 3px 9px; font-size: 0.78rem; color: var(--muted); background: color-mix(in srgb, var(--panel) 70%, transparent); border-color: transparent; }
+  .content .switch::after { left: auto; right: 0; }
+  .track { position: relative; width: 32px; height: 18px; border-radius: 999px; background: color-mix(in srgb, var(--muted) 35%, transparent); transition: background 0.18s; }
+  .knob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--fg); transition: transform 0.18s cubic-bezier(0.22, 0.9, 0.3, 1); }
+  .switch[aria-checked='true'] .track { background: var(--cos); }
+  .switch[aria-checked='true'] .knob { transform: translateX(14px); background: #fff; }
+  .switch:focus-visible { outline: 2px solid var(--cos); outline-offset: 4px; border-radius: 6px; }
 </style>

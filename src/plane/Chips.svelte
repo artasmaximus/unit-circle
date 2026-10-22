@@ -3,23 +3,28 @@
 <script lang="ts">
   import { scale } from 'svelte/transition';
   import { camera } from '../lib/camera.svelte.ts';
-  import type { Chip, Scene } from '../lib/scene.ts';
+  import { ui } from '../lib/state.svelte.ts';
+  import { CHIP_FONT, type Chip, type Scene } from '../lib/scene.ts';
   import Tex from '../ui/Tex.svelte';
-  import AngleInput from '../ui/AngleInput.svelte';
   let { scene }: { scene: Scene } = $props();
+  let slopeEl = $state<HTMLButtonElement>();
+  const close = () => (ui.slopeOpen = false);
 
   const box = (c: Chip) => {
     const k = camera.k;
-    return `transform:translate(${camera.ox + (c.x - c.w / 2) * k}px,${camera.oy + (c.y - c.h / 2) * k}px);width:${c.w * k}px;height:${c.h * k}px;--c:${c.color}`;
+    return `transform:translate(${camera.ox + (c.x - c.w / 2) * k}px,${camera.oy + (c.y - c.h / 2) * k}px);width:${c.w * k}px;height:${c.h * k}px;font-size:${CHIP_FONT * camera.textBoost}px;--c:${c.color}`;
   };
 </script>
+
+<svelte:window
+  onpointerdown={(e) => { if (ui.slopeOpen && !slopeEl?.contains(e.target as Node)) close(); }}
+  onkeydown={(e) => { if (e.key === 'Escape' && ui.slopeOpen) close(); }} />
 
 <div class="layer">
   {#if scene.tag}
     {@const t = scene.tag}
     <!-- no card: a soft blur behind the values keeps them readable over the grid and lines -->
-    <div class="tag" class:below={!t.thetaAbove} style={box(t)}>
-      <AngleInput />
+    <div class="tag" style={box(t)}>
       {#if t.values}
         <span class="values" transition:scale={{ start: 0.6, duration: 200 }}>
           {#each t.parts ?? [] as part}<span style:color={part.color}><Tex latex={part.latex} /></span>{/each}
@@ -28,20 +33,20 @@
     </div>
   {/if}
   {#if scene.slope}
-    <!-- just tan θ = value; hovering (or focusing) shows how it is worked out -->
-    <button type="button" class="chip slope" style={box(scene.slope)} aria-label="Slope: hover to see how it is worked out">
-      <Tex latex={scene.slope.latex} />
-      <span class="calc" role="tooltip"><Tex latex={scene.slopeCalc} /></span>
+    <!-- amber tan θ = value; hovering badges it as the slope, and a click unfolds the working inside the box -->
+    <button bind:this={slopeEl} type="button" class="chip slope" style={box(scene.slope)} aria-expanded={ui.slopeOpen}
+      aria-label="Slope: click to show the calculation" onclick={() => (ui.slopeOpen = !ui.slopeOpen)} onblur={close}
+      transition:scale={{ start: 0.6, duration: 200 }}>
+      <span class="badge">slope</span><Tex latex={scene.slope.latex} />
     </button>
   {/if}
 </div>
 
 <style>
   .tag {
-    position: absolute; left: 0; top: 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-    font-size: 13px; transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1);
+    position: absolute; left: 0; top: 0; box-sizing: border-box; display: grid; place-items: center;
+    transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1);
   }
-  .tag.below { flex-direction: column-reverse; }
   .values { position: relative; display: inline-flex; align-items: center; padding: 6px 12px; }
   /* a blur that fades out at its edges, behind the values only (masking the text itself would fade it too) */
   .values::before {
@@ -53,7 +58,7 @@
   .layer { position: fixed; inset: 0; pointer-events: none; }
   .chip {
     position: absolute; left: 0; top: 0; box-sizing: border-box; display: grid; place-items: center;
-    font-size: 13px; line-height: 1; color: var(--fg); white-space: nowrap;
+    line-height: 1; color: var(--fg); white-space: nowrap;
     border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: 8px;
     background: var(--glass); box-shadow: 0 6px 14px -4px var(--sh);
     -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
@@ -61,15 +66,18 @@
   }
   /* amber-tinted glass with a soft amber edge */
   .slope {
-    pointer-events: auto; cursor: help; outline: none; font: inherit; font-size: 13px; padding: 0;
+    pointer-events: auto; cursor: pointer; outline: none; font: inherit; padding: 0;
     border-color: color-mix(in srgb, var(--slope) 35%, transparent);
     background: color-mix(in srgb, var(--slope) 12%, var(--glass));
   }
-  .calc {
-    position: absolute; left: 50%; top: calc(100% + 8px); translate: -50% 0; padding: 8px 12px; border-radius: 9px; white-space: nowrap;
-    background: color-mix(in srgb, var(--panel) 92%, transparent); color: var(--fg); border: 1px solid var(--line); box-shadow: 0 8px 20px -6px var(--sh);
-    -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
-    opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  /* a small tag above the box's top-left corner, only while hovering or keyboard-focusing it */
+  .badge {
+    position: absolute; left: -1px; bottom: calc(100% + 4px); padding: 3px 7px; border-radius: 6px;
+    font-size: 0.72em; line-height: 1; letter-spacing: 0.03em; color: var(--slope);
+    border: 1px solid color-mix(in srgb, var(--slope) 35%, transparent);
+    background: color-mix(in srgb, var(--slope) 12%, var(--glass));
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+    opacity: 0; transform: translateY(2px); pointer-events: none; transition: opacity 0.15s, transform 0.15s;
   }
-  .slope:hover .calc, .slope:focus-visible .calc { opacity: 1; }
+  .slope:hover .badge, .slope:focus-visible .badge, .slope[aria-expanded='true'] .badge { opacity: 1; transform: none; }
 </style>

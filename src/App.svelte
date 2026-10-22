@@ -1,9 +1,13 @@
 <script lang="ts">
   import Plane from './plane/Plane.svelte';
   import Panel from './panel/Panel.svelte';
+  import SolverLab from './lab/SolverLab.svelte';
   import { point, quiz, ui } from './lib/state.svelte.ts';
 
-  if (ui.mode === 'quiz') quiz.start();
+  // ?lab=solver opens the equation solver's test bench in place of the panel
+  const lab = typeof location !== 'undefined' && new URLSearchParams(location.search).get('lab') === 'solver';
+
+  if (!lab && ui.mode === 'quiz') quiz.start();
 
   // arrow keys turn the point by 1° (15° with Shift)
   const onkeydown = (e: KeyboardEvent) => {
@@ -23,4 +27,4 @@
 <svelte:document onpointerover={flipTip} onfocusin={flipTip} />
 
 <Plane />
-<Panel />
+{#if lab}<SolverLab />{:else}<Panel />{/if}

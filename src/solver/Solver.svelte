@@ -12,6 +12,7 @@
   import { solver } from '../lib/state.svelte.ts';
   import { changes, eqTex, exactTex, type Op } from '../lib/algebra.ts';
   import Tex from '../ui/Tex.svelte';
+  import Rich from '../ui/Rich.svelte';
   import { morph } from '../lib/transition.ts';
 
   let { bare = false }: { bare?: boolean } = $props();
@@ -82,7 +83,7 @@
           <p class="ok">Solved: <Tex latex={`\\theta=${solver.sols.map((a) => a + '^\\circ').join(',\\ ')}`} /></p>
           <button class="primary" onclick={() => solver.next()}>Next problem</button>
         {:else}
-          <p>Drag the point to an angle where <Tex latex={`${fn}=${exactTex(solver.target.v)}`} />, then Check. There are two. {solver.note}</p>
+          <p>Drag the point to an angle where <Tex latex={`${fn}=${exactTex(solver.target.v)}`} />, then Check. There are two. <Rich parts={solver.note} /></p>
           <div class="row">
             <button class="primary" onclick={() => solver.check()}>Check</button>
             <button onclick={() => solver.undo()}>Back</button>
@@ -102,7 +103,6 @@
     -webkit-backdrop-filter: blur(6px) saturate(1.2); backdrop-filter: blur(6px) saturate(1.2);
     box-shadow: 0 24px 60px -24px var(--sh);
   }
-  /* inside a Morph the surrounding box already draws the card */
   .bare { border: 0; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   header { display: flex; justify-content: space-between; align-items: center; }
   .eyebrow, .op { font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }

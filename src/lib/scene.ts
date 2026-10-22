@@ -1,6 +1,7 @@
 // Everything drawn on the plane for one frame, as plain data. Components only render what this returns.
 // World units: the circle has radius S, y points down (so sin is drawn as -y).
 import { S } from './camera.svelte.ts';
+import { tag as tagT } from './tuning.ts';
 import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from './trig.ts';
 import { texBox, texRect, type Rect } from './tex.svelte.ts';
 
@@ -15,10 +16,10 @@ export type SceneInput = {
   /** Signed arc (radians) of the trail behind the point. */
   tail: number;
   revealed: boolean; mirror: boolean; mirrorOnly: Fn | null;
-  showCoords: boolean;
+  showCoords: boolean; slopeOpen: boolean;
   /** Px per world unit and the uncovered area in world units, for sizing and keeping chips on screen. */
-  k: number; bounds: Rect;
-  memo: { a: number; b: number };
+  k: number; bounds: Rect; boost: number;
+  memo: { b: number };
 };
 
 const label = (latex: string, size: number, x: number, y: number, color: string, ax = 0.5, ay = 0.5): Label | null => {
@@ -70,37 +71,46 @@ export function buildScene(p: SceneInput) {
     else if (i === 1) guide2 = [0, y, gx, y];
     else line = [x, y, gx, gy];
     // a ghost on a snap point is already named by the ring label
-    const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
+    const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11 * p.boost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
     mirrors.push({ line, dot: [gx, gy], label: lb });
   });
 
   // reference angle: quadrants II–IV get a small arc from the nearest x-axis; in quadrant I the label rides the θ arc
-  let refArc: string | null = null, refLabel: Label | null = null;
+  let refLabel: Label | null = null;
+  /** The reference arc at pop `e` (0 = lying on the θ arc, 1 = out at its own radius), so it can pop out of the θ arc. */
+  let refArcAt: ((e: number) => string) | null = null;
+  /** Where the reference label sits (polar, y up) and the x-axis angle it grows out of, so it can glide along the arc. */
+  let refPolar: { rr: number; from: number; to: number; dy: number } | null = null;
   if (hit !== undefined && p.revealed) {
     const ref = refOf(hit);
-    let mid: number, rr = 50;
+    let mid: number, rr = tagT.refRadius, from = 0;
     if (hit > 90 && ref > 0) {
       const ra = (S / 5) * 1.3, phiA = c >= -1e-9 ? 0 : Math.PI;
       const diff = ((((ang - phiA + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
-      refArc = `M ${ra * Math.cos(phiA)} ${-ra * Math.sin(phiA)} A ${ra} ${ra} 0 0 ${diff > 0 ? 0 : 1} ${ra * c} ${-ra * s}`;
-      mid = phiA + diff / 2;
-    } else if (hit > 90) mid = (hit * Math.PI) / 180;
-    else { mid = ang / 2; rr = 46; }
-    refLabel = label(`${ref}^\\circ`, 12, rr * Math.cos(mid), -rr * Math.sin(mid) + (ref === 0 ? -9 : 0), col);
+      refArcAt = (e) => { const q = r + (ra - r) * e; return `M ${q * Math.cos(phiA)} ${-q * Math.sin(phiA)} A ${q} ${q} 0 0 ${diff > 0 ? 0 : 1} ${q * c} ${-q * s}`; };
+      mid = phiA + diff / 2; from = phiA;
+    } else if (hit > 90) { mid = (hit * Math.PI) / 180; from = mid; }
+    else { mid = ang / 2; rr = tagT.refRadius - 4; }
+    const dy = ref === 0 ? -9 : 0;
+    refPolar = { rr, from, to: mid, dy };
+    refLabel = label(`${ref}^\\circ`, tagT.refFont * p.boost, rr * Math.cos(mid), -rr * Math.sin(mid) + dy, col);
   }
 
   // leg labels sit past a curly brace on the outside of each leg, so they read as lengths
   const ncy = s >= 0 ? 1 : -1, ncx = c >= 0 ? 1 : -1;
+  const cosCol = p.revealed ? 'var(--cos)' : 'var(--fg)', sinCol = p.revealed ? 'var(--sin)' : 'var(--fg)';
+  // each leg's label bounces away from its brace; leaving, the cosine label continues that way and the sine label goes left
+  const cosDir: [number, number] = [0, ncy], sinDir: [number, number] = [ncx, 0], cosExit = cosDir, sinExit: [number, number] = [-1, 0];
   const braceC = brace(0, 0, x, 0, 0, ncy, 30), braceS = brace(x, 0, x, y, ncx, 0, 24);
   const obstacles: (Rect & { k?: number })[] = [];
   let cosLabel: Label | null = null, sinLabel: Label | null = null;
   if (braceC) {
     const h = (texBox('x=\\cos\\theta')?.h ?? 0) * 12;
-    cosLabel = label('x=\\cos\\theta', 12, x / 2, ncy * (braceC.m + braceC.d + 4 + h / 2), p.revealed ? 'var(--cos)' : 'var(--fg)');
+    cosLabel = label('x=\\cos\\theta', 12 * p.boost, x / 2, ncy * (braceC.m + braceC.d + 4 + h / 2), cosCol);
     obstacles.push({ x: Math.min(0, x), y: Math.min(ncy * braceC.m, ncy * (braceC.m + braceC.d)), w: Math.abs(x), h: braceC.d });
   }
   if (braceS) {
-    sinLabel = label('y=\\sin\\theta', 12, x + ncx * (braceS.m + braceS.d + 5), y / 2, p.revealed ? 'var(--sin)' : 'var(--fg)', ncx > 0 ? 0 : 1, 0.5);
+    sinLabel = label('y=\\sin\\theta', 12 * p.boost, x + ncx * (braceS.m + braceS.d + 5), y / 2, sinCol, ncx > 0 ? 0 : 1, 0.5);
     obstacles.push({ x: Math.min(x + ncx * braceS.m, x + ncx * (braceS.m + braceS.d)), y: Math.min(0, y), w: braceS.d, h: Math.abs(y) });
   }
   if (cosLabel) obstacles.push(cosLabel.rect);
@@ -110,28 +120,28 @@ export function buildScene(p: SceneInput) {
   const cx = trigTex('cos', deg), sx = trigTex('sin', deg), tv = trigTex('tan', deg);
   const segs: Seg[] = [[0, 0, x, y], [0, 0, x, 0], [x, 0, x, y]];
   const onH = Math.abs(s) < 0.02, onV = Math.abs(c) < 0.02;
-  const slopeTex = `\\tan\\theta=${tv}`;
-  // the working behind it, shown in a tooltip on hover
-  const slopeCalc = `\\tan\\theta=\\frac{\\sin\\theta}{\\cos\\theta}=\\frac{${sx}}{${cx}}=${tv}`;
-  const place = (o: PlaceOpts, latex: string, padX: number, padY: number, minW: number, key: 'a' | 'b', color: string): Chip | null => {
+  const slopeTex = p.slopeOpen
+    ? `\\begin{aligned}\\tan\\theta&=\\frac{\\sin\\theta}{\\cos\\theta}\\\\[1.6ex]&=\\frac{${sx}}{${cx}}\\\\[1.6ex]&=${tv}\\end{aligned}`
+    : `\\tan\\theta=${tv}`;
+  const place = (o: PlaceOpts, latex: string, padX: number, padY: number, minW: number, color: string): Chip | null => {
     const b = texBox(latex);
     if (!b) return null;
-    const w = Math.max(b.w * CHIP_FONT + padX, minW) / p.k, h = (b.h * CHIP_FONT + padY) / p.k;
-    const at = placeChip(o, w, h, obstacles, p.bounds, p.memo, key);
+    const w = Math.max(b.w * CHIP_FONT * p.boost + padX, minW) / p.k, h = (b.h * CHIP_FONT * p.boost + padY) / p.k;
+    const at = placeChip(o, w, h, obstacles, p.bounds, p.memo);
     return { latex, x: at.x, y: at.y, w, h, ax: o.ax, ay: o.ay, color };
   };
   const slope = p.revealed
-    ? place({ ax: x / 2, ay: y / 2, fixed: true, gap: 0, pref: [0, 0], segs, place: onH ? 'above' : onV ? 'left' : undefined }, slopeTex, 28, 16, 0, 'b', 'var(--slope)')
+    ? place({ ax: x / 2, ay: y / 2, fixed: true, gap: 0, pref: [0, 0], segs, place: onH ? 'above' : onV ? 'left' : undefined }, slopeTex, 28, p.slopeOpen ? 28 : 16, 0, 'var(--slope)')
     : null;
-  // the point's tag: the θ box always, the coordinates too when they may show. θ sits on the side away
-  // from the x-axis: above the coordinates in quadrants I and II, below them in III and IV.
-  const THETA_H = 40;
-  const coords = place({ ax: x, ay: y, gap: p.dotR + 5, pref: onH ? [0, -1] : [c, -s], up2: onH && slope ? slope.h + 12 : 0, segs,
-        extra: slope ? [{ x: slope.x - slope.w / 2, y: slope.y - slope.h / 2, w: slope.w, h: slope.h }] : [] },
-        p.showCoords ? `\\left(${cx},\\ ${sx}\\right)` : '\\theta=\\ 000.0^\\circ', 24, p.showCoords ? 16 + THETA_H : 12, 96, 'a', col);
-  const tag = coords && { ...coords, values: p.showCoords, thetaAbove: y <= 0 };
+  // the point's tag is just its coordinates (the angle reads in the corner). The box sits a fixed distance out along θ
+  // at a nominal size, so a taller or wider value changes its extent but never where it is centered.
+  const tw = tagT.w / p.k, th = tagT.h / p.k;
+  const away = standoff(c, -s, tw / 2, th / 2, tagT.gap / p.k);
+  const at = clampTo(p.bounds, x + away * c, y - away * s, tw / 2, th / 2);
+  const tag: Chip & { values: boolean } & { parts?: Chip['parts'] } =
+    { latex: '', x: at.x, y: at.y, w: tw, h: th, ax: x, ay: y, color: col, values: p.showCoords };
   // coordinates read (cos, sin): gray brackets and comma, each value in its function's color
-  if (tag?.values) {
+  if (tag.values) {
     const tall = `\\vphantom{${cx}${sx}}`, gray = 'var(--muted)';
     tag.parts = [
       { latex: `\\left(${tall}\\right.`, color: gray }, { latex: cx, color: 'var(--cos)' }, { latex: ',\\ ', color: gray },
@@ -150,19 +160,33 @@ export function buildScene(p: SceneInput) {
     };
   }) : [];
 
-  return { x, y, col, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArc, refLabel, braceC, braceS, cosLabel, sinLabel, tag, slope, slopeCalc };
+  return { x, y, col, cosCol, sinCol, blend: colorOf(deg), trail, wedge, wedgeHead, sinLeg, guide2, mirrors, refArcAt, refLabel, refPolar, braceC, braceS, cosLabel, sinLabel, cosDir, sinDir, cosExit, sinExit, tag, slope };
 }
 
 /** Chip text size in px; chips keep their size on screen whatever the zoom. */
-export const CHIP_FONT = 13;
+export const CHIP_FONT = tagT.chipFont;
 type PlaceOpts = {
   ax: number; ay: number; gap: number; pref: [number, number]; segs: Seg[];
-  fixed?: boolean; place?: 'above' | 'left'; up2?: number; extra?: Rect[];
+  fixed?: boolean; place?: 'above' | 'left';
 };
 const OFFS = [0, 15, -15, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90, 120, -120, 150, -150, 180];
+/** How far out along the unit direction (ux, uy) a box of half-size hw × hh must sit for its edge to clear the anchor by `g`. */
+function standoff(ux: number, uy: number, hw: number, hh: number, g: number) {
+  let lo = 0, hi = 300;
+  for (let i = 0; i < 24; i++) {
+    const m = (lo + hi) / 2;
+    if (Math.hypot(Math.max(Math.abs(m * ux) - hw, 0), Math.max(Math.abs(m * uy) - hh, 0)) >= g) hi = m; else lo = m;
+  }
+  return hi;
+}
+/** A box center, kept so the box (half-size hw × hh) stays inside B. */
+const clampTo = (B: Rect, x: number, y: number, hw: number, hh: number) => ({
+  x: Math.max(B.x + 2 + hw, Math.min(B.x + B.w - 2 - hw, x)),
+  y: Math.max(B.y + 2 + hh, Math.min(B.y + B.h - 2 - hh, y)),
+});
 /** Center of a w×h chip near its anchor: tries spots around it and takes the one that covers the fewest
  *  labels and lines, preferring a direction. Sticks with the last pick unless another is clearly better. */
-function placeChip(o: PlaceOpts, w: number, h: number, labels: (Rect & { k?: number })[], B: Rect, memo: { a: number; b: number }, key: 'a' | 'b') {
+function placeChip(o: PlaceOpts, w: number, h: number, labels: (Rect & { k?: number })[], B: Rect, memo: { b: number }) {
   const hw = w / 2, hh = h / 2, g = o.gap;
   const cands: [number, number][] = [];
   if (o.fixed) cands.push(o.place === 'above' ? [0, -(hh + 9)] : o.place === 'left' ? [-(hw + 9), 0] : [0, 0]);
@@ -170,19 +194,16 @@ function placeChip(o: PlaceOpts, w: number, h: number, labels: (Rect & { k?: num
     // hug the anchor at one minimal distance, fanning out from the preferred direction, so it glides instead of hopping
     const a0 = Math.atan2(o.pref[1], o.pref[0]);
     for (const off of OFFS) {
-      const an = a0 + (off * Math.PI) / 180, ux = Math.cos(an), uy = Math.sin(an);
-      let d = 0;
-      for (; d < 300; d += 0.5) if (Math.hypot(Math.max(Math.abs(d * ux) - hw, 0), Math.max(Math.abs(d * uy) - hh, 0)) >= g) break;
+      const an = a0 + (off * Math.PI) / 180, ux = Math.cos(an), uy = Math.sin(an), d = standoff(ux, uy, hw, hh, g);
       cands.push([d * ux, d * uy]);
     }
-    if (o.up2) cands.push([0, -(g + hh) - o.up2]);
   }
+  if (cands.length === 1) return clampTo(B, o.ax + cands[0][0], o.ay + cands[0][1], hw, hh);
   const hits = (rx: number, ry: number, l: Rect, pad: number) => rx < l.x + l.w + pad && rx + w > l.x - pad && ry < l.y + l.h + pad && ry + h > l.y - pad;
   const scores = cands.map((d) => {
     const rx = o.ax + d[0] - hw, ry = o.ay + d[1] - hh;
     let sc = 0;
     if (rx < B.x + 2 || ry < B.y + 2 || rx + w > B.x + B.w - 2 || ry + h > B.y + B.h - 2) sc += 100;
-    for (const l of o.extra ?? []) if (hits(rx, ry, l, 8)) sc += 1000;
     for (const l of labels) if (hits(rx, ry, l, 3)) sc += l.k ?? 6;
     for (const sg of o.segs) for (let t = 0; t <= 1.001; t += 0.05) {
       const px = sg[0] + (sg[2] - sg[0]) * t, py = sg[1] + (sg[3] - sg[1]) * t;
@@ -191,11 +212,8 @@ function placeChip(o: PlaceOpts, w: number, h: number, labels: (Rect & { k?: num
     return sc + 0.8 * (1 - (d[0] * o.pref[0] + d[1] * o.pref[1]) / (Math.hypot(d[0], d[1]) || 1));
   });
   let best = scores.indexOf(Math.min(...scores));
-  const prev = memo[key];
-  if (prev >= 0 && prev < scores.length && scores[prev] < scores[best] + (o.fixed ? 1.5 : 0.3)) best = prev;
-  memo[key] = best;
-  return {
-    x: Math.max(B.x + 2 + hw, Math.min(B.x + B.w - 2 - hw, o.ax + cands[best][0])),
-    y: Math.max(B.y + 2 + hh, Math.min(B.y + B.h - 2 - hh, o.ay + cands[best][1])),
-  };
+  const prev = memo.b;
+  if (prev >= 0 && prev < scores.length && scores[prev] < scores[best] + 0.3) best = prev;
+  memo.b = best;
+  return clampTo(B, o.ax + cands[best][0], o.ay + cands[best][1], hw, hh);
 }

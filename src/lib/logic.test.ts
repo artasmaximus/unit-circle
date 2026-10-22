@@ -20,6 +20,10 @@ test('exact values', () => {
   assert.equal(trigTex('sin', 210), '-\\frac{1}{2}');
   assert.equal(trigTex('tan', 90), '\\text{undefined}');
   assert.equal(recipTex('csc', 45).r, '\\sqrt{2}');
+  // un-rationalized, so a reciprocal reads as the flip of its partner
+  assert.equal(trigTex('sin', 45), '\\frac{1}{\\sqrt{2}}');
+  assert.equal(recipTex('csc', 60).r, '\\frac{2}{\\sqrt{3}}');
+  assert.equal(trigTex('tan', 30), '\\frac{1}{\\sqrt{3}}');
   assert.equal(recipTex('cot', 135).r, '-1');
 });
 
