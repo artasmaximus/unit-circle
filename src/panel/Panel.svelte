@@ -96,7 +96,7 @@
   /* the panel only positions things; empty space in it lets the grid through, to the pointer too */
   .panel {
     position: fixed; z-index: 2; left: 0; top: 0; bottom: 0; width: clamp(340px, 32vw, 460px); pointer-events: none;
-    --dir: to right; --side: 36px; --below: 48px;
+    --dir: to right; --side: 36px; --below: 12px;
   }
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .panel { top: auto; right: 0; width: auto; height: auto; --dir: to top; --side: 0px; }

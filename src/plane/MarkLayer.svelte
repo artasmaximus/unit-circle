@@ -91,9 +91,19 @@
   {:else if m.kind === 'path'}
     <path d={m.at ? m.at(v.pop) : m.d} fill={m.fill ?? 'none'} stroke={m.color} stroke-width={m.width} opacity={v.op} transform={m.transform}
       stroke-linecap={m.round ? 'round' : 'butt'} stroke-linejoin={m.join ? 'round' : 'miter'}
+      vector-effect={m.fixed ? 'non-scaling-stroke' : null}
       pathLength={m.dash ? null : 1} stroke-dasharray={m.dash ? `${m.dash[0]} ${m.dash[1]}` : v.t < 0.999 ? (m.symmetric ? `${v.t / 2} ${1 - v.t} ${v.t / 2} 0` : `${v.t} 1`) : null} />
   {:else if m.kind === 'dot'}
     <circle cx={m.x} cy={m.y} style:r="{v.pop * m.r}px" fill={m.fill} stroke={m.stroke ?? 'none'} stroke-width={m.width ?? 0} opacity={v.op} style:transition={m.glide ? `r ${m.glide}ms ease-out` : null} />
+  {:else if m.kind === 'dotgrid'}
+    {@const h = m.step / 2}
+    <defs>
+      <pattern id="mark-dotgrid" patternUnits="userSpaceOnUse" width={m.step} height={m.step}>
+        <circle cx={h} cy="0" r={m.r} fill={m.color} /><circle cx="0" cy={h} r={m.r} fill={m.color} /><circle cx={h} cy={h} r={m.r} fill={m.color} />
+        <circle cx={m.step} cy={h} r={m.r} fill={m.color} /><circle cx={h} cy={m.step} r={m.r} fill={m.color} />
+      </pattern>
+    </defs>
+    <rect x={m.x} y={m.y} width={m.w} height={m.h} fill="url(#mark-dotgrid)" opacity={v.op} />
   {:else if m.kind === 'segments'}
     <g opacity={v.op}>
       {#each m.segs as sg}<line x1={sg.x1} y1={sg.y1} x2={sg.x2} y2={sg.y2} stroke={sg.color} stroke-width={sg.width} opacity={sg.opacity} stroke-linecap="round" />{/each}

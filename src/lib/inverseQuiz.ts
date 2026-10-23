@@ -28,6 +28,10 @@ const inDomain = (d: Domain, a: number) => a >= d.lo - 1e-9 && (d.hi === 360 || 
 const anglesIn = (d: Domain) => SPECIAL.flatMap((a) => [a - 360, a, a + 360]).filter((a) => inDomain(d, a));
 
 export const FNS: InvFn[] = ['asin', 'acos', 'atan'];
+/** What each inverse's input is called, so the wording matches what the picture shows: sin is a height (y), cos a distance across (x), tan a slope (m). */
+export const VAR = { asin: 'y', acos: 'x', atan: 'm' } as const;
+export const NOUN = { asin: 'y-value', acos: 'x-value', atan: 'slope m' } as const;
+const AXIS = { asin: 'along the y-axis', acos: 'along the x-axis', atan: '' } as const;
 const valuesOf = (fn: InvFn) => SPECIAL_VALUES[fn].map(([v]) => v);
 
 export function makeQ(): IQ {
@@ -72,15 +76,17 @@ export function qTex(q: IQ): string {
   const n = `\\${INV_NAME[q.fn]}`;
   if (q.t === 1) return `${n}\\left(${valueTex(q.fn, q.v)}\\right)`;
   if (q.t === 2) return `${n}\\left(\\${PARTNER[q.fn]}\\ ${deg(q.theta)}\\right)`;
-  return `${n}(x)=${deg(q.ang)}`;
+  return `${n}(${VAR[q.fn]})=${deg(q.ang)}`;
 }
 
 /** What the learner is asked to do, as running text. */
 export function task(q: IQ): Rich {
   const N = m(`\\${INV_NAME[q.fn]}()`);
-  if (q.t === 1) return ['Which angle does ', N, ' give for this value? Try angles on the circle to see each one\'s value. Remember, ', N, ' only gives angles in its range.'];
+  if (q.t === 1) return ['Which angle does ', N, ` give for this ${NOUN[q.fn]}? Try angles on the circle to see each one's ${q.fn === 'atan' ? 'slope' : NOUN[q.fn]}. Remember, `, N, ' only gives angles in its range.'];
   if (q.t === 2) return ['Here θ can be any angle with ', m(q.dom.tex), '. What angle does ', N, ' give back?'];
-  return ['Drag ', q.fn === 'atan' ? 'the ray' : 'the handle', ' to the value ', m('x'), ' that makes the answer ', m(deg(q.ang)), ', then press Check.'];
+  return q.fn === 'atan'
+    ? ['Drag the ray to the slope ', m('m'), ' that makes the answer ', m(deg(q.ang)), ', then press Check.']
+    : [`Drag the handle ${AXIS[q.fn]} to the ${NOUN[q.fn]} `, m(VAR[q.fn]), ' that makes the answer ', m(deg(q.ang)), ', then press Check.'];
 }
 
 export function hintMsg(q: IQ): Rich {
@@ -96,7 +102,7 @@ export function explain(q: IQ): Rich[] {
   const range = [m(`${N}()`), ` only gives angles from ${lo}° to ${hi}°.`] as Rich;
   if (q.t === 3) {
     const v = valueTex(q.fn, partnerAt(q.fn, q.ang)!);
-    return [[m(`${P}\\ ${deg(q.ang)}=${v}`), ', so the value is ', m(v), '.'], range];
+    return [[m(`${P}\\ ${deg(q.ang)}=${v}`), `, so the ${NOUN[q.fn]} is `, m(`${VAR[q.fn]}=${v}`), '.'], range];
   }
   const right = answerOf(q), other = r(otherAngle(q.fn, right));
   if (q.t === 1) {

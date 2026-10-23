@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { invQuiz as quiz } from '../lib/inverseQuiz.svelte.ts';
-  import { answerTex, explain, hintMsg, hintTip, qTex, task } from '../lib/inverseQuiz.ts';
+  import { NOUN, answerTex, explain, hintMsg, hintTip, qTex, task } from '../lib/inverseQuiz.ts';
   import Tex from '../ui/Tex.svelte';
   import Rich from '../ui/Rich.svelte';
 
@@ -10,7 +10,7 @@
   let showMissed = $state(false);
   const q = $derived(quiz.cur);
   const right = $derived(q && q.t !== 3 ? answerTex(q) : null);
-  const named = $derived(q?.t === 3 ? 'Set the value' : q?.t === 2 ? 'Find the angle' : 'Find the angle');
+  const named = $derived(q?.t === 3 ? `Set the ${NOUN[q.fn]}` : 'Find the angle');
 </script>
 
 <svelte:window onkeydown={(e) => {

@@ -10,6 +10,7 @@
   import { degSigned } from '../lib/trig.ts';
   import Segmented from '../ui/Segmented.svelte';
   import Tex from '../ui/Tex.svelte';
+  import InfoTip from '../ui/InfoTip.svelte';
 
   let { trailing }: { trailing?: Snippet } = $props();
   const FNS: { value: InvFn; label: string }[] = [{ value: 'asin', label: 'arcsin' }, { value: 'acos', label: 'arccos' }, { value: 'atan', label: 'arctan' }];
@@ -37,8 +38,10 @@
       <div class="big"><Tex latex={`m=\\text{undefined}`} /></div>
       <div class="why"><Tex latex={`${n}()`} /> never reaches <Tex latex={deg(inverse.angleTo)} />. It only gets closer as the slope gets bigger.</div>
     {:else}
-      <div class="big"><Tex latex={`${n}\\left(${v}\\right)=${deg(inverse.angleTo)}`} /></div>
-      <div class="why"><Tex latex={`${p}\\ ${deg(inverse.angleTo)}=${v}`} /></div>
+      <div class="big">
+        <Tex latex={`${n}\\left(${v}\\right)=${deg(inverse.angleTo)}`} />
+        <InfoTip label="Check it the other way round"><Tex latex={`${p}\\ ${deg(inverse.angleTo)}=${v}`} /></InfoTip>
+      </div>
     {/if}
   </div>
 
@@ -47,7 +50,7 @@
     <div class="row"><span class="k">Range</span><Tex latex={rng} /><span class="cap">what comes out</span></div>
     <p class="note">
       Since <Tex latex={`${p}()`} /> repeats, the range of its inverse <Tex latex={`${n}()`} /> is only {fn === 'acos' ? 'the upper half' : 'the right half'} of the circle,
-      where every possible <Tex latex={`${p}()`} /> {fn === 'atan' ? 'value (AKA slope)' : 'value'} appears once.
+      where every possible <Tex latex={`${p}()`} /> value ({fn === 'asin' ? 'y-value' : fn === 'acos' ? 'x-value' : 'AKA slope'}) appears once.
     </p>
     {#if !inverse.poleTo}<p class="note other"><Tex latex={`${p}\\ ${deg(otherAngle(fn, inverse.angleTo))}=${v}`} /> too, but <Tex latex={deg(otherAngle(fn, inverse.angleTo))} /> is outside the range, so <Tex latex={`${n}()`} /> never gives it.</p>{/if}
   </div>
@@ -63,12 +66,13 @@
     display: grid; gap: 8px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--c) 35%, transparent); border-radius: 8px;
     background: color-mix(in srgb, var(--c) 10%, var(--glass));
   }
-  .eq { gap: 4px; }
-  .big { font-size: 1.45rem; min-height: 2.6rem; display: flex; align-items: center; overflow-x: auto; overflow-y: hidden; }
-  .why { color: var(--muted); font-size: 0.95rem; }
-  .row { display: flex; align-items: baseline; gap: 12px; }
+  /* fixed heights, so a tall fraction never resizes the cards */
+  .eq { gap: 4px; height: 6.4rem; box-sizing: border-box; align-content: center; }
+  .big { font-size: 1.45rem; height: 4.2rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; overflow: visible; }
+  .why { color: var(--muted); font-size: 0.95rem; min-height: 2rem; }
+  .row { display: flex; align-items: baseline; gap: 12px; height: 1.7rem; }
   .cap { margin-left: auto; font-size: 0.78rem; color: var(--muted); }
   .k { width: 4.5rem; font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
   .note { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--muted); }
-  .note.other { color: var(--fg); }
+  .note.other { color: var(--fg); min-height: 5.4em; }
 </style>

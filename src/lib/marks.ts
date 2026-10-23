@@ -35,6 +35,8 @@ export type PathMark = Base & {
   transform?: string;
   at?: (e: number) => string;
   dash?: [number, number];
+  /** The width is on-screen pixels whatever the zoom (the grid's lines). */
+  fixed?: boolean;
 };
 /** Many short lines drawn as one mark (the trail), each with its own color, width and opacity. */
 export type SegmentsMark = Base & { kind: 'segments'; segs: { x1: number; y1: number; x2: number; y2: number; color: string; width: number; opacity: number }[] };
@@ -52,7 +54,9 @@ export type LabelMark = Base & {
   /** Which way (world units) a `shoot` exit carries it. */
   shoot?: [number, number];
 };
-export type Mark = LineMark | PathMark | DotMark | LabelMark | SegmentsMark;
+/** A repeating field of dots, drawn as one pattern fill so it costs the same at any zoom: a dot at each half-step point that is not a line crossing. */
+export type DotGridMark = Base & { kind: 'dotgrid'; step: number; r: number; color: string; x: number; y: number; w: number; h: number };
+export type Mark = LineMark | PathMark | DotMark | LabelMark | SegmentsMark | DotGridMark;
 
 /** Defaults a mark inherits unless it says otherwise. */
 export const DEFAULTS = { enter: 'fade', delay: 0, dur: 260, exitDelay: 0, exitDur: 200, z: 5 } as const;
