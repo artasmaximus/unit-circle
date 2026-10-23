@@ -54,9 +54,14 @@ export type LabelMark = Base & {
   /** Which way (world units) a `shoot` exit carries it. */
   shoot?: [number, number];
 };
+/** A pizza slice: the wedge between two angles (radians, counterclockwise from the right), pulled in from its edges by `gap` (and short of the circle by `rim`), so neighbouring slices stay apart
+ *  by a constant width. A slice that stays moves its edges by gliding (`glide` ms); one that arrives grows out from its first edge and one that leaves folds back into it. */
+export type SliceMark = Base & { kind: 'slice'; a0: number; a1: number; r: number; gap: number; fill: string; glide?: number;
+  /** How far each side is pulled in, where it differs from `gap`: the first edge, the last edge and the rim (a slice at the end of a row keeps the same gap from the axis, the ray and the circle as from its neighbour). */
+  edge0?: number; edge1?: number; rim?: number };
 /** A repeating field of dots, drawn as one pattern fill so it costs the same at any zoom: a dot at each half-step point that is not a line crossing. */
 export type DotGridMark = Base & { kind: 'dotgrid'; step: number; r: number; color: string; x: number; y: number; w: number; h: number };
-export type Mark = LineMark | PathMark | DotMark | LabelMark | SegmentsMark | DotGridMark;
+export type Mark = LineMark | PathMark | DotMark | LabelMark | SegmentsMark | DotGridMark | SliceMark;
 
 /** Defaults a mark inherits unless it says otherwise. */
 export const DEFAULTS = { enter: 'fade', delay: 0, dur: 260, exitDelay: 0, exitDur: 200, z: 5 } as const;

@@ -1,35 +1,26 @@
-<!-- The concepts, as a small bar floating at the bottom left (desktop and landscape tablets; phones don't show it yet). Each tab is an icon over a tiny label. Unit circle and inverse trig so far. -->
+<!-- The concepts, as a small bar floating at the bottom left (desktop and landscape tablets; phones don't show it yet). It is the same
+     segmented control as the mode switch (icon over a tiny label), and its thumb glides on the same pen motion a topic switch plays. -->
 <script lang="ts">
   import CircleDot from '@lucide/svelte/icons/circle-dot';
   import ArrowLeftRight from '@lucide/svelte/icons/arrow-left-right';
-  import { setTopic, ui } from '../lib/state.svelte.ts';
+  import Ruler from '@lucide/svelte/icons/ruler';
+  import { pen, setTopic, ui } from '../lib/state.svelte.ts';
+  import { progress } from '../lib/progress.svelte.ts';
+  import Segmented from './Segmented.svelte';
 
   const TABS = [
-    { id: 'circle', label: 'Unit circle', icon: CircleDot, ready: true },
-    { id: 'inverse', label: 'Inverse trig', icon: ArrowLeftRight, ready: true },
+    { value: 'circle', label: 'Unit circle', icon: CircleDot },
+    { value: 'inverse', label: 'Inverse trig', icon: ArrowLeftRight },
+    { value: 'radians', label: 'Radians', icon: Ruler },
   ] as const;
+  // a topic shows a check once its Guide's exam has been passed
+  const tabs = $derived(TABS.map((t) => ({ ...t, done: !!(progress.completed as Record<string, boolean | undefined>)[t.value] })));
 </script>
 
-<nav class="tabs" aria-label="Concepts">
-  {#each TABS as t (t.id)}
-    <button aria-pressed={ui.topic === t.id} disabled={!t.ready} title={t.ready ? t.label : `${t.label}: coming soon`}
-      onclick={() => setTopic(t.id)}>
-      <t.icon size={18} /><span>{t.label}</span>
-    </button>
-  {/each}
+<nav class="tabs">
+  <Segmented label="Concepts" stacked value={ui.topic} onchange={setTopic} progress={pen.current} options={tabs} />
 </nav>
 
 <style>
-  .tabs {
-    position: fixed; z-index: 3; bottom: 16px; left: 24px; display: flex; gap: 2px; padding: 4px;
-    border-radius: 14px; background: color-mix(in srgb, var(--panel) 70%, transparent);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 24px -10px var(--sh);
-  }
-  button {
-    display: grid; justify-items: center; gap: 3px; min-width: 76px; padding: 6px 10px 5px; border: 0; border-radius: 10px;
-    background: transparent; color: var(--muted); font-size: 0.62rem; letter-spacing: 0.02em; white-space: nowrap;
-  }
-  button:hover:not(:disabled) { color: var(--fg); border-color: transparent; }
-  button[aria-pressed='true'] { background: var(--fg); color: var(--bg); }
-  button:disabled { opacity: 0.45; cursor: default; }
+  .tabs { position: fixed; z-index: 3; bottom: 16px; left: 24px; border-radius: 14px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 24px -10px var(--sh); }
 </style>

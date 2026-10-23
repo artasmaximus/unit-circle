@@ -2,9 +2,9 @@
 // itself is pure and lives in inverseQuiz.ts.
 import { inverse } from './inverse.svelte.ts';
 import { partnerAt } from './inverse.ts';
-import { answerTex, iqKey, makeChoices, pickQ, type IQ } from './inverseQuiz.ts';
+import { answerOf, iqKey, makeChoices, pickQ, type IQ } from './inverseQuiz.ts';
 import type { Rich } from './quiz.ts';
-import { point, topicHooks, ui } from './state.svelte.ts';
+import { point, topicHooks, ui, type Mode } from './state.svelte.ts';
 
 const KEY = 'ucq-inv';
 function load(): { best: number; missed: IQ[] } {
@@ -17,7 +17,8 @@ class InvQuiz {
   best = $state(0);
   missed = $state<IQ[]>([]);
   cur = $state<IQ | null>(null);
-  choices = $state<string[]>([]);
+  /** The answer choices, as angles in degrees: they are written in the learner's unit when drawn, so switching unit mid-question just rewrites them. */
+  choices = $state<number[]>([]);
   answered = $state(false);
   picked = $state<number | null>(null);
   hint = $state(false);
@@ -34,7 +35,9 @@ class InvQuiz {
     // answer. The other two keep the plane still or hold the answer back.
     inverse.showOther = false; inverse.showBand = false;
     inverse.shown = q.t === 1;
-    inverse.locked = q.t === 2;
+    inverse.locked = false;
+    // a composition question hands you a free point to work with: move it by the ring or either axis and read what it shows
+    if (q.t === 2) inverse.startProbe(q.theta); else inverse.stopProbe();
     inverse.given = q.t === 2 ? q.theta : null;
     inverse.domain = q.t === 2 ? q.dom : null;
     if (q.t === 2) inverse.setValue(partnerAt(q.fn, q.theta)!);
@@ -42,7 +45,7 @@ class InvQuiz {
   }
   /** Put the plane back as the exploration leaves it. */
   explorePlane() {
-    inverse.shown = true; inverse.showBand = true; inverse.locked = false; inverse.given = null; inverse.domain = null;
+    inverse.shown = true; inverse.showBand = true; inverse.locked = false; inverse.given = null; inverse.domain = null; inverse.stopProbe();
   }
   start(q: IQ = pickQ(this.missed, this.cur)) {
     this.cur = q; this.answered = false; this.hint = false; this.picked = null; this.note = '';
@@ -55,7 +58,7 @@ class InvQuiz {
     const q = this.cur;
     if (!q || q.t === 3 || this.answered) return;
     this.picked = i;
-    this.#finish(this.choices[i] === answerTex(q));
+    this.#finish(this.choices[i] === answerOf(q));
   }
   /** Type 3: is the control where the question asked? */
   check() {
@@ -64,7 +67,7 @@ class InvQuiz {
     this.#finish(Math.abs(inverse.angle - q.ang) < 1.2);
   }
   #reveal(q: IQ) {
-    inverse.shown = true; inverse.showOther = true; inverse.showBand = true; inverse.locked = true;
+    inverse.shown = true; inverse.showOther = true; inverse.showBand = true; inverse.locked = true; inverse.stopProbe();
     if (q.t === 1) inverse.setValue(q.v);
     if (q.t === 3) inverse.setAngle(q.ang);
   }
@@ -81,10 +84,10 @@ class InvQuiz {
 export const invQuiz = new InvQuiz();
 
 // what switching to this topic, or switching mode inside it, does to the plane
-function apply(m: 'explore' | 'quiz') {
+function apply(m: Mode) {
   ui.revealed = true; ui.highlight = [];
-  if (m === 'explore') return invQuiz.explorePlane();
+  if (m !== 'practice') return invQuiz.explorePlane();
   if (!invQuiz.cur || invQuiz.answered) invQuiz.start(); else invQuiz.resume();
 }
 // arriving in the exploration, the control takes on the unit circle's angle and slides to where it lives here
-topicHooks.inverse = { mode: apply, enter: (m) => { if (m === 'explore') inverse.adopt(point.deg); apply(m); } };
+topicHooks.inverse = { mode: apply, enter: (m) => { if (m !== 'practice') inverse.adopt(point.deg); apply(m); } };

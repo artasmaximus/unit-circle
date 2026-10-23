@@ -11,9 +11,15 @@
   import Quiz from './Quiz.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import AngleInput from '../ui/AngleInput.svelte';
+  import { progress } from '../lib/progress.svelte.ts';
   import Reciprocals from './Reciprocals.svelte';
   import InversePanel from './InversePanel.svelte';
   import InverseQuiz from './InverseQuiz.svelte';
+  import RadiansGuide from './RadiansGuide.svelte';
+  import RadiansPanel from './RadiansPanel.svelte';
+  import RadiansQuiz from './RadiansQuiz.svelte';
+  import { radians } from '../lib/radians.svelte.ts';
+  import { guideTopics } from '../lib/state.svelte.ts';
   import { inverse } from '../lib/inverse.svelte.ts';
 
   let w = $state(0), h = $state(0);
@@ -55,7 +61,7 @@
 
 {#snippet mirror()}
   <button class="switch" role="switch" aria-checked={ui.mirror} onclick={() => (ui.mirror = !ui.mirror)}
-    data-tip="Shows the other angles that have the same reference angle. In a quiz it also shows the second angle with the same sin, cos or tan.">
+    data-tip="Shows the other angles that have the same reference angle. In Practice it also shows the second angle with the same sin, cos or tan.">
     Mirror Point<span class="track"><span class="knob"></span></span>
   </button>
 {/snippet}
@@ -69,17 +75,21 @@
   <div class="content" bind:clientHeight={contentH}>
     <header bind:clientHeight={headH}>
       <div class="title">
-        <h1>{ui.topic === 'inverse' ? 'Inverse Trig' : 'Unit Circle'}</h1>
+        <h1>{ui.topic === 'inverse' ? 'Inverse Trig' : ui.topic === 'radians' ? 'Radians' : 'Unit Circle'}</h1>
         <Segmented label="Mode" value={ui.mode} onchange={setMode} progress={pen.current}
-          options={[{ value: 'explore', label: 'Explore' }, { value: 'quiz', label: 'Quiz' }]} />
+          options={[...(guideTopics.has(ui.topic) ? [{ value: 'guide' as const, label: 'Guide' }] : []), { value: 'explore' as const, label: 'Explore' }, { value: 'practice' as const, label: 'Practice' }]} />
       </div>
     </header>
     <!-- the views share one grid cell, so the old one fades away under the new one as it rises in -->
     <div class="stage">
-      {#if ui.topic === 'inverse'}
-        {#if ui.mode === 'quiz'}<div class="view" in:fly={IN} out:fly={OUT}><InverseQuiz /></div>
+      {#if ui.topic === 'radians'}
+        {#if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><RadiansGuide /></div>
+        {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}><RadiansQuiz session={radians.practice} /></div>
+        {:else}<div class="view" in:fly={IN} out:fly={OUT}><RadiansPanel /></div>{/if}
+      {:else if ui.topic === 'inverse'}
+        {#if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}><InverseQuiz /></div>
         {:else}<div class="view" in:fly={IN} out:fly={OUT}><InversePanel trailing={otherToggle} /></div>{/if}
-      {:else if ui.mode === 'quiz'}<div class="view" in:fly={IN} out:fly={OUT}><Quiz trailing={mirror} /></div>
+      {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}><Quiz trailing={mirror} /></div>
       {:else}<div class="view" in:fly={IN} out:fly={OUT}><Reciprocals trailing={mirror} /></div>{/if}
     </div>
   </div>
@@ -88,7 +98,12 @@
 
 <!-- the angle reads and edits here, in the plane's top-right corner; "Reset view" appears under it once the view has moved -->
 <div class="corner">
-  {#if ui.topic === 'circle'}<AngleInput />{/if}
+  <div class="row">
+    <!-- the unit every angle is written in; radians unlock once the Radians topic is done -->
+    <Segmented label="Angle unit" value={progress.unit} onchange={(u) => progress.setUnit(u)}
+      options={[{ value: 'deg', label: '°' }, { value: 'rad', label: 'rad', locked: !progress.radiansUnlocked, tip: 'Learn radians to unlock' }]} />
+    {#if ui.topic === 'circle' || (ui.topic === 'radians' && !radians.asking)}<AngleInput unit={ui.topic === 'radians' ? 'rad' : undefined} />{/if}
+  </div>
   {#if camera.moved}<button class="reset" onclick={camera.reset}>Reset view</button>{/if}
 </div>
 
@@ -143,6 +158,8 @@
     font-size: 0.85rem; cursor: pointer;
   }
   /* the angle readout and reset button, floating in the plane's top-right corner */
+  .corner :global([data-tip]::after) { left: auto; right: 0; }
+  .corner .row { display: flex; align-items: center; gap: 8px; }
   .corner { position: fixed; z-index: 3; top: max(14px, env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); display: grid; justify-items: end; gap: 8px; }
   .reset { padding: 3px 9px; font-size: 0.78rem; color: var(--muted); background: color-mix(in srgb, var(--panel) 70%, transparent); border-color: transparent; }
   .content .switch::after { left: auto; right: 0; }

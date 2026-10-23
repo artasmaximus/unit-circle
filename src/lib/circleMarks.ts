@@ -43,11 +43,13 @@ export function circleMarks(i: CircleInput): Mark[] {
   const label = (m: Omit<Extract<Mark, { kind: 'label' }>, 'kind' | 'label'>, l: Label | null) => { if (l) out.push({ kind: 'label', label: l, ...m }); };
 
   // ---- the guides to the axes
-  out.push({ kind: 'line', key: 'guide:x', z: 3, x1: sc.x, y1: sc.y, x2: 0, y2: sc.y, color: axisCol, width: 0.75 * sw, dash: [3 * sw, 4 * sw], offset: tick(7), enter: 'draw', dur: 350 });
+  // the guides across to the y-axis, and out to the mirrored points, are dashed like the legs so the whole figure reads as one family
+  const legDash = { width: 2 * sw, dash: [3 * sw, 6 * sw] as [number, number], round: true, opacity: 0.7, offset: tick(9) };
+  out.push({ kind: 'line', key: 'guide:x', z: 3, x1: sc.x, y1: sc.y, x2: 0, y2: sc.y, color: axisCol, ...legDash, enter: 'draw', dur: 350 });
   if (sc.guide2) {
     const g = sc.guide2;
-    out.push({ kind: 'line', key: 'mirror:guide', z: 6, x1: g[0], y1: g[1], x2: g[2], y2: g[3], color: axisCol, width: 0.75 * sw, dash: [3 * sw, 4 * sw],
-      offset: (Math.abs(sc.x) % (7 * sw)) + tick(7), power: F.mirrorEase, enter: 'draw', dur: F.mirrorMs * F.mirrorLineShare, exitDelay: 150, exitDur: 300 });
+    out.push({ kind: 'line', key: 'mirror:guide', z: 6, x1: g[0], y1: g[1], x2: g[2], y2: g[3], color: axisCol, ...legDash,
+      power: F.mirrorEase, enter: 'draw', dur: F.mirrorMs * F.mirrorLineShare, exitDelay: 150, exitDur: 300 });
   }
 
   // ---- the angle arc, with the new color washing along it as a mode switch plays
@@ -115,7 +117,7 @@ export function circleMarks(i: CircleInput): Mark[] {
   // then the dot pops in as they land, and leaving runs it backwards: the dot first, then the line.
   const landing = F.mirrorMs * F.mirrorLineShare * 0.5;
   for (const m of sc.mirrors) {
-    if (m.line) out.push({ kind: 'line', key: `mirror:line${m.i}`, z: 6, x1: m.line[0], y1: m.line[1], x2: m.line[2], y2: m.line[3], color: sc.col, width: 1 * sw, dash: [2 * sw, 4 * sw], opacity: 0.8,
+    if (m.line) out.push({ kind: 'line', key: `mirror:line${m.i}`, z: 6, x1: m.line[0], y1: m.line[1], x2: m.line[2], y2: m.line[3], color: sc.col, ...legDash,
       power: F.mirrorEase, enter: 'draw', dur: F.mirrorMs * F.mirrorLineShare, exitDelay: 150, exitDur: 300 });
     out.push({ kind: 'dot', key: `mirror:dot${m.i}`, z: 7, x: m.dot[0], y: m.dot[1], r: 4.5 * sw, fill: 'var(--bg)', stroke: sc.col, width: 1.5 * sw, enter: 'pop', delay: landing, dur: F.mirrorMs - landing, exitDur: 200 });
     label({ key: `mirror:label${m.i}`, z: 9, enter: 'fade', delay: landing, dur: 300, exitDur: 150 }, m.label);

@@ -86,26 +86,14 @@ export function recipTex(kind: Recip, deg: number): { sub: string; r: string } {
   return { sub: `\\frac{1}{${kind === 'csc' ? sT : cT}}`, r };
 }
 
-/** "135", "135°", "pi/6", "2π/3", "0.5 rad" → degrees, or null. Plain numbers are degrees; anything with π is radians. */
-export function parseAngle(t: string): number | null {
+/** "135", "135°", "pi/6", "2π/3", "0.5 rad" → degrees, or null. Anything with π is radians; a bare number is degrees, or radians when `plain` says so. */
+export function parseAngle(t: string, plain: 'deg' | 'rad' = 'deg'): number | null {
   t = t.trim().replace(/°/g, ' deg').replace(/π/g, 'pi');
   if (!t) return null;
   try {
     const v = math.evaluate(/pi/i.test(t) ? t.replace(/rad/gi, '') : t);
-    const d = typeof v === 'number' ? (/pi/i.test(t) ? (v * 180) / Math.PI : v) : v?.toNumber?.('deg');
+    const bare = !/pi|deg|rad/i.test(t);
+    const d = typeof v === 'number' ? (/pi/i.test(t) || (bare && plain === 'rad') ? (v * 180) / Math.PI : v) : v?.toNumber?.('deg');
     return Number.isFinite(d) ? d : null;
   } catch { return null; }
 }
-
-/** How the angle box shows deg: exact at special angles, whole degrees when close, else one decimal. */
-export const degText = (deg: number, decimals = 1) => {
-  const half = 0.5 * 10 ** -decimals, hit = specialOf(deg), d = norm(deg);
-  if (hit !== undefined && Math.abs(d - hit) < half) return String(hit);
-  return Math.abs(d - Math.round(d)) < half ? String(Math.round(d) % 360) : d.toFixed(decimals);
-};
-
-/** An angle that may be negative (an inverse trig answer, like −30°), to `decimals` places, without the trailing zeros degText drops. */
-export const degSigned = (deg: number, decimals = 1) => {
-  const f = 10 ** decimals, r = Math.round(deg * f) / f;
-  return r === 0 ? '0' : String(r);
-};

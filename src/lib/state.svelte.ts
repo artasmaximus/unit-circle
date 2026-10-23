@@ -3,7 +3,9 @@ import { Tween } from 'svelte/motion';
 import { SPECIAL, norm, rad, snapDeg, specialOf, wrapPi } from './trig.ts';
 import { makeChoices, pickQ, qKey, trigTexAnswer, type Question, type Rich } from './quiz.ts';
 import { apply, atom, num, solvedForm, type Eq, type Op } from './algebra.ts';
+import { angleTex } from './angles.ts';
 import { inverse } from './inverse.svelte.ts';
+import { progress } from './progress.svelte.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
 
@@ -61,20 +63,24 @@ export const point = new Point();
 /** The snap angle the pointer is aiming at: its ring label is drawn by the hover ghost, so the ring skips it. */
 export const aim = $state<{ deg: number | null }>({ deg: null });
 
-export type Topic = 'circle' | 'inverse';
+export type Topic = 'circle' | 'inverse' | 'radians';
+/** How a topic is being used: Guide is the guided path (only some topics have one), Explore is free play, Practice is questions. */
+export type Mode = 'guide' | 'explore' | 'practice';
+/** The topics that have a Guide. */
+export const guideTopics: ReadonlySet<Topic> = new Set<Topic>(['radians']);
 export const ui = $state({
   /** The concept on the plane, picked in the tab bar. */
   topic: 'circle' as Topic,
-  mode: 'quiz' as 'explore' | 'quiz',
+  mode: 'practice' as Mode,
   mirror: false,
-  /** In a quiz, answers stay hidden until the question is answered. */
+  /** In Practice, answers stay hidden until the question is answered. */
   revealed: true,
   slopeOpen: false,
-  /** Snap points drawn larger: the angles found in a quiz. */
+  /** Snap points drawn larger: the angles found in Practice. */
   highlight: [] as number[],
 });
 /** Whether answers (colors, values, labels) may show. */
-export const revealed = () => ui.mode !== 'quiz' || ui.revealed;
+export const revealed = () => ui.mode !== 'practice' || ui.revealed;
 
 /* ---------- the pen motion ---------- */
 // One motion drives every reaction to a mode switch or a reveal: the segmented control's thumb and the
@@ -149,7 +155,7 @@ class Quiz {
     if (this.found.includes(hit)) { this.note = 'You already found that one. Look for the other angle.'; return; }
     this.found.push(hit); ui.highlight = [...this.found];
     if (this.found.length === q.sols.length) this.#finish(true);
-    else this.note = ['Yes, ', { m: `${hit}^\\circ` }, '. Now find the other angle.'];
+    else this.note = ['Yes, ', { m: angleTex(hit, progress.unit) }, '. Now find the other angle.'];
   }
   #finish(ok: boolean) {
     const q = this.cur!;
@@ -166,7 +172,7 @@ class Quiz {
 export const quiz = new Quiz();
 
 /** Topics other than the unit circle keep their state in their own modules, and register here what a mode or topic switch means for them. */
-export const topicHooks: Partial<Record<Topic, { mode(m: 'explore' | 'quiz'): void; enter(m: 'explore' | 'quiz'): void }>> = {};
+export const topicHooks: Partial<Record<Topic, { mode(m: Mode): void; enter(m: Mode): void }>> = {};
 
 export function setTopic(t: Topic) {
   if (ui.topic === t) return;
@@ -175,19 +181,22 @@ export function setTopic(t: Topic) {
   if (t === 'circle' && from === 'inverse' && ui.mode === 'explore') point.set(norm(inverse.angleTo), true);
   withPen(() => {
     ui.topic = t; ui.slopeOpen = false; ui.highlight = [];
+    // a topic without a Guide cannot be in Guide mode
+    if (ui.mode === 'guide' && !guideTopics.has(t)) ui.mode = 'explore';
     const hook = topicHooks[t];
     if (hook) return hook.enter(ui.mode);
-    if (ui.mode === 'quiz') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
+    if (ui.mode === 'practice') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
     else ui.revealed = true;
   });
 }
 
-export function setMode(m: 'explore' | 'quiz') {
+export function setMode(m: Mode) {
+  if (m === 'guide' && !guideTopics.has(ui.topic)) return;
   withPen(() => {
     ui.mode = m;
     const hook = topicHooks[ui.topic];
     if (hook) return hook.mode(m);
-    if (m === 'quiz') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
+    if (m === 'practice') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
     else { ui.highlight = []; ui.revealed = true; solver.close(); }
   });
 }
@@ -245,7 +254,7 @@ class Solver {
     if (hit === undefined) { this.note = 'Not there. Look where the value matches.'; return; }
     if (this.found.includes(hit)) { this.note = 'Already found. Look for the other angle.'; return; }
     this.found.push(hit); ui.highlight = [...this.found];
-    this.note = this.done ? '' : ["Yes, ", { m: `${hit}^\\circ` }, ". One more."];
+    this.note = this.done ? '' : ["Yes, ", { m: angleTex(hit, progress.unit) }, ". One more."];
   }
 }
 export const solver = new Solver();

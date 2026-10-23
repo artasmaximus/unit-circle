@@ -2,14 +2,17 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import { invQuiz as quiz } from '../lib/inverseQuiz.svelte.ts';
-  import { NOUN, answerTex, explain, hintMsg, hintTip, qTex, task } from '../lib/inverseQuiz.ts';
+  import { angleTex } from '../lib/angles.ts';
+  import { progress } from '../lib/progress.svelte.ts';
+  import { NOUN, answerOf, domainTex, explain, hintMsg, hintTip, qTex, task } from '../lib/inverseQuiz.ts';
   import Tex from '../ui/Tex.svelte';
   import Rich from '../ui/Rich.svelte';
 
   let { trailing }: { trailing?: Snippet } = $props();
   let showMissed = $state(false);
   const q = $derived(quiz.cur);
-  const right = $derived(q && q.t !== 3 ? answerTex(q) : null);
+  const unit = $derived(progress.unit);
+  const right = $derived(q && q.t !== 3 ? answerOf(q) : null);
   const named = $derived(q?.t === 3 ? `Set the ${NOUN[q.fn]}` : 'Find the angle');
 </script>
 
@@ -21,7 +24,7 @@
 }} />
 
 {#if q}
-  <section class="quiz" aria-label="Inverse trig quiz">
+  <section class="quiz" aria-label="Inverse trig practice">
     <div class="hud">
       <span class="pill" style="--c:var(--ok)">Streak <b>{quiz.streak}</b></span>
       <span class="pill" style="--c:var(--slope)">Best <b>{quiz.best}</b></span>
@@ -29,21 +32,21 @@
       {@render trailing?.()}
     </div>
     {#if showMissed && quiz.missed.length}
-      <div class="missed">{#each quiz.missed as m}<button onclick={() => { quiz.start(m); showMissed = false; }}><Tex latex={qTex(m)} /></button>{/each}</div>
+      <div class="missed">{#each quiz.missed as m}<button onclick={() => { quiz.start(m); showMissed = false; }}><Tex latex={qTex(m, unit)} /></button>{/each}</div>
     {/if}
     <div class="qa" class:split={q.t !== 3}>
       <div class="ask">
         <div>
           <div class="label">{named}</div>
-          <div class="prompt"><Tex latex={q.t === 3 ? qTex(q) : `${qTex(q)}=\\ ?`} /></div>
-          {#if q.t === 2}<div class="domain"><Tex latex={q.dom.tex} /></div>{/if}
+          <div class="prompt"><Tex latex={q.t === 3 ? qTex(q, unit) : `${qTex(q, unit)}=\\ ?`} /></div>
+          {#if q.t === 2}<div class="domain"><Tex latex={domainTex(q.dom, unit)} /></div>{/if}
         </div>
-        <p class="task"><Rich parts={task(q)} /></p>
+        <p class="task"><Rich parts={task(q, unit)} /></p>
       </div>
       {#if q.t !== 3}
         <div class="choices">
           {#each quiz.choices as c, i}
-            <button disabled={quiz.answered} class:ok={quiz.answered && c === right} class:bad={quiz.answered && i === quiz.picked && c !== right} onclick={() => quiz.answer(i)}><Tex latex={c} /></button>
+            <button disabled={quiz.answered} class:ok={quiz.answered && c === right} class:bad={quiz.answered && i === quiz.picked && c !== right} onclick={() => quiz.answer(i)}><Tex latex={angleTex(c, unit)} /></button>
           {/each}
         </div>
       {/if}
@@ -51,14 +54,14 @@
     <div class="actions">
       {#if !quiz.answered}
         {#if q.t === 3}<button class="primary" onclick={() => quiz.check()}>Check</button>{/if}
-        {#if quiz.hint}<p class="hint"><Rich parts={hintMsg(q)} /></p>
+        {#if quiz.hint}<p class="hint"><Rich parts={hintMsg(q, unit)} /></p>
         {:else}<button data-tip={hintTip(q)} onclick={() => quiz.useHint()}>Hint</button>{/if}
       {:else}
         <span class="verdict" class:ok={quiz.ok} class:bad={!quiz.ok}>{quiz.ok ? (quiz.hint ? 'Correct, with a hint (streak unchanged)' : 'Correct') : 'Not quite'}</span>
         <button class="primary next" onclick={() => quiz.start()}>Next</button>
       {/if}
     </div>
-    {#if quiz.answered}<div class="explain">{#each explain(q) as line}<p><Rich parts={line} /></p>{/each}</div>{/if}
+    {#if quiz.answered}<div class="explain">{#each explain(q, unit) as line}<p><Rich parts={line} /></p>{/each}</div>{/if}
   </section>
 {/if}
 

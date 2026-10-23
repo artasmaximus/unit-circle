@@ -6,14 +6,18 @@
   import { input } from '../lib/tuning.ts';
   import { aim, point, quiz, revealed, ui } from '../lib/state.svelte.ts';
   import { inverse } from '../lib/inverse.svelte.ts';
+  import { snapValue } from '../lib/inverse.ts';
   import { buildScene } from '../lib/scene.ts';
-  import { SPECIAL, colorOf, degText, rad, snapDeg } from '../lib/trig.ts';
+  import { angleTex } from '../lib/angles.ts';
+  import { progress } from '../lib/progress.svelte.ts';
+  import { SPECIAL, colorOf, norm, rad, snapDeg } from '../lib/trig.ts';
   import { texRect } from '../lib/tex.svelte.ts';
   import Grid from './Grid.svelte';
   import RingLayer from './RingLayer.svelte';
   import CircleLayer from './CircleLayer.svelte';
   import Chips from './Chips.svelte';
   import InverseLayer from './InverseLayer.svelte';
+  import RadiansLayer from './RadiansLayer.svelte';
 
   /** How close (px) to the circle a press must be to grab the point. */
   const BAND = input.grabBand;
@@ -21,9 +25,9 @@
   const scene = $derived(buildScene({
     ang: point.ang, hit: point.hit, dotR: point.dotR, tail: point.tail,
     revealed: revealed(), mirror: ui.mirror,
-    mirrorOnly: ui.mode === 'quiz' && quiz.cur ? quiz.cur.fn : null,
-    showCoords: revealed() || (ui.mode === 'quiz' && quiz.hint),
-    slopeOpen: ui.slopeOpen, k: camera.k, boost: camera.textBoost, labelBoost: camera.labelBoost, stroke: camera.stroke, bounds: camera.freeWorld, memo,
+    mirrorOnly: ui.mode === 'practice' && quiz.cur ? quiz.cur.fn : null,
+    showCoords: revealed() || (ui.mode === 'practice' && quiz.hint),
+    slopeOpen: ui.slopeOpen, k: camera.k, boost: camera.textBoost, labelBoost: camera.labelBoost, stroke: camera.stroke, unit: progress.unit, decimals: camera.thetaDecimals, bounds: camera.freeWorld, memo,
   }));
 
   let dragging = $state(false), panning = $state(false);
@@ -48,6 +52,27 @@
     const dx = Math.abs(e.clientX - camera.ox), dy = Math.abs(e.clientY - camera.oy), reach = S * camera.k + BAND;
     return inverse.fn === 'atan' ? nearRing(e) : inverse.fn === 'asin' ? dx <= BAND && dy <= reach : dy <= BAND && dx <= reach;
   };
+  // a free probe (a composition question) can be moved by the ring, the y-axis or the x-axis: a press takes whichever is closest
+  type ProbeBy = 'ring' | 'y' | 'x';
+  const probing = $derived(inInverse && inverse.probe !== null);
+  const probeBy = (e: { clientX: number; clientY: number }): ProbeBy | null => {
+    const dx = Math.abs(e.clientX - camera.ox), dy = Math.abs(e.clientY - camera.oy), reach = S * camera.k + BAND;
+    const c: [ProbeBy, number][] = [];
+    const dr = Math.abs(Math.hypot(dx, dy) - S * camera.k);
+    if (dr <= BAND) c.push(['ring', dr]);
+    if (dx <= BAND && dy <= reach) c.push(['y', dx]);
+    if (dy <= BAND && dx <= reach) c.push(['x', dy]);
+    return c.length ? c.sort((a, b) => a[1] - b[1])[0][0] : null;
+  };
+  let probeHold: ProbeBy = 'ring', hoverProbe = $state(false);
+  const probeAngle = (by: ProbeBy, e: { clientX: number; clientY: number }) => {
+    const w = camera.toWorld(e.clientX, e.clientY), cur = inverse.probe ?? 0, r = (v: number) => (v * Math.PI) / 180;
+    if (by === 'ring') return snapDeg(grain((Math.atan2(-w.y, w.x) * 180) / Math.PI), snapRange());
+    const v = snapValue('asin', Math.max(-1, Math.min(1, by === 'y' ? -w.y / S : w.x / S)), invSnap().value);
+    // a value sits at two angles; keep to the side the probe is already on
+    if (by === 'y') { const a = (Math.asin(v) * 180) / Math.PI; return Math.cos(r(cur)) >= 0 ? a : 180 - a; }
+    const a = (Math.acos(v) * 180) / Math.PI; return Math.sin(r(cur)) >= 0 ? a : -a;
+  };
   const invSnap = () => ({ value: 0.03 / Math.max(1, camera.zoom), angle: snapRange() });
   const invPos = (e: { clientX: number; clientY: number }) => { const w = camera.toWorld(e.clientX, e.clientY); return inverse.angleAt(w.x, w.y, S, invSnap(), grain); };
   const touches = new Map<number, { x: number; y: number }>();
@@ -58,7 +83,8 @@
     touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (touches.size === 2) { dragging = false; panning = true; const p = pinchState(); pinch = p.d; last = p; return; }
     last = { x: e.clientX, y: e.clientY };
-    if (nearControl(e)) { dragging = true; inverse.dragging = true; aimAt(e); } else panning = true;
+    if (probing) { const by = probeBy(e); if (by) { probeHold = by; dragging = true; inverse.moveProbe(probeAngle(by, e), 90); } else panning = true; }
+    else if (nearControl(e)) { dragging = true; inverse.dragging = true; aimAt(e); } else panning = true;
   };
   const move = (e: PointerEvent) => {
     if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -67,10 +93,12 @@
       camera.panBy(p.x - last.x, p.y - last.y); camera.zoomAt(p.x, p.y, p.d / pinch);
       pinch = p.d; last = p; return;
     }
-    if (dragging) aimAt(e);
+    if (dragging && probing) inverse.moveProbe(probeAngle(probeHold, e), 90);
+    else if (dragging) aimAt(e);
     else if (panning) { camera.panBy(e.clientX - last.x, e.clientY - last.y); last = { x: e.clientX, y: e.clientY }; }
     else if (e.pointerType === 'mouse') {
-      if (inInverse) inverse.ghost = nearControl(e) ? invPos(e) : null;
+      if (probing) hoverProbe = probeBy(e) !== null;
+      else if (inInverse) inverse.ghost = nearControl(e) ? invPos(e) : null;
       else ghost = nearRing(e) ? ghostAt(e) : null;
     }
   };
@@ -90,7 +118,7 @@
   // the ghost sits exactly where the pointer aims; its label rides out to the ring label's own spot on a snap angle, and takes that label's place there
   const ghostDraw = $derived.by(() => {
     if (ghost === null || dragging || Math.abs(ghost - point.deg) < 0.5) return null;
-    const a = rad(ghost), x = S * Math.cos(a), y = -S * Math.sin(a), latex = `${degText(ghost, camera.thetaDecimals)}^\\circ`;
+    const a = rad(ghost), x = S * Math.cos(a), y = -S * Math.sin(a), latex = angleTex(norm(ghost), progress.unit, camera.thetaDecimals);
     const special = SPECIAL.includes(ghost), size = 10 * camera.labelBoost;
     const rect = texRect(latex, size, LABEL_R * Math.cos(a), -LABEL_R * Math.sin(a));
     const color = special && revealed() ? colorOf(ghost) : 'var(--muted)';
@@ -106,17 +134,19 @@
 
 <svg class="plane" style="--sw:{camera.boost}; --wk:{camera.stroke}" class:dragging width={camera.vw} height={camera.vh} role="slider" aria-label="Angle θ" aria-valuemin={0} aria-valuemax={360}
   aria-valuenow={Math.round(point.deg)} tabindex="0"
-  bind:this={svg} class:panning class:overRing={inInverse ? inverse.ghost !== null : ghost !== null}
-  onpointerdown={down} onpointermove={move} onpointerleave={() => { ghost = null; inverse.ghost = null; }} onpointerup={up} onpointercancel={up}>
+  bind:this={svg} class:panning class:overRing={probing ? hoverProbe : inInverse ? inverse.ghost !== null : ghost !== null}
+  onpointerdown={down} onpointermove={move} onpointerleave={() => { ghost = null; inverse.ghost = null; hoverProbe = false; }} onpointerup={up} onpointercancel={up}>
   <g transform="translate({camera.ox} {camera.oy}) scale({camera.k})">
     <Grid />
     <!-- every topic's layer is always mounted: when a topic is left its marks play their own exits, and the next topic's marks enter -->
+    <RadiansLayer under />
     <RingLayer />
     <InverseLayer />
+    <RadiansLayer />
     <CircleLayer {scene} ghost={ghostDraw} />
   </g>
 </svg>
-{#if !inInverse}<div in:fade={{ duration: 200 }} out:fade={{ duration: 160 }}><Chips {scene} /></div>{/if}
+{#if ui.topic === 'circle'}<div in:fade={{ duration: 200 }} out:fade={{ duration: 160 }}><Chips {scene} /></div>{/if}
 
 <style>
   .plane { position: fixed; inset: 0; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }

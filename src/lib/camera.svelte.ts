@@ -42,11 +42,16 @@ class Camera {
   });
   /** World-unit box the drawing needs around the circle (ring labels, chips). Phones have less to spare, and the chips
    *  shuffle to wherever they fit, so the circle may take more of the screen there. */
-  need = $derived(this.wide ? T.need : T.needNarrow);
+  /** A topic that draws beyond the circle asks for room: `extra` more world units of height to fit in, and `dy` to slide the circle up by (so the extra
+   *  sits below it). It glides, so the circle makes way when the extra drawing arrives and takes its place back when it leaves. */
+  #frame = new Tween({ dy: 0, extra: 0 }, { duration: 500, easing: cubicOut });
+  get frame() { return this.#frame.current; }
+  set frame(v: { dy: number; extra: number }) { this.#frame.set(v, reduce ? { duration: 0 } : undefined); }
+  need = $derived.by(() => { const n = this.wide ? T.need : T.needNarrow; return { w: n.w, h: n.h + this.#frame.current.extra }; });
   k = $derived(Math.min(T.fitMax, Math.max(T.fitMin, Math.min(this.free.w / this.need.w, this.free.h / this.need.h))) * this.zoom);
   /** On wide screens the circle sits a little left of center, so the controls in the top right have room. */
   ox = $derived(this.free.x + this.free.w / 2 + this.pan.x + (this.wide ? T.wideShift : 0));
-  oy = $derived(this.free.y + this.free.h / 2 + this.pan.y);
+  oy = $derived(this.free.y + this.free.h / 2 + this.pan.y - this.#frame.current.dy * this.k);
 
   /** Zoom by `f` about a screen point, so the world under it stays put. */
   zoomAt = (px: number, py: number, f: number) => {

@@ -7,7 +7,8 @@
   import { inverse } from '../lib/inverse.svelte.ts';
   import { INV_NAME, PARTNER, RANGE, otherAngle, valueTex, type InvFn } from '../lib/inverse.ts';
   import { camera } from '../lib/camera.svelte.ts';
-  import { degSigned } from '../lib/trig.ts';
+  import { angleTex, trigOf } from '../lib/angles.ts';
+  import { progress } from '../lib/progress.svelte.ts';
   import Segmented from '../ui/Segmented.svelte';
   import Tex from '../ui/Tex.svelte';
   import InfoTip from '../ui/InfoTip.svelte';
@@ -22,10 +23,11 @@
   const fn = $derived(inverse.fn);
   const n = $derived(`\\${INV_NAME[fn]}`), p = $derived(`\\${PARTNER[fn]}`);
   const v = $derived(valueTex(fn, inverse.valueTo));
-  const deg = (a: number) => `${degSigned(a, camera.thetaDecimals)}^\\circ`;
+  const deg = (a: number) => angleTex(a, progress.unit, camera.thetaDecimals);
+  const trig = (a: number) => trigOf(p, a, progress.unit, camera.thetaDecimals);
   const range = $derived(RANGE[fn]);
   const dom = $derived(fn === 'atan' ? '(-\\infty,\\ \\infty)' : '[-1,\\ 1]');
-  const rng = $derived(`${range.open ? '(' : '['}${range.lo}^\\circ,\\ ${range.hi}^\\circ${range.open ? ')' : ']'}`);
+  const rng = $derived(`${range.open ? '(' : '['}${angleTex(range.lo, progress.unit)},\\ ${angleTex(range.hi, progress.unit)}${range.open ? ')' : ']'}`);
 </script>
 
 <section class="inv" style:--c={HUE[fn]}>
@@ -40,7 +42,7 @@
     {:else}
       <div class="big">
         <Tex latex={`${n}\\left(${v}\\right)=${deg(inverse.angleTo)}`} />
-        <InfoTip label="Check it the other way round"><Tex latex={`${p}\\ ${deg(inverse.angleTo)}=${v}`} /></InfoTip>
+        <InfoTip label="Check it the other way round"><Tex latex={`${trig(inverse.angleTo)}=${v}`} /></InfoTip>
       </div>
     {/if}
   </div>
@@ -52,7 +54,7 @@
       Since <Tex latex={`${p}()`} /> repeats, the range of its inverse <Tex latex={`${n}()`} /> is only {fn === 'acos' ? 'the upper half' : 'the right half'} of the circle,
       where every possible <Tex latex={`${p}()`} /> value ({fn === 'asin' ? 'y-value' : fn === 'acos' ? 'x-value' : 'AKA slope'}) appears once.
     </p>
-    {#if !inverse.poleTo}<p class="note other"><Tex latex={`${p}\\ ${deg(otherAngle(fn, inverse.angleTo))}=${v}`} /> too, but <Tex latex={deg(otherAngle(fn, inverse.angleTo))} /> is outside the range, so <Tex latex={`${n}()`} /> never gives it.</p>{/if}
+    {#if !inverse.poleTo}<p class="note other"><Tex latex={`${trig(otherAngle(fn, inverse.angleTo))}=${v}`} /> too, but <Tex latex={deg(otherAngle(fn, inverse.angleTo))} /> is outside the range, so <Tex latex={`${n}()`} /> never gives it.</p>{/if}
   </div>
 </section>
 

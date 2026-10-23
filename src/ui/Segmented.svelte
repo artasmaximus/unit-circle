@@ -2,8 +2,12 @@
      animation: it follows `progress` (0 → 1, may lean below 0 and overshoot past 1), so it can move in
      lockstep with anything else driven by the same value. -->
 <script lang="ts" generics="T extends string">
-  let { options, value, onchange, label, progress = 1 }: {
-    options: { value: T; label: string }[]; value: T; onchange: (v: T) => void; label: string; progress?: number;
+  import type { Component } from 'svelte';
+  import Lock from '@lucide/svelte/icons/lock';
+  import Check from '@lucide/svelte/icons/check';
+  /** `icon` puts a glyph with each label; `stacked` lays it above the label, for a bar of destinations rather than a switch. `done` adds a small check mark. */
+  let { options, value, onchange, label, progress = 1, stacked = false }: {
+    options: { value: T; label: string; icon?: Component<{ size?: number }>; locked?: boolean; done?: boolean; tip?: string }[]; value: T; onchange: (v: T) => void; label: string; progress?: number; stacked?: boolean;
   } = $props();
 
   let root = $state<HTMLDivElement>();
@@ -25,11 +29,17 @@
   const w = $derived(from && to ? from.w + (to.w - from.w) * Math.min(1, Math.max(0, progress)) : 0);
 </script>
 
-<div class="seg" role="group" aria-label={label} bind:this={root} class:pressed
+<div class="seg" role="group" aria-label={label} bind:this={root} class:pressed class:stacked
   onpointerdown={() => (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)}>
   <div class="thumb" aria-hidden="true" style:transform="translateX({x}px)" style:width="{w}px"></div>
   {#each options as o (o.value)}
-    <button data-v={o.value} aria-pressed={value === o.value} onclick={() => value !== o.value && onchange(o.value)}>{o.label}</button>
+    {@const Icon = o.icon}
+    <!-- a locked option stays hoverable (so it can say how to unlock it) but does nothing -->
+    <button data-v={o.value} aria-pressed={value === o.value} aria-disabled={o.locked ? 'true' : null} data-tip={o.tip}
+      onclick={() => !o.locked && value !== o.value && onchange(o.value)}>
+      {#if Icon}<Icon size={18} />{/if}{#if o.locked}<Lock size={11} />{/if}{#if stacked}<span>{o.label}</span>{:else}{o.label}{/if}
+      {#if o.done}<span class="done" title="Completed"><Check size={9} strokeWidth={3.5} /></span>{/if}
+    </button>
   {/each}
 </div>
 
@@ -46,4 +56,13 @@
   }
   button[aria-pressed='true'] { background: transparent; color: var(--bg); }
   button:hover { border-color: transparent; }
+  button[aria-disabled='true'] { opacity: 0.55; cursor: not-allowed; display: inline-flex; align-items: center; gap: 4px; }
+  /* a bar of destinations: icon over a tiny label, the inactive ones dimmed until hovered */
+  .stacked { padding: 4px; border-radius: 14px; }
+  .stacked .thumb { top: 4px; bottom: 4px; border-radius: 10px; }
+  .stacked button { display: grid; justify-items: center; gap: 3px; min-width: 76px; padding: 6px 10px 5px; border-radius: 10px; font-size: 0.62rem; letter-spacing: 0.02em; white-space: nowrap; }
+  /* a small badge in the corner of a finished destination */
+  .done { position: absolute; top: 3px; right: 6px; display: grid; place-items: center; width: 13px; height: 13px; border-radius: 50%; background: var(--rad); color: #fff; pointer-events: none; }
+  .stacked button:not([aria-pressed='true']) { color: var(--muted); }
+  .stacked button:not([aria-pressed='true']):hover { color: var(--fg); }
 </style>

@@ -43,6 +43,21 @@ class Inverse {
   dragging = $state(false);
   /** Whether the shaded principal range is drawn (a quiz holds it back until the hint or the answer). */
   showBand = $state(true);
+  /** A free point on the circle for a quiz that asks you to work something out (arcsin(sin θ)): you can move it by the ring, the
+   *  y-axis or the x-axis, and read its angle, y-value and x-value. While it is there, the function's own control stays out of the way. */
+  probe = $state<number | null>(null);
+  #probe = new Tween(0, { duration: 260, easing: cubicOut });
+  probeAngle = $derived(this.#probe.current);
+  /** Put the probe at an angle straight away. */
+  startProbe(a: number) { this.probe = a; this.#probe.set(a, { duration: 0 }); }
+  stopProbe() { this.probe = null; }
+  /** Slide the probe to an angle, going the short way round. */
+  moveProbe(a: number, ms?: number) {
+    if (this.probe === null) return;
+    const to = this.probe + ((((a - this.probe) % 360) + 540) % 360) - 180;
+    this.probe = to;
+    this.#probe.set(to, { duration: reduce ? 0 : ms ?? 140 });
+  }
   /** The control cannot be moved (a quiz that sets the value itself). */
   locked = $state(false);
   /** The stretch of angles a composition question draws θ from, marked on the ring. */
@@ -54,7 +69,8 @@ class Inverse {
     const out: number[] = [];
     if (this.shown && this.showOther) out.push(this.other);
     if (this.given !== null) out.push(this.given);
-    if (this.ghost !== null && !this.dragging) out.push(this.ghost, otherAngle(this.fn, this.ghost));
+    // the preview is drawn only where it would change something, so it only claims labels then
+    if (this.ghost !== null && !this.dragging && Math.abs(this.ghost - this.target) > 1e-3) out.push(this.ghost, otherAngle(this.fn, this.ghost));
     return out.map((a) => norm(a));
   });
   name = $derived(INV_NAME[this.fn]);

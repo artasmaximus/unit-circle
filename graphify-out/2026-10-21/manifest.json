@@ -1,0 +1,182 @@
+{
+  "package.json": {
+    "mtime": 1792577354.9846175,
+    "seen": 1792578356.233315,
+    "ast_hash": "02bd56c2a63899bd20a7f4dfc2178c58",
+    "semantic_hash": "02bd56c2a63899bd20a7f4dfc2178c58"
+  },
+  "scripts/artifact.mjs": {
+    "mtime": 1792577731.7073534,
+    "seen": 1792578356.2333179,
+    "ast_hash": "38640f8ea94ca76f953a6636f48c9282",
+    "semantic_hash": "38640f8ea94ca76f953a6636f48c9282"
+  },
+  "src/App.svelte": {
+    "mtime": 1792577731.699658,
+    "seen": 1792578356.23332,
+    "ast_hash": "ccb87f19fcd7e8682a6a47c785bc54bd",
+    "semantic_hash": "ccb87f19fcd7e8682a6a47c785bc54bd"
+  },
+  "src/lib/algebra.ts": {
+    "mtime": 1792577392.9350376,
+    "seen": 1792578356.23332,
+    "ast_hash": "3555ea76172b6ef6d87e196e197c09c1",
+    "semantic_hash": "3555ea76172b6ef6d87e196e197c09c1"
+  },
+  "src/lib/camera.svelte.ts": {
+    "mtime": 1792577763.537023,
+    "seen": 1792578356.233321,
+    "ast_hash": "c9e5b29fece19f06ecd808bf0be348e5",
+    "semantic_hash": "c9e5b29fece19f06ecd808bf0be348e5"
+  },
+  "src/lib/logic.test.ts": {
+    "mtime": 1792577425.5319686,
+    "seen": 1792578356.233322,
+    "ast_hash": "d0627ce036ccc1b84ecb9188bdf669d9",
+    "semantic_hash": "d0627ce036ccc1b84ecb9188bdf669d9"
+  },
+  "src/lib/mathjax-config.ts": {
+    "mtime": 1792577482.5302167,
+    "seen": 1792578356.233323,
+    "ast_hash": "87d461be7998db16616a8b453448a3d3",
+    "semantic_hash": "87d461be7998db16616a8b453448a3d3"
+  },
+  "src/lib/quiz.ts": {
+    "mtime": 1792577814.8567715,
+    "seen": 1792578356.233323,
+    "ast_hash": "2cedd13dac602424ab33f978b210cdd2",
+    "semantic_hash": "2cedd13dac602424ab33f978b210cdd2"
+  },
+  "src/lib/scene.ts": {
+    "mtime": 1792577611.2152207,
+    "seen": 1792578356.233324,
+    "ast_hash": "1b2d1dc1b712175cf8d6647cb53ecbad",
+    "semantic_hash": "1b2d1dc1b712175cf8d6647cb53ecbad"
+  },
+  "src/lib/state.svelte.ts": {
+    "mtime": 1792577509.5414789,
+    "seen": 1792578356.233325,
+    "ast_hash": "74986b8ca95697bf198b71568ecfaf16",
+    "semantic_hash": "74986b8ca95697bf198b71568ecfaf16"
+  },
+  "src/lib/tex.svelte.ts": {
+    "mtime": 1792577482.5336866,
+    "seen": 1792578356.2333262,
+    "ast_hash": "5efe6462bdc68e1fd11e03010ced2e70",
+    "semantic_hash": "5efe6462bdc68e1fd11e03010ced2e70"
+  },
+  "src/lib/trig.ts": {
+    "mtime": 1792577392.932099,
+    "seen": 1792578356.2333262,
+    "ast_hash": "223887c4a48c14b306985d55d1090b88",
+    "semantic_hash": "223887c4a48c14b306985d55d1090b88"
+  },
+  "src/main.ts": {
+    "mtime": 1792577731.701969,
+    "seen": 1792578356.2333272,
+    "ast_hash": "b80e8e5cf8c9a434d02d05a7544326bb",
+    "semantic_hash": "b80e8e5cf8c9a434d02d05a7544326bb"
+  },
+  "src/panel/Panel.svelte": {
+    "mtime": 1792577814.857274,
+    "seen": 1792578356.233328,
+    "ast_hash": "309c279a5b3d57ceacd2a75ca50a3cc9",
+    "semantic_hash": "309c279a5b3d57ceacd2a75ca50a3cc9"
+  },
+  "src/panel/Quiz.svelte": {
+    "mtime": 1792577814.857031,
+    "seen": 1792578356.2333288,
+    "ast_hash": "5a935b4e36ee61311ae3fbfc0bc48727",
+    "semantic_hash": "5a935b4e36ee61311ae3fbfc0bc48727"
+  },
+  "src/panel/Reciprocals.svelte": {
+    "mtime": 1792577692.7770343,
+    "seen": 1792578356.2333288,
+    "ast_hash": "ab52c8c0973d409c608cbc20553a976c",
+    "semantic_hash": "ab52c8c0973d409c608cbc20553a976c"
+  },
+  "src/panel/Workshop.svelte": {
+    "mtime": 1792577731.696769,
+    "seen": 1792578356.233331,
+    "ast_hash": "a1b0ab8138290528e1139e582ac57db1",
+    "semantic_hash": "a1b0ab8138290528e1139e582ac57db1"
+  },
+  "src/plane/Chips.svelte": {
+    "mtime": 1792577651.494995,
+    "seen": 1792578356.233331,
+    "ast_hash": "ee56c2e887c902e4faf7c8fc2cae3a2c",
+    "semantic_hash": "ee56c2e887c902e4faf7c8fc2cae3a2c"
+  },
+  "src/plane/Figure.svelte": {
+    "mtime": 1792577651.4919205,
+    "seen": 1792578356.233332,
+    "ast_hash": "99b349ea25973b87f589db7b46c88782",
+    "semantic_hash": "99b349ea25973b87f589db7b46c88782"
+  },
+  "src/plane/Grid.svelte": {
+    "mtime": 1792577651.4855578,
+    "seen": 1792578356.233333,
+    "ast_hash": "bb48fbefb377e3be23b4055da71314a6",
+    "semantic_hash": "bb48fbefb377e3be23b4055da71314a6"
+  },
+  "src/plane/Plane.svelte": {
+    "mtime": 1792577845.3433602,
+    "seen": 1792578356.233333,
+    "ast_hash": "b5a0393e00cfa54847748863e80d9db2",
+    "semantic_hash": "b5a0393e00cfa54847748863e80d9db2"
+  },
+  "src/plane/Ring.svelte": {
+    "mtime": 1792577651.4889045,
+    "seen": 1792578356.233334,
+    "ast_hash": "9f0f38de9d83b03e19f9fcaa6082fbe3",
+    "semantic_hash": "9f0f38de9d83b03e19f9fcaa6082fbe3"
+  },
+  "src/ui/Rich.svelte": {
+    "mtime": 1792577611.231025,
+    "seen": 1792578356.233335,
+    "ast_hash": "bc9a996fcc36dafa408448869648cb91",
+    "semantic_hash": "bc9a996fcc36dafa408448869648cb91"
+  },
+  "src/ui/SvgTex.svelte": {
+    "mtime": 1792577611.2277567,
+    "seen": 1792578356.233335,
+    "ast_hash": "6d7d7e96f6f93616db284b5f838cf8fa",
+    "semantic_hash": "6d7d7e96f6f93616db284b5f838cf8fa"
+  },
+  "src/ui/Tex.svelte": {
+    "mtime": 1792577611.224593,
+    "seen": 1792578356.233336,
+    "ast_hash": "c1301c6d2427512c2d4cf1ce01907329",
+    "semantic_hash": "c1301c6d2427512c2d4cf1ce01907329"
+  },
+  "svelte.config.js": {
+    "mtime": 1792577355.0370982,
+    "seen": 1792578356.2333372,
+    "ast_hash": "a668b3283be44f2ffc16c3aa80f422e0",
+    "semantic_hash": "a668b3283be44f2ffc16c3aa80f422e0"
+  },
+  "tsconfig.json": {
+    "mtime": 1792577739.6220326,
+    "seen": 1792578356.2333372,
+    "ast_hash": "8a7c92cde8e4db3736172eb7f9aaa8ca",
+    "semantic_hash": "8a7c92cde8e4db3736172eb7f9aaa8ca"
+  },
+  "vite.config.ts": {
+    "mtime": 1792577355.0349371,
+    "seen": 1792578356.233338,
+    "ast_hash": "da78d25c93b5ddbde12c7d14430dacd3",
+    "semantic_hash": "da78d25c93b5ddbde12c7d14430dacd3"
+  },
+  "README.md": {
+    "mtime": 1792577889.7724519,
+    "seen": 1792579021.372973,
+    "ast_hash": "c5646ae09fc35abe82d29dded1243bee",
+    "semantic_hash": "c5646ae09fc35abe82d29dded1243bee"
+  },
+  "index.html": {
+    "mtime": 1792577355.0438116,
+    "seen": 1792579021.3729742,
+    "ast_hash": "15aa7763ad740f5822a582b6ddb7dac1",
+    "semantic_hash": "15aa7763ad740f5822a582b6ddb7dac1"
+  }
+}

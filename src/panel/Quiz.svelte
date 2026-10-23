@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { progress } from '../lib/progress.svelte.ts';
   import { quiz } from '../lib/state.svelte.ts';
   import { explain, hintMsg, hintTip, qTex, task, trigTexAnswer } from '../lib/quiz.ts';
   import Tex from '../ui/Tex.svelte';
@@ -8,6 +9,7 @@
   let { trailing }: { trailing?: Snippet } = $props();
 
   let showMissed = $state(false);
+  const unit = $derived(progress.unit);
   const q = $derived(quiz.cur);
   const right = $derived(q?.t === 1 ? trigTexAnswer(q) : null);
 </script>
@@ -20,7 +22,7 @@
 }} />
 
 {#if q}
-  <section class="quiz" aria-label="Quiz">
+  <section class="quiz" aria-label="Practice">
     <div class="hud">
       <span class="pill" style="--c:var(--ok)">Streak <b>{quiz.streak}</b></span>
       <span class="pill" style="--c:var(--slope)">Best <b>{quiz.best}</b></span>
@@ -28,15 +30,15 @@
       {@render trailing?.()}
     </div>
     {#if showMissed && quiz.missed.length}
-      <div class="missed">{#each quiz.missed as m}<button onclick={() => { quiz.start(m); showMissed = false; }}><Tex latex={qTex(m)} /></button>{/each}</div>
+      <div class="missed">{#each quiz.missed as m}<button onclick={() => { quiz.start(m); showMissed = false; }}><Tex latex={qTex(m, unit)} /></button>{/each}</div>
     {/if}
     <div class="qa" class:split={q.t === 1}>
     <div class="ask">
       <div>
       <div class="label">{q.t === 1 ? 'Find the value' : `Find both angles${quiz.found.length ? ` · ${quiz.found.length} of 2 found` : ''}`}</div>
-      <div class="prompt"><Tex latex={q.t === 1 ? `${qTex(q)}=\\ ?` : qTex(q)} /></div>
+      <div class="prompt"><Tex latex={q.t === 1 ? `${qTex(q, unit)}=\\ ?` : qTex(q, unit)} /></div>
     </div>
-    <p class="task"><Rich parts={task(q)} /></p>
+    <p class="task"><Rich parts={task(q, unit)} /></p>
     </div>
     {#if q.t === 1}
       <div class="choices">
@@ -49,15 +51,15 @@
     <div class="actions">
       {#if !quiz.answered}
         {#if q.t === 2}<button class="primary" onclick={() => quiz.check()}>Check</button>{/if}
-        {#if quiz.hint}<p class="hint"><Rich parts={hintMsg(q)} /></p>
-        {:else}<button data-tip={hintTip(q)} onclick={() => quiz.useHint()}>Hint</button>{/if}
+        {#if quiz.hint}<p class="hint"><Rich parts={hintMsg(q, unit)} /></p>
+        {:else}<button data-tip={hintTip(q, unit)} onclick={() => quiz.useHint()}>Hint</button>{/if}
         {#if quiz.note}<p class="hint"><Rich parts={quiz.note} /></p>{/if}
       {:else}
         <span class="verdict" class:ok={quiz.ok} class:bad={!quiz.ok}>{quiz.ok ? (quiz.hint ? 'Correct, with a hint (streak unchanged)' : 'Correct') : 'Not quite'}</span>
         <button class="primary next" onclick={() => quiz.start()}>Next</button>
       {/if}
     </div>
-    {#if quiz.answered}<div class="explain">{#each explain(q) as line}<p><Rich parts={line} /></p>{/each}</div>{/if}
+    {#if quiz.answered}<div class="explain">{#each explain(q, unit) as line}<p><Rich parts={line} /></p>{/each}</div>{/if}
   </section>
 {/if}
 

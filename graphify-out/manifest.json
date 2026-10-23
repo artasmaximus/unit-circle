@@ -1,0 +1,404 @@
+{
+  "package.json": {
+    "mtime": 1792585942.8985476,
+    "seen": 1792650917.548365,
+    "ast_hash": "80002e800fa31cfc8d31f27c8a1a781a",
+    "semantic_hash": ""
+  },
+  "scripts/artifact.mjs": {
+    "mtime": 1792577731.7073534,
+    "seen": 1792578356.2333179,
+    "ast_hash": "38640f8ea94ca76f953a6636f48c9282",
+    "semantic_hash": "38640f8ea94ca76f953a6636f48c9282"
+  },
+  "src/App.svelte": {
+    "mtime": 1792768321.5756528,
+    "seen": 1792768448.2179148,
+    "ast_hash": "c73ce36ba8a0606495d0c0f0db8e5b77",
+    "semantic_hash": ""
+  },
+  "src/lib/algebra.ts": {
+    "mtime": 1792642955.7345388,
+    "seen": 1792650917.5483708,
+    "ast_hash": "918624a9ce3d8056b3e2cc4393a0d74c",
+    "semantic_hash": ""
+  },
+  "src/lib/camera.svelte.ts": {
+    "mtime": 1792769630.9940493,
+    "seen": 1792769843.31956,
+    "ast_hash": "c3f2b40d530846d26668f28a0b05aebc",
+    "semantic_hash": ""
+  },
+  "src/lib/logic.test.ts": {
+    "mtime": 1792768356.7239673,
+    "seen": 1792768448.217931,
+    "ast_hash": "464c3a043021b53267e250cb42525b91",
+    "semantic_hash": ""
+  },
+  "src/lib/mathjax-config.ts": {
+    "mtime": 1792577482.5302167,
+    "seen": 1792578356.233323,
+    "ast_hash": "87d461be7998db16616a8b453448a3d3",
+    "semantic_hash": "87d461be7998db16616a8b453448a3d3"
+  },
+  "src/lib/quiz.ts": {
+    "mtime": 1792768248.0051877,
+    "seen": 1792768448.2179341,
+    "ast_hash": "2daf6c263a785f1c7a92263a53e8f4ae",
+    "semantic_hash": ""
+  },
+  "src/lib/scene.ts": {
+    "mtime": 1792768229.3537247,
+    "seen": 1792768448.2179358,
+    "ast_hash": "1c10a4cad32fafd2c71401ab43612806",
+    "semantic_hash": ""
+  },
+  "src/lib/state.svelte.ts": {
+    "mtime": 1792769308.2739632,
+    "seen": 1792769843.319581,
+    "ast_hash": "526e18d9a7cd6645cb16764412d71e9f",
+    "semantic_hash": ""
+  },
+  "src/lib/tex.svelte.ts": {
+    "mtime": 1792577482.5336866,
+    "seen": 1792578356.2333262,
+    "ast_hash": "5efe6462bdc68e1fd11e03010ced2e70",
+    "semantic_hash": "5efe6462bdc68e1fd11e03010ced2e70"
+  },
+  "src/lib/trig.ts": {
+    "mtime": 1792768418.3150759,
+    "seen": 1792768448.2179399,
+    "ast_hash": "a0c43f0c89bbcd41d9f7ff6e19a18b97",
+    "semantic_hash": ""
+  },
+  "src/main.ts": {
+    "mtime": 1792769482.8987188,
+    "seen": 1792769843.319586,
+    "ast_hash": "470288dba13facbf7d7b63cda16e43c0",
+    "semantic_hash": ""
+  },
+  "src/panel/Panel.svelte": {
+    "mtime": 1792769684.550512,
+    "seen": 1792769843.3195882,
+    "ast_hash": "d58e2fcc163f782ece9851e5705d8ec5",
+    "semantic_hash": ""
+  },
+  "src/panel/Quiz.svelte": {
+    "mtime": 1792768321.5922718,
+    "seen": 1792768448.217945,
+    "ast_hash": "9e39afd6c0f089f63685644dd3e7b045",
+    "semantic_hash": ""
+  },
+  "src/panel/Reciprocals.svelte": {
+    "mtime": 1792716003.1652431,
+    "seen": 1792716054.37271,
+    "ast_hash": "b96485fbaba8b085da0472dfe36b8d75",
+    "semantic_hash": ""
+  },
+  "src/plane/Chips.svelte": {
+    "mtime": 1792643786.765487,
+    "seen": 1792650917.548385,
+    "ast_hash": "23d32e85e74a4d2c21ab2139c14dc059",
+    "semantic_hash": ""
+  },
+  "src/plane/Grid.svelte": {
+    "mtime": 1792717275.35366,
+    "seen": 1792717353.97943,
+    "ast_hash": "947b98a4030067d50b8a932eaa2a295c",
+    "semantic_hash": ""
+  },
+  "src/plane/Plane.svelte": {
+    "mtime": 1792776468.2854404,
+    "seen": 1792776504.403595,
+    "ast_hash": "6287c0c5ad9161879242ceb908264973",
+    "semantic_hash": ""
+  },
+  "src/ui/Rich.svelte": {
+    "mtime": 1792577611.231025,
+    "seen": 1792578356.233335,
+    "ast_hash": "bc9a996fcc36dafa408448869648cb91",
+    "semantic_hash": "bc9a996fcc36dafa408448869648cb91"
+  },
+  "src/ui/SvgTex.svelte": {
+    "mtime": 1792577611.2277567,
+    "seen": 1792578356.233335,
+    "ast_hash": "6d7d7e96f6f93616db284b5f838cf8fa",
+    "semantic_hash": "6d7d7e96f6f93616db284b5f838cf8fa"
+  },
+  "src/ui/Tex.svelte": {
+    "mtime": 1792577611.224593,
+    "seen": 1792578356.233336,
+    "ast_hash": "c1301c6d2427512c2d4cf1ce01907329",
+    "semantic_hash": "c1301c6d2427512c2d4cf1ce01907329"
+  },
+  "svelte.config.js": {
+    "mtime": 1792577355.0370982,
+    "seen": 1792578356.2333372,
+    "ast_hash": "a668b3283be44f2ffc16c3aa80f422e0",
+    "semantic_hash": "a668b3283be44f2ffc16c3aa80f422e0"
+  },
+  "tsconfig.json": {
+    "mtime": 1792577739.6220326,
+    "seen": 1792578356.2333372,
+    "ast_hash": "8a7c92cde8e4db3736172eb7f9aaa8ca",
+    "semantic_hash": "8a7c92cde8e4db3736172eb7f9aaa8ca"
+  },
+  "vite.config.ts": {
+    "mtime": 1792577355.0349371,
+    "seen": 1792578356.233338,
+    "ast_hash": "da78d25c93b5ddbde12c7d14430dacd3",
+    "semantic_hash": "da78d25c93b5ddbde12c7d14430dacd3"
+  },
+  "README.md": {
+    "mtime": 1792577889.7724519,
+    "seen": 1792579021.372973,
+    "ast_hash": "c5646ae09fc35abe82d29dded1243bee",
+    "semantic_hash": "c5646ae09fc35abe82d29dded1243bee"
+  },
+  "index.html": {
+    "mtime": 1792577355.0438116,
+    "seen": 1792579021.3729742,
+    "ast_hash": "15aa7763ad740f5822a582b6ddb7dac1",
+    "semantic_hash": "15aa7763ad740f5822a582b6ddb7dac1"
+  },
+  ".claude/launch.json": {
+    "mtime": 1792593030.0800843,
+    "seen": 1792650917.548362,
+    "ast_hash": "e3f8c0951eceaf0a91209a25d9b7ef81",
+    "semantic_hash": ""
+  },
+  "src/lab/SolverLab.svelte": {
+    "mtime": 1792643736.6168628,
+    "seen": 1792650917.54837,
+    "ast_hash": "f3215377242fe25a4dc08dd956ce37fa",
+    "semantic_hash": ""
+  },
+  "src/lib/transition.ts": {
+    "mtime": 1792643736.617781,
+    "seen": 1792650917.548379,
+    "ast_hash": "a4bfa0e14c695c72402d5017b380d8c7",
+    "semantic_hash": ""
+  },
+  "src/lib/tuning.ts": {
+    "mtime": 1792716003.1640265,
+    "seen": 1792716054.372704,
+    "ast_hash": "1b83b95426ec3f060d9fcab3a737cacc",
+    "semantic_hash": ""
+  },
+  "src/solver/Solver.svelte": {
+    "mtime": 1792643798.0535314,
+    "seen": 1792650917.548388,
+    "ast_hash": "116e105d91944bf325bafd301ea6ca73",
+    "semantic_hash": ""
+  },
+  "src/ui/AngleInput.svelte": {
+    "mtime": 1792769530.840165,
+    "seen": 1792769843.319602,
+    "ast_hash": "dd553b5473cf1c0bffd69ac90c6d7926",
+    "semantic_hash": ""
+  },
+  "src/ui/Segmented.svelte": {
+    "mtime": 1792769827.118646,
+    "seen": 1792769843.3196049,
+    "ast_hash": "a74df8ed1544fc76ef618b8b4e502268",
+    "semantic_hash": ""
+  },
+  "src/lib/inverse.svelte.ts": {
+    "mtime": 1792769284.225686,
+    "seen": 1792769843.319564,
+    "ast_hash": "c5021d1d63736b030aa14d63c50b0764",
+    "semantic_hash": ""
+  },
+  "src/lib/inverse.test.ts": {
+    "mtime": 1792692445.5000489,
+    "seen": 1792693038.3072882,
+    "ast_hash": "430fe7d11d7b376996ba6cb6220c65d5",
+    "semantic_hash": ""
+  },
+  "src/lib/inverse.ts": {
+    "mtime": 1792695166.607724,
+    "seen": 1792695210.3728719,
+    "ast_hash": "1b86f5bb5c749498b245e29e993cbb3b",
+    "semantic_hash": ""
+  },
+  "src/lib/inverseQuiz.svelte.ts": {
+    "mtime": 1792769314.3766901,
+    "seen": 1792769843.319568,
+    "ast_hash": "51ecfeb2ba1b6f84cdeeef8f8509fc12",
+    "semantic_hash": ""
+  },
+  "src/lib/inverseQuiz.test.ts": {
+    "mtime": 1792768349.0389798,
+    "seen": 1792768448.217929,
+    "ast_hash": "5cf1eea6624303bae40ca8aeff8878c3",
+    "semantic_hash": ""
+  },
+  "src/lib/inverseQuiz.ts": {
+    "mtime": 1792768281.7642853,
+    "seen": 1792768448.21793,
+    "ast_hash": "6a6a4d8f1c51228d6463b1376e235ed7",
+    "semantic_hash": ""
+  },
+  "src/panel/InversePanel.svelte": {
+    "mtime": 1792768407.7017598,
+    "seen": 1792768448.217943,
+    "ast_hash": "af94dacc39733f0a263f120d2663d0fa",
+    "semantic_hash": ""
+  },
+  "src/panel/InverseQuiz.svelte": {
+    "mtime": 1792768321.5955107,
+    "seen": 1792768448.2179441,
+    "ast_hash": "9edf8d8a60a2d077495105cd47e2252c",
+    "semantic_hash": ""
+  },
+  "src/plane/InverseLayer.svelte": {
+    "mtime": 1792768229.3564796,
+    "seen": 1792768448.2179499,
+    "ast_hash": "ee2dfe7167255d6964f21a97f28fcfb2",
+    "semantic_hash": ""
+  },
+  "src/ui/TabBar.svelte": {
+    "mtime": 1792769827.147988,
+    "seen": 1792769843.319606,
+    "ast_hash": "ac9e15aec79a72cd8589bf4260593838",
+    "semantic_hash": ""
+  },
+  "src/lib/inverseMarks.ts": {
+    "mtime": 1792768229.3555386,
+    "seen": 1792768448.217927,
+    "ast_hash": "785147b29a7dd6d278b178a34f703d63",
+    "semantic_hash": ""
+  },
+  "src/lib/marks.ts": {
+    "mtime": 1792776836.9271312,
+    "seen": 1792776874.826112,
+    "ast_hash": "0f667ee0b4aa3b7a6690aebdc0b3c64f",
+    "semantic_hash": ""
+  },
+  "src/plane/MarkLayer.svelte": {
+    "mtime": 1792777046.96757,
+    "seen": 1792777090.042916,
+    "ast_hash": "cd1c0261f04222a6de54c11b73a654f6",
+    "semantic_hash": ""
+  },
+  "src/lib/circleMarks.ts": {
+    "mtime": 1792769284.2270224,
+    "seen": 1792769843.319561,
+    "ast_hash": "6e489b1a4c0bd26980134bbee2080fd5",
+    "semantic_hash": ""
+  },
+  "src/lib/ringMarks.ts": {
+    "mtime": 1792776836.9285204,
+    "seen": 1792776874.8261209,
+    "ast_hash": "a3f08b09da825c2fbeabde3f57271e54",
+    "semantic_hash": ""
+  },
+  "src/plane/CircleLayer.svelte": {
+    "mtime": 1792713408.965372,
+    "seen": 1792713530.5985339,
+    "ast_hash": "f0229903adf46ce782f6d70fb043fa90",
+    "semantic_hash": ""
+  },
+  "src/plane/RingLayer.svelte": {
+    "mtime": 1792776836.929225,
+    "seen": 1792776874.826143,
+    "ast_hash": "bee1ae5da74ec805c2b7a3aeae5adf22",
+    "semantic_hash": ""
+  },
+  "src/lib/gridMarks.ts": {
+    "mtime": 1792717275.3494103,
+    "seen": 1792717353.9794052,
+    "ast_hash": "94e3f23dc124b4d0b9815df5820346b8",
+    "semantic_hash": ""
+  },
+  "src/ui/InfoTip.svelte": {
+    "mtime": 1792717224.7252872,
+    "seen": 1792717353.979437,
+    "ast_hash": "fc53dbe207977910b37be2efa350fdd9",
+    "semantic_hash": ""
+  },
+  "src/lib/angles.test.ts": {
+    "mtime": 1792768217.819823,
+    "seen": 1792768448.2179189,
+    "ast_hash": "00c25c9bc08fd86641cbaca7bfa30595",
+    "semantic_hash": ""
+  },
+  "src/lib/angles.ts": {
+    "mtime": 1792769342.5105083,
+    "seen": 1792769843.3195589,
+    "ast_hash": "04b28fba70ced3171339c0bd07920734",
+    "semantic_hash": ""
+  },
+  "src/lib/progress.svelte.ts": {
+    "mtime": 1792769308.2436852,
+    "seen": 1792769843.319573,
+    "ast_hash": "19eadb5f5f42def886ba11bf2dcf28c0",
+    "semantic_hash": ""
+  },
+  "src/guides/radians.ts": {
+    "mtime": 1792777989.8938074,
+    "seen": 1792777997.794461,
+    "ast_hash": "e1b4138a85b1847175e1aa89daa8d00a",
+    "semantic_hash": ""
+  },
+  "src/lib/guide.ts": {
+    "mtime": 1792769381.1754422,
+    "seen": 1792769843.319563,
+    "ast_hash": "430d45774e0486c4fcea4676076eb515",
+    "semantic_hash": ""
+  },
+  "src/lib/radians.svelte.ts": {
+    "mtime": 1792775121.8911827,
+    "seen": 1792775179.5500789,
+    "ast_hash": "8f2b096ef5bba9f7b585b90b358c0284",
+    "semantic_hash": ""
+  },
+  "src/lib/radiansFeatures.ts": {
+    "mtime": 1792775104.7352343,
+    "seen": 1792775179.550081,
+    "ast_hash": "73e16106e11e8c323151ce23169a0b85",
+    "semantic_hash": ""
+  },
+  "src/lib/radiansMarks.ts": {
+    "mtime": 1792776836.9279926,
+    "seen": 1792776874.826119,
+    "ast_hash": "4ca94fa354319adfdb1caa6073620f62",
+    "semantic_hash": ""
+  },
+  "src/lib/radiansQuiz.test.ts": {
+    "mtime": 1792769712.9539273,
+    "seen": 1792769843.319577,
+    "ast_hash": "27c5c82da17c10f6486426fd38805a8f",
+    "semantic_hash": ""
+  },
+  "src/lib/radiansQuiz.ts": {
+    "mtime": 1792775131.7487674,
+    "seen": 1792775179.550087,
+    "ast_hash": "c84741abf14c70140cb84bdd2a1a4af0",
+    "semantic_hash": ""
+  },
+  "src/panel/RadiansGuide.svelte": {
+    "mtime": 1792769703.815654,
+    "seen": 1792769843.3195899,
+    "ast_hash": "e26a8efb15a2174fe72d502895f4875f",
+    "semantic_hash": ""
+  },
+  "src/panel/RadiansPanel.svelte": {
+    "mtime": 1792775135.5512176,
+    "seen": 1792775179.550118,
+    "ast_hash": "a64855b24bb739aaf6a1c63748cfabd9",
+    "semantic_hash": ""
+  },
+  "src/panel/RadiansQuiz.svelte": {
+    "mtime": 1792769496.4593582,
+    "seen": 1792769843.319592,
+    "ast_hash": "bb78bf3349ae94976eef5f1238a189d9",
+    "semantic_hash": ""
+  },
+  "src/plane/RadiansLayer.svelte": {
+    "mtime": 1792776468.2849944,
+    "seen": 1792776504.403596,
+    "ast_hash": "15456138e332aaaaf70c38483798beed",
+    "semantic_hash": ""
+  }
+}

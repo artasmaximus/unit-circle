@@ -7,7 +7,8 @@ import { LABEL_R, S } from './camera.svelte.ts';
 import type { Mark } from './marks.ts';
 import type { Label } from './scene.ts';
 import { texRect } from './tex.svelte.ts';
-import { degSigned, rad } from './trig.ts';
+import { angleTex, type Unit } from './angles.ts';
+import { rad } from './trig.ts';
 
 export type InvInput = {
   /** Whether the inverse topic is on the plane at all; when it is not, nothing is wanted, and everything leaves. */
@@ -19,8 +20,11 @@ export type InvInput = {
   shown: boolean; showOther: boolean; showBand: boolean;
   given: number | null; domain: { lo: number; hi: number } | null;
   ghost: number | null; dragging: boolean;
+  /** The free probe point (degrees, not wrapped), or null when there is none. */
+  probe: number | null;
   /** Line width, label size and decimal places, as camera.stroke, camera.labelBoost and camera.thetaDecimals give them. */
   sw: number; lb: number; decimals: number;
+  unit: Unit;
 };
 
 const COLORS = { asin: 'var(--sin)', acos: 'var(--cos)', atan: 'var(--slope)' } as const;
@@ -36,11 +40,12 @@ export function inverseMarks(i: InvInput): Mark[] {
     const rect = texRect(latex, size * lb, x, y, ax, ay);
     return rect && { latex, size: size * lb, rect, color };
   };
-  const ang = (a: number) => `${degSigned(a, i.decimals)}^\\circ`;
+  const ang = (a: number) => angleTex(a, i.unit, i.decimals);
   const label = (m: Omit<Extract<Mark, { kind: 'label' }>, 'kind' | 'label'>, l: Label | null) => { if (l) out.push({ kind: 'label', label: l, ...m }); };
 
   const P = at(i.angle), Q = at(i.other), twin = apart(i.angle, i.other);
-  const handle: [number, number] | null = fn === 'asin' ? [0, -i.value * S] : fn === 'acos' ? [i.value * S, 0] : null;
+  const probing = i.probe !== null;
+  const handle: [number, number] | null = probing ? null : fn === 'asin' ? [0, -i.value * S] : fn === 'acos' ? [i.value * S, 0] : null;
 
   // ---- the stage: the shaded range, the stretch θ is drawn from, and the axis the value lives on
   if (i.showBand) {
@@ -51,7 +56,7 @@ export function inverseMarks(i: InvInput): Mark[] {
     const [x1, y1] = at(i.domain.lo), [x2, y2] = at(i.domain.hi);
     out.push({ kind: 'path', key: 'domain', z: 1, d: `M ${x1} ${y1} A ${S} ${S} 0 ${i.domain.hi - i.domain.lo > 180 ? 1 : 0} 0 ${x2} ${y2}`, color: 'var(--muted)', width: 3.5 * sw, opacity: 0.35, enter: 'draw', dur: 500 });
   }
-  if (fn !== 'atan') {
+  if (fn !== 'atan' && !probing) {
     const [x1, y1, x2, y2] = fn === 'asin' ? [0, -S, 0, S] : [-S, 0, S, 0];
     out.push({ kind: 'line', key: `axis:${fn}`, z: 2, x1, y1, x2, y2, color: c, width: 1.5 * sw, opacity: 0.55, enter: 'draw', dur: 500, exit: 'fade' });
     SPECIAL_VALUES[fn].forEach(([v, tex], k) => {
@@ -108,8 +113,35 @@ export function inverseMarks(i: InvInput): Mark[] {
     label({ key: 'other:label', z: 9, opacity: 0.7, enter: 'fade', delay: 380, exitDur: 120 }, lab(ang(i.other), 10, ...at(i.other, LABEL_R), c));
   }
 
+  // ---- the free probe: a point you can move by the ring, the y-axis or the x-axis, with what it reads on each
+  if (i.probe !== null) {
+    const pa = i.probe, PP = at(pa), Hy: [number, number] = [0, PP[1]], Hx: [number, number] = [PP[0], 0];
+    const ys = Math.sin(rad(pa)), xs = Math.cos(rad(pa)), fg = 'var(--fg)', red = COLORS.asin, blue = COLORS.acos;
+    out.push({ kind: 'line', key: 'probe:axisY', z: 2, x1: 0, y1: -S, x2: 0, y2: S, color: red, width: 1.5 * sw, opacity: 0.55, enter: 'draw', dur: 500 });
+    out.push({ kind: 'line', key: 'probe:axisX', z: 2, x1: -S, y1: 0, x2: S, y2: 0, color: blue, width: 1.5 * sw, opacity: 0.55, enter: 'draw', dur: 500 });
+    SPECIAL_VALUES.asin.forEach(([v, tex], k) => {
+      out.push({ kind: 'dot', key: `probe:ty:${k}`, z: 3, x: 0, y: -v * S, r: 2.2 * sw, fill: red, opacity: 0.8, enter: 'pop', delay: 220 + 25 * k, dur: 220 });
+      out.push({ kind: 'dot', key: `probe:tx:${k}`, z: 3, x: v * S, y: 0, r: 2.2 * sw, fill: blue, opacity: 0.8, enter: 'pop', delay: 220 + 25 * k, dur: 220 });
+      label({ key: `probe:tyl:${k}`, z: 3, enter: 'fade', delay: 260 + 25 * k }, lab(tex, 8.5, -7 * sw, -v * S, 'var(--muted)', 1, 0.5));
+      label({ key: `probe:txl:${k}`, z: 3, enter: 'fade', delay: 260 + 25 * k }, lab(tex, 8.5, v * S, 8 * sw, 'var(--muted)', 0.5, 0));
+    });
+    out.push({ kind: 'line', key: 'probe:dropY', z: 5, x1: PP[0], y1: PP[1], x2: Hy[0], y2: Hy[1], color: red, width: 1.25 * sw, dash: DASH(sw), enter: 'draw', dur: 350 });
+    out.push({ kind: 'line', key: 'probe:dropX', z: 5, x1: PP[0], y1: PP[1], x2: Hx[0], y2: Hx[1], color: blue, width: 1.25 * sw, dash: DASH(sw), enter: 'draw', dur: 350 });
+    out.push({ kind: 'line', key: 'probe:ray', z: 6, x1: 0, y1: 0, x2: PP[0], y2: PP[1], color: fg, width: 1.75 * sw, round: true, enter: 'draw', dur: 450 });
+    // the angle reads in the stretch the question draws θ from (0° to 360° unless it says otherwise)
+    const from = i.domain?.lo ?? 0;
+    const wr = S / 5, [wx, wy] = at(pa, wr), wrap = ((pa % 360) + 360) % 360;
+    out.push({ kind: 'path', key: 'probe:arc', z: 6, d: `M ${wr} 0 A ${wr} ${wr} 0 ${wrap > 180 ? 1 : 0} 0 ${wx} ${wy}`, color: fg, width: 1.25 * sw, enter: 'draw', delay: 120, dur: 400 });
+    out.push({ kind: 'dot', key: 'probe:Hy', z: 7, x: Hy[0], y: Hy[1], r: 5 * sw, fill: red, stroke: 'var(--panel)', width: 2 * sw, enter: 'pop', delay: 250 });
+    out.push({ kind: 'dot', key: 'probe:Hx', z: 7, x: Hx[0], y: Hx[1], r: 5 * sw, fill: blue, stroke: 'var(--panel)', width: 2 * sw, enter: 'pop', delay: 250 });
+    out.push({ kind: 'dot', key: 'probe:P', z: 8, x: PP[0], y: PP[1], r: 6.5 * sw, fill: fg, stroke: 'var(--panel)', width: 2 * sw, enter: 'pop', delay: 300 });
+    label({ key: 'probe:vy', z: 9, back: lb, enter: 'fade', delay: 300 }, lab(`y=${valueTex('asin', ys)}`, 11, Hy[0] + 10 * sw, Hy[1], red, 0, 0.5));
+    label({ key: 'probe:vx', z: 9, back: lb, enter: 'fade', delay: 300 }, lab(`x=${valueTex('asin', xs)}`, 11, Hx[0], Hx[1] + 12 * sw, blue, 0.5, 0));
+    label({ key: 'probe:angle', z: 9, enter: 'fade', delay: 350 }, lab(ang(from + ((((pa - from) % 360) + 360) % 360)), 10.5, ...at(pa / 2, S * 0.36), fg));
+  }
+
   // ---- the faded preview: where a press would put the control, with both angles it would give
-  if (i.ghost !== null && !i.dragging && Math.abs(i.ghost - i.target) > 1e-3) {
+  if (i.ghost !== null && !probing && !i.dragging && Math.abs(i.ghost - i.target) > 1e-3) {
     const gP = at(i.ghost), go = otherAngle(fn, i.ghost), gQ = at(go), both = apart(i.ghost, go);
     const g = { z: 8, enter: 'fade', dur: 120, exitDur: 120 } as const, grey = 'var(--muted)';
     out.push({ kind: 'line', key: 'ghost:line', ...g, x1: gQ[0], y1: gQ[1], x2: gP[0], y2: gP[1], color: grey, width: sw, dash: DASH(sw, 2, 4), opacity: 0.45 });

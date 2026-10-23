@@ -1,6 +1,7 @@
 // Everything drawn on the plane for one frame, as plain data. Components only render what this returns.
 // World units: the circle has radius S, y points down (so sin is drawn as -y).
 import { S } from './camera.svelte.ts';
+import { angleTex, type Unit } from './angles.ts';
 import { figure as tuning, tag as tagT } from './tuning.ts';
 import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from './trig.ts';
 import { texBox, texRect, type Rect } from './tex.svelte.ts';
@@ -21,6 +22,8 @@ export type SceneInput = {
   k: number; bounds: Rect; boost: number;
   /** Multipliers for in-plane label sizes, and for line widths and brace size (see camera.stroke / camera.labelBoost). */
   labelBoost: number; stroke: number;
+  /** How angles are written, and the degree precision (see angles.ts). */
+  unit: Unit; decimals: number;
   memo: { b: number };
 };
 
@@ -74,7 +77,7 @@ export function buildScene(p: SceneInput) {
     else if (i === 1) guide2 = [0, y, gx, y];
     else line = [x, y, gx, gy];
     // a ghost on a snap point is already named by the ring label
-    const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11 * p.labelBoost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
+    const lb = specialOf(gd) !== undefined ? null : label(angleTex(gd, p.unit, 0), 11 * p.labelBoost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
     mirrors.push({ i, line, dot: [gx, gy], label: lb });
   });
 
@@ -96,7 +99,7 @@ export function buildScene(p: SceneInput) {
     else { mid = ang / 2; rr = tagT.refRadius - 4; }
     const dy = ref === 0 ? -9 : 0;
     refPolar = { rr, from, to: mid, dy };
-    refLabel = label(`${ref}^\\circ`, tagT.refFont * p.labelBoost, rr * Math.cos(mid), -rr * Math.sin(mid) + dy, col);
+    refLabel = label(angleTex(ref, p.unit, 0), tagT.refFont * p.labelBoost, rr * Math.cos(mid), -rr * Math.sin(mid) + dy, col);
   }
 
   // leg labels sit past a curly brace on the outside of each leg, so they read as lengths
