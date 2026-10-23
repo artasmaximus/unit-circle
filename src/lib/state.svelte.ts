@@ -3,6 +3,7 @@ import { Tween } from 'svelte/motion';
 import { SPECIAL, norm, rad, snapDeg, specialOf, wrapPi } from './trig.ts';
 import { makeChoices, pickQ, qKey, trigTexAnswer, type Question, type Rich } from './quiz.ts';
 import { apply, atom, num, solvedForm, type Eq, type Op } from './algebra.ts';
+import { inverse } from './inverse.svelte.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
 
@@ -60,9 +61,10 @@ export const point = new Point();
 /** The snap angle the pointer is aiming at: its ring label is drawn by the hover ghost, so the ring skips it. */
 export const aim = $state<{ deg: number | null }>({ deg: null });
 
+export type Topic = 'circle' | 'inverse';
 export const ui = $state({
   /** The concept on the plane, picked in the tab bar. */
-  topic: 'circle' as 'circle' | 'inverse',
+  topic: 'circle' as Topic,
   mode: 'quiz' as 'explore' | 'quiz',
   mirror: false,
   /** In a quiz, answers stay hidden until the question is answered. */
@@ -163,9 +165,28 @@ class Quiz {
 }
 export const quiz = new Quiz();
 
+/** Topics other than the unit circle keep their state in their own modules, and register here what a mode or topic switch means for them. */
+export const topicHooks: Partial<Record<Topic, { mode(m: 'explore' | 'quiz'): void; enter(m: 'explore' | 'quiz'): void }>> = {};
+
+export function setTopic(t: Topic) {
+  if (ui.topic === t) return;
+  const from = ui.topic;
+  // leaving inverse trig in the exploration, the unit circle's point takes the control's angle and slides to it
+  if (t === 'circle' && from === 'inverse' && ui.mode === 'explore') point.set(norm(inverse.angleTo), true);
+  withPen(() => {
+    ui.topic = t; ui.slopeOpen = false; ui.highlight = [];
+    const hook = topicHooks[t];
+    if (hook) return hook.enter(ui.mode);
+    if (ui.mode === 'quiz') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
+    else ui.revealed = true;
+  });
+}
+
 export function setMode(m: 'explore' | 'quiz') {
   withPen(() => {
     ui.mode = m;
+    const hook = topicHooks[ui.topic];
+    if (hook) return hook.mode(m);
     if (m === 'quiz') { if (!quiz.cur || quiz.answered) quiz.start(); else ui.revealed = quiz.answered; }
     else { ui.highlight = []; ui.revealed = true; solver.close(); }
   });

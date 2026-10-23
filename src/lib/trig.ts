@@ -103,3 +103,9 @@ export const degText = (deg: number, decimals = 1) => {
   if (hit !== undefined && Math.abs(d - hit) < half) return String(hit);
   return Math.abs(d - Math.round(d)) < half ? String(Math.round(d) % 360) : d.toFixed(decimals);
 };
+
+/** An angle that may be negative (an inverse trig answer, like −30°), to `decimals` places, without the trailing zeros degText drops. */
+export const degSigned = (deg: number, decimals = 1) => {
+  const f = 10 ** decimals, r = Math.round(deg * f) / f;
+  return r === 0 ? '0' : String(r);
+};

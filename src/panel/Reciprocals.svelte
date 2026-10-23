@@ -16,7 +16,7 @@
   <div class="head"><h2 id="defs-h">Definitions</h2>{@render trailing?.()}</div>
   <div class="row">
     {#each KEYS as k (k)}
-      <div class="card" style:--c={HUE[k]} data-tip="Values stay un-rationalized (1/√2, not √2/2), so you can see each reciprocal is just its partner flipped.">
+      <div class="card" style:--c={HUE[k]} data-tip="Answers like 1/√2 stay as they are (not √2/2), so you can see each one is just its partner flipped upside down.">
         <span class="eq" title={NAMES[k]}><Tex latex={`\\${k}\\theta`} /></span>
         <span class="val"><Tex latex={recipTex(k, point.deg).r} /></span>
       </div>

@@ -15,7 +15,7 @@ export type SceneInput = {
   ang: number; hit: number | undefined; dotR: number;
   /** Signed arc (radians) of the trail behind the point. */
   tail: number;
-  revealed: boolean; mirror: number; mirrorOnly: Fn | null;
+  revealed: boolean; mirror: boolean; mirrorOnly: Fn | null;
   showCoords: boolean; slopeOpen: boolean;
   /** Px per world unit and the uncovered area in world units, for sizing and keeping chips on screen. */
   k: number; bounds: Rect; boost: number;
@@ -61,26 +61,21 @@ export function buildScene(p: SceneInput) {
   const wedgeHead = ang > 0.16 && ang < 2 * Math.PI - 0.02
     ? `M ${px - tx * L - ty * W} ${py - ty * L + tx * W} L ${px} ${py} L ${px - tx * L + ty * W} ${py - ty * L - tx * W}` : null;
 
-  // legs of the triangle; mirror mode draws each one on out to its reflected point (`p.mirror` runs 0 → 1, so the
-  // lines grow from where they start), with the reflected dot riding the tip
+  // legs of the triangle; mirror mode adds a line out to each reflected point, with the reflected dot at its tip
   const sinLeg: Seg = [x, 0, x, y];
   let sinExt: Seg | null = null;
   let guide2: Seg | null = null;
-  const mirrors: { line: Seg | null; dot: [number, number]; label: Label | null; e: number }[] = [];
-  // the lines take the first part of the run and the dots pop in once they have arrived (and go first on the way back)
-  // an ease-out line looks finished well before its run is, so the dot starts popping when the line is 97% drawn
-  const e = p.mirror, grow = 1 - (1 - Math.min(1, e / tuning.mirrorLineShare)) ** tuning.mirrorEase;
-  const popFrom = tuning.mirrorLineShare * (1 - 0.03 ** (1 / tuning.mirrorEase)), pop = Math.min(1, Math.max(0, (e - popFrom) / (1 - popFrom)));
+  const mirrors: { i: number; line: Seg | null; dot: [number, number]; label: Label | null }[] = [];
   REFL.forEach((rf, i) => {
-    if (e <= 0.001 || (p.mirrorOnly && p.mirrorOnly !== rf.fn)) return;
+    if (!p.mirror || (p.mirrorOnly && p.mirrorOnly !== rf.fn)) return;
     const a = rf.ang(ang), gx = S * Math.cos(a), gy = -S * Math.sin(a), gd = norm(Math.round(rf.deg(deg)));
-    let line: Seg | null = null, tip: [number, number] = [gx, gy];
-    if (i === 0) { tip = [x, gy * grow]; sinExt = [x, 0, ...tip]; }
-    else if (i === 1) { tip = [gx * grow, y]; guide2 = [0, y, ...tip]; }
-    else { tip = [x + (gx - x) * grow, y + (gy - y) * grow]; line = [x, y, ...tip]; }
+    let line: Seg | null = null;
+    if (i === 0) sinExt = [x, 0, x, gy];
+    else if (i === 1) guide2 = [0, y, gx, y];
+    else line = [x, y, gx, gy];
     // a ghost on a snap point is already named by the ring label
     const lb = specialOf(gd) !== undefined ? null : label(`${gd}^\\circ`, 11 * p.labelBoost, (S + 17) * Math.cos(a), -(S + 17) * Math.sin(a), col);
-    mirrors.push({ line, dot: tip, label: lb, e: pop });
+    mirrors.push({ i, line, dot: [gx, gy], label: lb });
   });
 
   // reference angle: quadrants II–IV get a small arc from the nearest x-axis; in quadrant I the label rides the θ arc

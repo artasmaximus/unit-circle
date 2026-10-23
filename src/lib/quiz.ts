@@ -89,19 +89,19 @@ export function explain(q: Question): Rich[] {
 export function task(q: Question): Rich {
   return q.t === 1
     ? ['What is ', m(`${FN_TEX[q.fn]}\\ ${q.a}^\\circ`), '? Choose the exact value below. You can drag the point to ', m(`${q.a}^\\circ`), ' to picture it.']
-    : ['Move the point to an angle where ', m(`${FN_TEX[q.fn]}\\theta`), ' equals the value above, then press Check. Two angles between ', m('0^\\circ'), ' and ', m('360^\\circ'), ' work, so you will find both, one after the other.'];
+    : ['Move the point to an angle where ', m(`${FN_TEX[q.fn]}\\theta`), ' equals the value above, then press Check. Two angles between ', m('0^\\circ'), ' and ', m('360^\\circ'), ' work, so find both, one at a time.'];
 }
 
 // A hint shows the (cos θ, sin θ) label next to the point; it never moves the point.
 // A hinted answer doesn't add to the streak, though a wrong answer still resets it.
-const HINT_TAIL = ' Using a hint stops your streak from growing on this question.';
+const HINT_TAIL = " A hint means this question won't add to your streak.";
 export function hintTip(q: Question): string {
   const sin = q.fn === 'sin';
   if (q.fn === 'tan') return (q.t === 1
-    ? 'Shows the coordinates (cos θ, sin θ) of the point, wherever it is. It does not move the point, so move it to the angle and work out tan θ yourself.'
-    : 'Shows the coordinates (cos θ, sin θ) next to the point as you move it, so you can work out tan θ and match the value.') + HINT_TAIL;
+    ? "Shows the point's coordinates (cos θ, sin θ). It won't move the point, so drag it to the angle and work out tan θ (sin θ ÷ cos θ) yourself."
+    : 'Shows the coordinates (cos θ, sin θ) next to the point as you move it, so you can work out tan θ (sin θ ÷ cos θ) and match the value.') + HINT_TAIL;
   return (q.t === 1
-    ? `Shows the coordinates (cos θ, sin θ) of the point, wherever it is. It does not move the point, so move it to ${q.a}° yourself. ${sin ? 'sin θ is the y-coordinate.' : 'cos θ is the x-coordinate.'}`
+    ? `Shows the point's coordinates (cos θ, sin θ). It won't move the point, so drag it to ${q.a}° yourself. ${sin ? 'sin θ is the y-coordinate.' : 'cos θ is the x-coordinate.'}`
     : `Shows the coordinates (cos θ, sin θ) next to the point, so you can watch the ${sin ? 'y' : 'x'}-coordinate as you move it.`) + HINT_TAIL;
 }
 export function hintMsg(q: Question): Rich {

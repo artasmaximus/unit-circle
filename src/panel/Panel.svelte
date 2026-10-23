@@ -4,6 +4,7 @@
   import { fly } from 'svelte/transition';
   import { cubicIn, cubicOut } from 'svelte/easing';
   import { untrack } from 'svelte';
+  import { Tween } from 'svelte/motion';
   import { panel as panelT } from '../lib/tuning.ts';
   import { camera } from '../lib/camera.svelte.ts';
   import { pen, setMode, ui } from '../lib/state.svelte.ts';
@@ -11,6 +12,9 @@
   import Segmented from '../ui/Segmented.svelte';
   import AngleInput from '../ui/AngleInput.svelte';
   import Reciprocals from './Reciprocals.svelte';
+  import InversePanel from './InversePanel.svelte';
+  import InverseQuiz from './InverseQuiz.svelte';
+  import { inverse } from '../lib/inverse.svelte.ts';
 
   let w = $state(0), h = $state(0);
   // The plane is its own layer under the UI: the panel never resizes it as its content changes (a value turning
@@ -20,7 +24,7 @@
   $effect(() => {
     void `${ui.mode}|${camera.vw}|${camera.vh}`;
     clearTimeout(settle);
-    if (camera.wide) { camera.inset = { left: w, bottom: panelT.tabBarRoom }; placed = false; return; }
+    if (camera.wide) { camera.inset = { left: w, bottom: 0 }; placed = false; return; }
     if (!placed) return;
     settle = window.setTimeout(() => { camera.inset = { left: 0, bottom: untrack(() => h) }; }, panelT.settleMs);
     return () => clearTimeout(settle);
@@ -35,32 +39,47 @@
 
   const IN = { y: panelT.enter.y, duration: panelT.enter.ms, delay: panelT.enter.delay, easing: cubicOut }, OUT = { y: panelT.exit.y, duration: panelT.exit.ms, easing: cubicIn };
   let contentH = $state(0);
+  // the blur follows the content's height on a glide, so it grows and shrinks with the panel instead of jumping when a view changes
+  const blurH = new Tween(0, { duration: panelT.blurGlideMs, easing: cubicOut });
+  const blurHead = new Tween(0, { duration: panelT.blurGlideMs, easing: cubicOut });
+  let blurSeen = false;
+  $effect(() => { const first = !blurSeen && contentH > 0; if (contentH > 0) blurSeen = true; blurH.set(contentH, first ? { duration: 0 } : undefined); blurHead.set(headH, first ? { duration: 0 } : undefined); });
 </script>
+
+{#snippet otherToggle()}
+  <button class="switch" role="switch" aria-checked={inverse.showOther} onclick={() => (inverse.showOther = !inverse.showOther)}
+    data-tip="Shows the other angle that has the same value. It is outside the range, which is why the inverse never gives it.">
+    Other angle<span class="track"><span class="knob"></span></span>
+  </button>
+{/snippet}
 
 {#snippet mirror()}
   <button class="switch" role="switch" aria-checked={ui.mirror} onclick={() => (ui.mirror = !ui.mirror)}
-    data-tip="Shows the mirrored angles that share this point's reference angle. In a quiz it shows the other angle with the same sin, cos or tan, so you can see both answers.">
+    data-tip="Shows the other angles that have the same reference angle. In a quiz it also shows the second angle with the same sin, cos or tan.">
     Mirror Point<span class="track"><span class="knob"></span></span>
   </button>
 {/snippet}
 
 <aside class="panel" bind:clientWidth={w} bind:clientHeight={h}>
   <!-- the blur hugs the content: it ends a little below the last element and fades out past the panel edge -->
-  <div class="blur" aria-hidden="true" style:--content-h="{contentH}px" style:--head="{headH}px">
+  <div class="blur" aria-hidden="true" style:--content-h="{blurH.current}px" style:--head="{blurHead.current}px">
     {#each LAYERS as [b, a, z]}<div style="--b:{b}px;--a:{a}%;--z:{z}%"></div>{/each}
     <div class="tint"></div>
   </div>
   <div class="content" bind:clientHeight={contentH}>
     <header bind:clientHeight={headH}>
       <div class="title">
-        <h1>Unit Circle</h1>
+        <h1>{ui.topic === 'inverse' ? 'Inverse Trig' : 'Unit Circle'}</h1>
         <Segmented label="Mode" value={ui.mode} onchange={setMode} progress={pen.current}
           options={[{ value: 'explore', label: 'Explore' }, { value: 'quiz', label: 'Quiz' }]} />
       </div>
     </header>
     <!-- the views share one grid cell, so the old one fades away under the new one as it rises in -->
     <div class="stage">
-      {#if ui.mode === 'quiz'}<div class="view" in:fly={IN} out:fly={OUT}><Quiz trailing={mirror} /></div>
+      {#if ui.topic === 'inverse'}
+        {#if ui.mode === 'quiz'}<div class="view" in:fly={IN} out:fly={OUT}><InverseQuiz /></div>
+        {:else}<div class="view" in:fly={IN} out:fly={OUT}><InversePanel trailing={otherToggle} /></div>{/if}
+      {:else if ui.mode === 'quiz'}<div class="view" in:fly={IN} out:fly={OUT}><Quiz trailing={mirror} /></div>
       {:else}<div class="view" in:fly={IN} out:fly={OUT}><Reciprocals trailing={mirror} /></div>{/if}
     </div>
   </div>
@@ -69,7 +88,7 @@
 
 <!-- the angle reads and edits here, in the plane's top-right corner; "Reset view" appears under it once the view has moved -->
 <div class="corner">
-  <AngleInput />
+  {#if ui.topic === 'circle'}<AngleInput />{/if}
   {#if camera.moved}<button class="reset" onclick={camera.reset}>Reset view</button>{/if}
 </div>
 
@@ -77,7 +96,7 @@
   /* the panel only positions things; empty space in it lets the grid through, to the pointer too */
   .panel {
     position: fixed; z-index: 2; left: 0; top: 0; bottom: 0; width: clamp(340px, 32vw, 460px); pointer-events: none;
-    --dir: to right; --side: 56px; --below: 110px;
+    --dir: to right; --side: 36px; --below: 48px;
   }
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .panel { top: auto; right: 0; width: auto; height: auto; --dir: to top; --side: 0px; }
@@ -104,7 +123,8 @@
   .content {
     position: relative; max-height: 100%; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; pointer-events: auto;
     display: grid; align-content: start; gap: 22px;
-    padding: max(28px, env(safe-area-inset-top, 0px)) 24px max(28px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
+    /* the bottom padding keeps the last line clear of the tab bar floating at the bottom left */
+    padding: max(28px, env(safe-area-inset-top, 0px)) 24px 96px max(24px, env(safe-area-inset-left, 0px));
   }
   /* phones: the sheet is short, so everything tightens */
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {

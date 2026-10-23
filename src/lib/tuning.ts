@@ -39,7 +39,7 @@ export const figure = {
   /** The reference angle is fully opaque once its pop reaches this fraction, and fades below it. */
   refFadeBy: 0.7,
   /** The reference angle's spring: seconds to settle, natural frequency (rad/s), damping ratio (lower = bouncier). */
-  refSettle: 0.55, refFreq: 22, refDamping: 0.9,
+  refSettle: 0.24, refFreq: 22, refDamping: 0.9,
 };
 
 /** Pressing, hovering and zooming on the plane (Plane.svelte). */
@@ -90,8 +90,8 @@ export const panel = {
   enter: { y: 10, ms: 280, delay: 140 }, exit: { y: -10, ms: 180 },
   /** On phones the plane re-fits to the panel this long (ms) after a view change settles. */
   settleMs: 450,
-  /** Room (px) the circle leaves along the bottom on wide screens, for the tab bar floating there. */
-  tabBarRoom: 64,
   /** Progressive blur layers [blur px, solid up to %, gone by %], strongest first. */
-  blur: [[6, 62, 80], [4, 70, 87], [2, 78, 93], [1, 86, 100]] as [number, number, number][],
+  blur: [[6, 52, 68], [4, 58, 74], [2, 64, 80], [1, 70, 88]] as [number, number, number][],
+  /** The blur glides to a new content height over this long (ms). */
+  blurGlideMs: 380,
 };

@@ -2,27 +2,25 @@
      pressing elsewhere drags the whole view. Scroll (or pinch) zooms about the pointer. -->
 <script lang="ts">
   import { camera, S, LABEL_R } from '../lib/camera.svelte.ts';
-  import { Tween } from 'svelte/motion';
-  import { figure, input } from '../lib/tuning.ts';
+  import { fade } from 'svelte/transition';
+  import { input } from '../lib/tuning.ts';
   import { aim, point, quiz, revealed, ui } from '../lib/state.svelte.ts';
+  import { inverse } from '../lib/inverse.svelte.ts';
   import { buildScene } from '../lib/scene.ts';
   import { SPECIAL, colorOf, degText, rad, snapDeg } from '../lib/trig.ts';
   import { texRect } from '../lib/tex.svelte.ts';
-  import SvgTex from '../ui/SvgTex.svelte';
   import Grid from './Grid.svelte';
-  import Ring from './Ring.svelte';
-  import Figure from './Figure.svelte';
+  import RingLayer from './RingLayer.svelte';
+  import CircleLayer from './CircleLayer.svelte';
   import Chips from './Chips.svelte';
+  import InverseLayer from './InverseLayer.svelte';
 
   /** How close (px) to the circle a press must be to grab the point. */
   const BAND = input.grabBand;
-  // mirror mode draws its lines on and takes them back as this runs 0 ↔ 1
-  const mirrorP = new Tween(0, { duration: figure.mirrorMs });
-  $effect(() => { const want = ui.mirror ? 1 : 0; if (mirrorP.target !== want) mirrorP.target = want; });
   const memo = { b: -1 };
   const scene = $derived(buildScene({
     ang: point.ang, hit: point.hit, dotR: point.dotR, tail: point.tail,
-    revealed: revealed(), mirror: mirrorP.current,
+    revealed: revealed(), mirror: ui.mirror,
     mirrorOnly: ui.mode === 'quiz' && quiz.cur ? quiz.cur.fn : null,
     showCoords: revealed() || (ui.mode === 'quiz' && quiz.hint),
     slopeOpen: ui.slopeOpen, k: camera.k, boost: camera.textBoost, labelBoost: camera.labelBoost, stroke: camera.stroke, bounds: camera.freeWorld, memo,
@@ -41,6 +39,17 @@
   const grain = (deg: number) => { const f = 10 ** camera.thetaDecimals; return Math.round(deg * f) / f; };
   const nearRing = (e: { clientX: number; clientY: number }) =>
     Math.abs(Math.hypot(e.clientX - camera.ox, e.clientY - camera.oy) - S * camera.k) <= BAND;
+  // what a press can grab depends on the topic: the point on the ring (unit circle, arctan), or the axis the value lives on (arcsin, arccos); the faded preview shows only where a press would grab
+  const inInverse = $derived(ui.topic === 'inverse');
+  const nearControl = (e: { clientX: number; clientY: number }) => {
+    if (!inInverse) return nearRing(e);
+    if (inverse.locked) return false;
+    // press close to what you are choosing: the circle's edge for an angle (arctan), or the axis the value lives on
+    const dx = Math.abs(e.clientX - camera.ox), dy = Math.abs(e.clientY - camera.oy), reach = S * camera.k + BAND;
+    return inverse.fn === 'atan' ? nearRing(e) : inverse.fn === 'asin' ? dx <= BAND && dy <= reach : dy <= BAND && dx <= reach;
+  };
+  const invSnap = () => ({ value: 0.03 / Math.max(1, camera.zoom), angle: snapRange() });
+  const invPos = (e: { clientX: number; clientY: number }) => { const w = camera.toWorld(e.clientX, e.clientY); return inverse.angleAt(w.x, w.y, S, invSnap(), grain); };
   const touches = new Map<number, { x: number; y: number }>();
   let last = { x: 0, y: 0 }, pinch = 0;
   const pinchState = () => { const [a, b] = [...touches.values()]; return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; };
@@ -49,7 +58,7 @@
     touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (touches.size === 2) { dragging = false; panning = true; const p = pinchState(); pinch = p.d; last = p; return; }
     last = { x: e.clientX, y: e.clientY };
-    if (nearRing(e)) { dragging = true; aimAt(e); } else panning = true;
+    if (nearControl(e)) { dragging = true; inverse.dragging = true; aimAt(e); } else panning = true;
   };
   const move = (e: PointerEvent) => {
     if (touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -60,12 +69,15 @@
     }
     if (dragging) aimAt(e);
     else if (panning) { camera.panBy(e.clientX - last.x, e.clientY - last.y); last = { x: e.clientX, y: e.clientY }; }
-    else if (e.pointerType === 'mouse') ghost = nearRing(e) ? ghostAt(e) : null;
+    else if (e.pointerType === 'mouse') {
+      if (inInverse) inverse.ghost = nearControl(e) ? invPos(e) : null;
+      else ghost = nearRing(e) ? ghostAt(e) : null;
+    }
   };
   const up = (e: PointerEvent) => {
     touches.delete(e.pointerId);
     if (touches.size === 1) { const [r] = touches.values(); last = r; }
-    if (!touches.size) dragging = panning = false;
+    if (!touches.size) { dragging = panning = false; inverse.dragging = false; }
   };
   let svg = $state<SVGSVGElement>();
   $effect(() => {
@@ -87,42 +99,31 @@
   $effect(() => { aim.deg = ghostDraw?.special ? ghost : null; });
   const aimAt = (e: PointerEvent) => {
     const w = camera.toWorld(e.clientX, e.clientY);
+    if (inInverse) return inverse.setFromWorld(w.x, w.y, S, invSnap(), grain);
     point.set(grain((Math.atan2(-w.y, w.x) * 180) / Math.PI), false, snapRange());
   };
 </script>
 
 <svg class="plane" style="--sw:{camera.boost}; --wk:{camera.stroke}" class:dragging width={camera.vw} height={camera.vh} role="slider" aria-label="Angle θ" aria-valuemin={0} aria-valuemax={360}
   aria-valuenow={Math.round(point.deg)} tabindex="0"
-  bind:this={svg} class:panning class:overRing={ghost !== null}
-  onpointerdown={down} onpointermove={move} onpointerleave={() => (ghost = null)} onpointerup={up} onpointercancel={up}>
+  bind:this={svg} class:panning class:overRing={inInverse ? inverse.ghost !== null : ghost !== null}
+  onpointerdown={down} onpointermove={move} onpointerleave={() => { ghost = null; inverse.ghost = null; }} onpointerup={up} onpointercancel={up}>
   <g transform="translate({camera.ox} {camera.oy}) scale({camera.k})">
     <Grid />
-    <Ring />
-    {#if ghostDraw}
-      <g class="ghost" class:snapped={ghostDraw.special}>
-        <line x1="0" y1="0" x2={ghostDraw.x} y2={ghostDraw.y} />
-        {#if !ghostDraw.special}<circle cx={ghostDraw.x} cy={ghostDraw.y} r={6 * camera.stroke} />{/if}
-        {#if ghostDraw.label}<g class="glabel"><SvgTex label={ghostDraw.label} /></g>{/if}
-      </g>
-    {/if}
-    <Figure {scene} />
-    <circle cx={scene.x} cy={scene.y} r="28" fill="transparent" class="grab" />
-    <circle cx={scene.x} cy={scene.y} r={point.dotR * camera.stroke} fill={scene.col} stroke="var(--panel)" stroke-width={2 * camera.stroke} pointer-events="none" />
+    <!-- every topic's layer is always mounted: when a topic is left its marks play their own exits, and the next topic's marks enter -->
+    <RingLayer />
+    <InverseLayer />
+    <CircleLayer {scene} ghost={ghostDraw} />
   </g>
 </svg>
-<Chips {scene} />
+{#if !inInverse}<div in:fade={{ duration: 200 }} out:fade={{ duration: 160 }}><Chips {scene} /></div>{/if}
 
 <style>
   .plane { position: fixed; inset: 0; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
   .plane:focus { outline: none; }
   .plane:focus-visible { outline: 2px solid var(--cos); outline-offset: -2px; }
   .plane { cursor: grab; }
-  .plane.overRing, .grab { cursor: pointer; }
+  .plane.overRing { cursor: pointer; }
   .plane.panning { cursor: grabbing; }
-  .ghost { pointer-events: none; }
-  .ghost line, .ghost circle, .glabel { opacity: 0.45; }
-  .snapped .glabel { opacity: 1; }
-  .ghost line { stroke: var(--muted); stroke-width: calc(1px * var(--wk, 1)); stroke-dasharray: calc(2px * var(--wk, 1)) calc(4px * var(--wk, 1)); }
-  .ghost circle { fill: var(--muted); stroke: none; }
-  .dragging, .dragging .grab { cursor: grabbing; }
+  .dragging { cursor: grabbing; }
 </style>
