@@ -11,7 +11,10 @@ test('answers follow the principal range', () => {
   assert.equal(answerOf({ t: 2, fn: 'asin', theta: 210, dom: { lo: 0, hi: 360, tex: '' } }), -30);
   assert.equal(answerOf({ t: 2, fn: 'acos', theta: 300, dom: { lo: 0, hi: 360, tex: '' } }), 60);
   assert.equal(answerOf({ t: 2, fn: 'atan', theta: 135, dom: { lo: 0, hi: 360, tex: '' } }), -45);
-  assert.equal(answerOf({ t: 2, fn: 'asin', theta: -150, dom: { lo: -180, hi: 180, tex: '' } }), -30);
+  assert.equal(
+    answerOf({ t: 2, fn: 'asin', theta: -150, dom: { lo: -180, hi: 180, tex: '' } }),
+    -30,
+  );
 });
 
 test('every generated question is answerable, with four distinct choices that include the answer', () => {
@@ -38,12 +41,16 @@ test('every generated question is answerable, with four distinct choices that in
     assert.equal(new Set(choices).size, 4, choices.join());
     assert.ok(choices.includes(answerOf(q)), `${choices.join()} should hold ${answerOf(q)}`);
     // written in either unit, the four choices stay distinct
-    for (const u of ['deg', 'rad'] as Unit[]) assert.equal(new Set(choices.map((c) => angleTex(c, u))).size, 4);
+    for (const u of ['deg', 'rad'] as Unit[])
+      assert.equal(new Set(choices.map((c) => angleTex(c, u))).size, 4);
   }
 });
 
 test('a domain reads in either unit and keeps its open and closed ends', () => {
-  assert.equal(domainTex({ lo: 0, hi: 360, closed: false }, 'deg'), '0^\\circ\\le\\theta<360^\\circ');
+  assert.equal(
+    domainTex({ lo: 0, hi: 360, closed: false }, 'deg'),
+    '0^\\circ\\le\\theta<360^\\circ',
+  );
   assert.equal(domainTex({ lo: 0, hi: 360, closed: false }, 'rad'), '0\\le\\theta<2\\pi');
   assert.equal(domainTex({ lo: 90, hi: 270, closed: true }, 'rad'), '\\pi/2\\le\\theta\\le3\\pi/2');
   // a question saved before the flag existed still reads the same way

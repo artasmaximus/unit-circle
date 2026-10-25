@@ -5,8 +5,12 @@
   let { parts }: { parts: Rich | string } = $props();
 </script>
 
-{#if typeof parts === 'string'}{parts}{:else}{#each parts as p}{#if typeof p === 'string'}{p}{:else}<span class="im"><Tex latex={p.m} /></span>{/if}{/each}{/if}
+{#if typeof parts === 'string'}{parts}{:else}{#each parts as p}{#if typeof p === 'string'}{p}{:else}<span
+        class="im"><Tex latex={p.m} /></span
+      >{/if}{/each}{/if}
 
 <style>
-  .im { margin: 0 0.12em; }
+  .im {
+    margin: 0 0.12em;
+  }
 </style>

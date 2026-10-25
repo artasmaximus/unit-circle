@@ -1,6 +1,7 @@
-// Inverse trig on the unit circle, as pure math. Angles are in degrees.
-// The inverses are functions only because each is cut down to one stretch of the circle where its partner never repeats
-// (the "principal range"): arcsin keeps the right half, arccos the upper half, arctan the right half without its ends.
+// Inverse trig on the unit circle, as pure math. Angles are in degrees. The inverses are functions
+// only because each is cut down to one stretch of the circle where its partner never repeats (the
+// "principal range"): arcsin keeps the right half, arccos the upper half, arctan the right half
+// without its ends.
 import { dec, norm } from './trig.ts';
 
 export type InvFn = 'asin' | 'acos' | 'atan';
@@ -33,17 +34,28 @@ export function partnerAt(fn: InvFn, deg: number): number | null {
   return Math.abs(Math.cos(r)) < 1e-9 ? null : Math.tan(r);
 }
 
-/** The other angle on the circle with the same partner value: 180° − θ for sin, −θ for cos, θ + 180° for tan. */
-export const otherAngle = (fn: InvFn, deg: number) => (fn === 'asin' ? 180 - deg : fn === 'acos' ? -deg : deg + 180);
+/**
+ * The other angle on the circle with the same partner value: 180° − θ for sin, −θ for cos, θ + 180°
+ * for tan.
+ */
+export const otherAngle = (fn: InvFn, deg: number) =>
+  fn === 'asin' ? 180 - deg : fn === 'acos' ? -deg : deg + 180;
 
 /** Every angle in [from, from + 360) whose partner value is `v`, ascending. */
 export function solutionsIn(fn: InvFn, v: number, from = 0): number[] {
-  const p = principal(fn, v), out = [p, otherAngle(fn, p)].map((a) => from + norm(a - from));
-  const uniq = out.filter((a, i) => out.findIndex((b) => Math.abs(b - a) < 1e-9 || Math.abs(Math.abs(b - a) - 360) < 1e-9) === i);
+  const p = principal(fn, v),
+    out = [p, otherAngle(fn, p)].map((a) => from + norm(a - from));
+  const uniq = out.filter(
+    (a, i) =>
+      out.findIndex((b) => Math.abs(b - a) < 1e-9 || Math.abs(Math.abs(b - a) - 360) < 1e-9) === i,
+  );
   return uniq.sort((a, b) => a - b);
 }
 
-/** arcsin(sin θ), arccos(cos θ) or arctan(tan θ): the principal angle that has the same partner value as θ. null if undefined. */
+/**
+ * arcsin(sin θ), arccos(cos θ) or arctan(tan θ): the principal angle that has the same partner
+ * value as θ. null if undefined.
+ */
 export function compose(fn: InvFn, deg: number): number | null {
   const v = partnerAt(fn, deg);
   return v === null ? null : principal(fn, v);
@@ -58,19 +70,43 @@ export function inRange(fn: InvFn, deg: number): boolean {
 }
 
 // ---- special values ----
-const R2 = Math.SQRT2, R3 = Math.sqrt(3);
-/** The exact sin / cos values on the special angles, and the tan values (slopes), each with its LaTeX (left un-rationalized). */
+const R2 = Math.SQRT2,
+  R3 = Math.sqrt(3);
+/**
+ * The exact sin / cos values on the special angles, and the tan values (slopes), each with its
+ * LaTeX (left un-rationalized).
+ */
 const SC: [number, string][] = [
-  [0, '0'], [1 / 2, '\\frac{1}{2}'], [R2 / 2, '\\frac{1}{\\sqrt{2}}'], [R3 / 2, '\\frac{\\sqrt{3}}{2}'], [1, '1'],
+  [0, '0'],
+  [1 / 2, '\\frac{1}{2}'],
+  [R2 / 2, '\\frac{1}{\\sqrt{2}}'],
+  [R3 / 2, '\\frac{\\sqrt{3}}{2}'],
+  [1, '1'],
 ];
-const T: [number, string][] = [[0, '0'], [R3 / 3, '\\frac{1}{\\sqrt{3}}'], [1, '1'], [R3, '\\sqrt{3}']];
-const SIGNED = (t: [number, string][]): [number, string][] => [...t.slice(1).reverse().map(([v, s]): [number, string] => [-v, `-${s}`]), ...t];
+const T: [number, string][] = [
+  [0, '0'],
+  [R3 / 3, '\\frac{1}{\\sqrt{3}}'],
+  [1, '1'],
+  [R3, '\\sqrt{3}'],
+];
+const SIGNED = (t: [number, string][]): [number, string][] => [
+  ...t
+    .slice(1)
+    .reverse()
+    .map(([v, s]): [number, string] => [-v, `-${s}`]),
+  ...t,
+];
 export const SPECIAL_VALUES = { asin: SIGNED(SC), acos: SIGNED(SC), atan: SIGNED(T) } as const;
 
 /** The special value nearest `v` when it is within `range`, else `v` itself. */
 export function snapValue(fn: InvFn, v: number, range: number): number {
-  let best = v, d = range;
-  for (const [s] of SPECIAL_VALUES[fn]) if (Math.abs(s - v) <= d) { best = s; d = Math.abs(s - v); }
+  let best = v,
+    d = range;
+  for (const [s] of SPECIAL_VALUES[fn])
+    if (Math.abs(s - v) <= d) {
+      best = s;
+      d = Math.abs(s - v);
+    }
   return best;
 }
 

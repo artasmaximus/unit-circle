@@ -30,7 +30,10 @@ test('exact values', () => {
 test('workshop operations', () => {
   const flipped = apply(DEFINITIONS.csc, { kind: 'reciprocal' });
   assert.equal(eqTex(flipped), '\\frac{1}{\\csc\\theta}=\\sin\\theta');
-  assert.equal(eqTex(apply(DEFINITIONS.csc, { kind: 'inSinCos' })), '\\frac{1}{\\sin\\theta}=\\frac{1}{\\sin\\theta}');
+  assert.equal(
+    eqTex(apply(DEFINITIONS.csc, { kind: 'inSinCos' })),
+    '\\frac{1}{\\sin\\theta}=\\frac{1}{\\sin\\theta}',
+  );
   assert.ok(isIdentity(apply(flipped, { kind: 'simplify' })));
   const times = apply(DEFINITIONS.csc, { kind: 'times', by: 'sin' });
   assert.equal(eqTex(apply(times, { kind: 'simplify' })), '1=1');
@@ -61,11 +64,19 @@ test('solving csc θ = 2 by reciprocal', async () => {
 });
 
 test('the unit circle quiz writes every angle in the unit asked for, with no degree signs in radians', () => {
-  const flat = (r: unknown[]): string => r.map((p) => (typeof p === 'string' ? p : (p as { m: string }).m)).join('');
+  const flat = (r: unknown[]): string =>
+    r.map((p) => (typeof p === 'string' ? p : (p as { m: string }).m)).join('');
   for (let i = 0; i < 300; i++) {
     const q = makeQ();
-    const texts = [qTex(q, 'rad'), flat(task(q, 'rad')), hintTip(q, 'rad'), flat(hintMsg(q, 'rad')), ...explain(q, 'rad').map(flat)];
-    for (const t of texts) assert.ok(!/circ|°/.test(t), `${t} should have no degree signs in radians`);
+    const texts = [
+      qTex(q, 'rad'),
+      flat(task(q, 'rad')),
+      hintTip(q, 'rad'),
+      flat(hintMsg(q, 'rad')),
+      ...explain(q, 'rad').map(flat),
+    ];
+    for (const t of texts)
+      assert.ok(!/circ|°/.test(t), `${t} should have no degree signs in radians`);
     assert.ok(/circ/.test(qTex(makeQ_t1(), 'deg')));
   }
 });

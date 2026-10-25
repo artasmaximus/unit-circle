@@ -7,5 +7,14 @@
 </script>
 
 {#if b}
-  <svg x={label.rect.x} y={label.rect.y} width={label.rect.w} height={label.rect.h} viewBox={b.viewBox} overflow="visible" style:color={label.color} {style}>{@html b.inner}</svg>
+  <svg
+    x={label.rect.x}
+    y={label.rect.y}
+    width={label.rect.w}
+    height={label.rect.h}
+    viewBox={b.viewBox}
+    overflow="visible"
+    style:color={label.color}
+    {style}>{@html b.inner}</svg
+  >
 {/if}

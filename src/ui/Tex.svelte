@@ -6,9 +6,20 @@
 </script>
 
 {#if b}
-  <svg class="tex" viewBox={b.viewBox} style:width="{b.w}em" style:height="{b.h}em" style:vertical-align="{-b.depth}em" role="img" aria-label={latex}>{@html b.inner}</svg>
+  <svg
+    class="tex"
+    viewBox={b.viewBox}
+    style:width="{b.w}em"
+    style:height="{b.h}em"
+    style:vertical-align="{-b.depth}em"
+    role="img"
+    aria-label={latex}>{@html b.inner}</svg
+  >
 {/if}
 
 <style>
-  .tex { display: inline-block; overflow: visible; }
+  .tex {
+    display: inline-block;
+    overflow: visible;
+  }
 </style>

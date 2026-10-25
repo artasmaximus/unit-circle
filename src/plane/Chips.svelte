@@ -17,8 +17,13 @@
 </script>
 
 <svelte:window
-  onpointerdown={(e) => { if (ui.slopeOpen && !slopeEl?.contains(e.target as Node)) close(); }}
-  onkeydown={(e) => { if (e.key === 'Escape' && ui.slopeOpen) close(); }} />
+  onpointerdown={(e) => {
+    if (ui.slopeOpen && !slopeEl?.contains(e.target as Node)) close();
+  }}
+  onkeydown={(e) => {
+    if (e.key === 'Escape' && ui.slopeOpen) close();
+  }}
+/>
 
 <div class="layer">
   {#if scene.tag}
@@ -27,16 +32,27 @@
     <div class="tag" style={box(t)}>
       {#if t.values}
         <span class="values" transition:scale={{ start: 0.6, duration: 200 }}>
-          {#each t.parts ?? [] as part}<span style:color={part.color}><Tex latex={part.latex} /></span>{/each}
+          {#each t.parts ?? [] as part}<span style:color={part.color}
+              ><Tex latex={part.latex} /></span
+            >{/each}
         </span>
       {/if}
     </div>
   {/if}
   {#if scene.slope}
-    <!-- amber tan θ = value; hovering badges it as the slope, and a click unfolds the working inside the box -->
-    <button bind:this={slopeEl} type="button" class="chip slope" style={box(scene.slope)} aria-expanded={ui.slopeOpen}
-      aria-label="Slope: click to show the calculation" onclick={() => (ui.slopeOpen = !ui.slopeOpen)} onblur={close}
-      transition:scale={{ start: 0.6, duration: 200 }}>
+    <!-- amber tan θ = value; hovering badges it as the slope, and a click unfolds the working
+         inside the box -->
+    <button
+      bind:this={slopeEl}
+      type="button"
+      class="chip slope"
+      style={box(scene.slope)}
+      aria-expanded={ui.slopeOpen}
+      aria-label="Slope: click to show the calculation"
+      onclick={() => (ui.slopeOpen = !ui.slopeOpen)}
+      onblur={close}
+      transition:scale={{ start: 0.6, duration: 200 }}
+    >
       <span class="badge">slope</span><Tex latex={scene.slope.latex} />
     </button>
   {/if}
@@ -44,40 +60,96 @@
 
 <style>
   .tag {
-    position: absolute; left: 0; top: 0; box-sizing: border-box; display: grid; place-items: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
     transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1);
   }
-  .values { position: relative; display: inline-flex; align-items: center; padding: 6px 12px; }
-  /* a blur that fades out at its edges, behind the values only (masking the text itself would fade it too) */
-  .values::before {
-    content: ''; position: absolute; inset: -6px -10px; z-index: -1;
-    background: color-mix(in srgb, var(--bg) 35%, transparent);
-    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
-    -webkit-mask-image: radial-gradient(closest-side, #000 50%, transparent); mask-image: radial-gradient(closest-side, #000 50%, transparent);
+  .values {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
   }
-  .layer { position: fixed; inset: 0; pointer-events: none; }
+  /* a blur that fades out at its edges, behind the values only (masking the text itself would
+     fade it too) */
+  .values::before {
+    content: '';
+    position: absolute;
+    inset: -6px -10px;
+    z-index: -1;
+    background: color-mix(in srgb, var(--bg) 35%, transparent);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    -webkit-mask-image: radial-gradient(closest-side, #000 50%, transparent);
+    mask-image: radial-gradient(closest-side, #000 50%, transparent);
+  }
+  .layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
   .chip {
-    position: absolute; left: 0; top: 0; box-sizing: border-box; display: grid; place-items: center;
-    line-height: 1; color: var(--fg); white-space: nowrap;
-    border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line)); border-radius: 8px;
-    background: var(--glass); box-shadow: 0 6px 14px -4px var(--sh);
-    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-    transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1), width 0.24s cubic-bezier(0.22, 0.9, 0.3, 1), height 0.24s cubic-bezier(0.22, 0.9, 0.3, 1), border-color 0.15s;
+    position: absolute;
+    left: 0;
+    top: 0;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    color: var(--fg);
+    white-space: nowrap;
+    border: 1px solid color-mix(in srgb, var(--c) 55%, var(--line));
+    border-radius: 8px;
+    background: var(--glass);
+    box-shadow: 0 6px 14px -4px var(--sh);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    transition:
+      transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1),
+      width 0.24s cubic-bezier(0.22, 0.9, 0.3, 1),
+      height 0.24s cubic-bezier(0.22, 0.9, 0.3, 1),
+      border-color 0.15s;
   }
   /* amber-tinted glass with a soft amber edge */
   .slope {
-    pointer-events: auto; cursor: pointer; outline: none; font: inherit; padding: 0;
+    pointer-events: auto;
+    cursor: pointer;
+    outline: none;
+    font: inherit;
+    padding: 0;
     border-color: color-mix(in srgb, var(--slope) 35%, transparent);
     background: color-mix(in srgb, var(--slope) 12%, var(--glass));
   }
   /* a small tag above the box's top-left corner, only while hovering or keyboard-focusing it */
   .badge {
-    position: absolute; left: -1px; bottom: calc(100% + 4px); padding: 3px 7px; border-radius: 6px;
-    font-size: 0.72em; line-height: 1; letter-spacing: 0.03em; color: var(--slope);
+    position: absolute;
+    left: -1px;
+    bottom: calc(100% + 4px);
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 0.72em;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--slope);
     border: 1px solid color-mix(in srgb, var(--slope) 35%, transparent);
     background: color-mix(in srgb, var(--slope) 12%, var(--glass));
-    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-    opacity: 0; transform: translateY(2px); pointer-events: none; transition: opacity 0.15s, transform 0.15s;
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transform: translateY(2px);
+    pointer-events: none;
+    transition:
+      opacity 0.15s,
+      transform 0.15s;
   }
-  .slope:hover .badge, .slope:focus-visible .badge, .slope[aria-expanded='true'] .badge { opacity: 1; transform: none; }
+  .slope:hover .badge,
+  .slope:focus-visible .badge,
+  .slope[aria-expanded='true'] .badge {
+    opacity: 1;
+    transform: none;
+  }
 </style>
