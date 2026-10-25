@@ -16,6 +16,7 @@
   import InversePanel from './InversePanel.svelte';
   import InverseQuiz from './InverseQuiz.svelte';
   import RadiansGuide from './RadiansGuide.svelte';
+  import UnitGuide from './UnitGuide.svelte';
   import RadiansPanel from './RadiansPanel.svelte';
   import RadiansQuiz from './RadiansQuiz.svelte';
   import { radians } from '../lib/radians.svelte.ts';
@@ -89,6 +90,7 @@
       {:else if ui.topic === 'inverse'}
         {#if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}><InverseQuiz /></div>
         {:else}<div class="view" in:fly={IN} out:fly={OUT}><InversePanel trailing={otherToggle} /></div>{/if}
+      {:else if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><UnitGuide /></div>
       {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}><Quiz trailing={mirror} /></div>
       {:else}<div class="view" in:fly={IN} out:fly={OUT}><Reciprocals trailing={mirror} /></div>{/if}
     </div>

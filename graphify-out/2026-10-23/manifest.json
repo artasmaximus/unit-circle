@@ -48,15 +48,15 @@
     "semantic_hash": ""
   },
   "src/lib/scene.ts": {
-    "mtime": 1792768229.3537247,
-    "seen": 1792768448.2179358,
-    "ast_hash": "1c10a4cad32fafd2c71401ab43612806",
+    "mtime": 1792782969.5318787,
+    "seen": 1792783021.42214,
+    "ast_hash": "660e948d858a03d56b64b565e5450f8d",
     "semantic_hash": ""
   },
   "src/lib/state.svelte.ts": {
-    "mtime": 1792769308.2739632,
-    "seen": 1792769843.319581,
-    "ast_hash": "526e18d9a7cd6645cb16764412d71e9f",
+    "mtime": 1792780137.1983044,
+    "seen": 1792780343.5922072,
+    "ast_hash": "bedeb7bb620c51bcee9c9efdfc0a6759",
     "semantic_hash": ""
   },
   "src/lib/tex.svelte.ts": {
@@ -78,9 +78,9 @@
     "semantic_hash": ""
   },
   "src/panel/Panel.svelte": {
-    "mtime": 1792769684.550512,
-    "seen": 1792769843.3195882,
-    "ast_hash": "d58e2fcc163f782ece9851e5705d8ec5",
+    "mtime": 1792780275.54873,
+    "seen": 1792780343.5922182,
+    "ast_hash": "07bbf656de7d831d91787a99cb01b2b5",
     "semantic_hash": ""
   },
   "src/panel/Quiz.svelte": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/plane/Plane.svelte": {
-    "mtime": 1792776468.2854404,
-    "seen": 1792776504.403595,
-    "ast_hash": "6287c0c5ad9161879242ceb908264973",
+    "mtime": 1792780229.944037,
+    "seen": 1792780343.5922291,
+    "ast_hash": "2ee7a0ab912e73152e55f8c6338bf8f1",
     "semantic_hash": ""
   },
   "src/ui/Rich.svelte": {
@@ -276,9 +276,9 @@
     "semantic_hash": ""
   },
   "src/plane/MarkLayer.svelte": {
-    "mtime": 1792776842.1691964,
-    "seen": 1792776874.8261409,
-    "ast_hash": "e25b1517dee17d0fe364957cc503070f",
+    "mtime": 1792777046.96757,
+    "seen": 1792777090.042916,
+    "ast_hash": "cd1c0261f04222a6de54c11b73a654f6",
     "semantic_hash": ""
   },
   "src/lib/circleMarks.ts": {
@@ -294,15 +294,15 @@
     "semantic_hash": ""
   },
   "src/plane/CircleLayer.svelte": {
-    "mtime": 1792713408.965372,
-    "seen": 1792713530.5985339,
-    "ast_hash": "f0229903adf46ce782f6d70fb043fa90",
+    "mtime": 1792780229.9424028,
+    "seen": 1792780343.592225,
+    "ast_hash": "a8a01fe2eddbc09d97fa888b076e94c1",
     "semantic_hash": ""
   },
   "src/plane/RingLayer.svelte": {
-    "mtime": 1792776836.929225,
-    "seen": 1792776874.826143,
-    "ast_hash": "bee1ae5da74ec805c2b7a3aeae5adf22",
+    "mtime": 1792780229.9430633,
+    "seen": 1792780343.5922308,
+    "ast_hash": "93563ebf3f6ebe85ac025839ef8960c1",
     "semantic_hash": ""
   },
   "src/lib/gridMarks.ts": {
@@ -330,21 +330,21 @@
     "semantic_hash": ""
   },
   "src/lib/progress.svelte.ts": {
-    "mtime": 1792769308.2436852,
-    "seen": 1792769843.319573,
-    "ast_hash": "19eadb5f5f42def886ba11bf2dcf28c0",
+    "mtime": 1792780137.1975906,
+    "seen": 1792780343.592198,
+    "ast_hash": "ca2b321abdd8b1d8d7778cf71ff70478",
     "semantic_hash": ""
   },
   "src/guides/radians.ts": {
-    "mtime": 1792775121.9386563,
-    "seen": 1792775179.550029,
-    "ast_hash": "d35dfa4193176f037b7ba8d12880f558",
+    "mtime": 1792777989.8938074,
+    "seen": 1792777997.794461,
+    "ast_hash": "e1b4138a85b1847175e1aa89daa8d00a",
     "semantic_hash": ""
   },
   "src/lib/guide.ts": {
-    "mtime": 1792769381.1754422,
-    "seen": 1792769843.319563,
-    "ast_hash": "430d45774e0486c4fcea4676076eb515",
+    "mtime": 1792780077.6846936,
+    "seen": 1792780343.592187,
+    "ast_hash": "644d9b1d187bb351012e842222466e06",
     "semantic_hash": ""
   },
   "src/lib/radians.svelte.ts": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "src/panel/RadiansGuide.svelte": {
-    "mtime": 1792769703.815654,
-    "seen": 1792769843.3195899,
-    "ast_hash": "e26a8efb15a2174fe72d502895f4875f",
+    "mtime": 1792780252.6864543,
+    "seen": 1792780343.5922198,
+    "ast_hash": "fae09c56527c328166d0d52929748930",
     "semantic_hash": ""
   },
   "src/panel/RadiansPanel.svelte": {
@@ -399,6 +399,48 @@
     "mtime": 1792776468.2849944,
     "seen": 1792776504.403596,
     "ast_hash": "15456138e332aaaaf70c38483798beed",
+    "semantic_hash": ""
+  },
+  "src/guides/unitCircle.ts": {
+    "mtime": 1792782969.5323565,
+    "seen": 1792783021.422112,
+    "ast_hash": "917949b058da7a2c44e79ebf8a0c86f7",
+    "semantic_hash": ""
+  },
+  "src/lib/unitFeatures.ts": {
+    "mtime": 1792780077.6901011,
+    "seen": 1792780343.592212,
+    "ast_hash": "0d739f383137c431725acdf66e34845e",
+    "semantic_hash": ""
+  },
+  "src/lib/unitGuide.svelte.ts": {
+    "mtime": 1792780136.9718769,
+    "seen": 1792780343.592213,
+    "ast_hash": "746acf6c925f245eabb7b6e801bf5b91",
+    "semantic_hash": ""
+  },
+  "src/lib/unitGuideMarks.ts": {
+    "mtime": 1792783296.9397001,
+    "seen": 1792783315.980077,
+    "ast_hash": "5c1d4839aeb55e1a48ac1e7a2391fc29",
+    "semantic_hash": ""
+  },
+  "src/panel/Guide.svelte": {
+    "mtime": 1792780288.7859051,
+    "seen": 1792780343.592215,
+    "ast_hash": "601fe6ee1bc40de2d60b08d05f6bd7a3",
+    "semantic_hash": ""
+  },
+  "src/panel/UnitGuide.svelte": {
+    "mtime": 1792780275.5477996,
+    "seen": 1792780343.592223,
+    "ast_hash": "d18d7d4e768a2623ece6d0d8f785d921",
+    "semantic_hash": ""
+  },
+  "src/plane/UnitGuideLayer.svelte": {
+    "mtime": 1792780229.9241922,
+    "seen": 1792780343.592232,
+    "ast_hash": "fd1e44428ad3fc22023b20bbc7e69d47",
     "semantic_hash": ""
   }
 }

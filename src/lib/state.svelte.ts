@@ -67,11 +67,12 @@ export type Topic = 'circle' | 'inverse' | 'radians';
 /** How a topic is being used: Guide is the guided path (only some topics have one), Explore is free play, Practice is questions. */
 export type Mode = 'guide' | 'explore' | 'practice';
 /** The topics that have a Guide. */
-export const guideTopics: ReadonlySet<Topic> = new Set<Topic>(['radians']);
+export const guideTopics: ReadonlySet<Topic> = new Set<Topic>(['radians', 'circle']);
 export const ui = $state({
   /** The concept on the plane, picked in the tab bar. */
   topic: 'circle' as Topic,
-  mode: 'practice' as Mode,
+  /** A learner who has not finished the unit circle's Guide starts in it. */
+  mode: (progress.completed.circle ? 'practice' : 'guide') as Mode,
   mirror: false,
   /** In Practice, answers stay hidden until the question is answered. */
   revealed: true,

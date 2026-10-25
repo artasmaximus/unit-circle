@@ -40,7 +40,7 @@ const REFL: { ang: (a: number) => number; deg: (d: number) => number; fn: Fn }[]
 ];
 
 /** A curly brace beside segment (x1,y1)-(x2,y2), tip along the outward normal (nx,ny). */
-function brace(x1: number, y1: number, x2: number, y2: number, nx: number, ny: number, minLen: number, sf: number) {
+export function brace(x1: number, y1: number, x2: number, y2: number, nx: number, ny: number, minLen: number, sf: number) {
   const L = Math.hypot(x2 - x1, y2 - y1);
   if (L < minLen) return null;
   const ux = (x2 - x1) / L, uy = (y2 - y1) / L, d = Math.min(7 * sf, L / 6), m = 5 * sf, h = L / 2;

@@ -4,7 +4,7 @@
 import type { Unit } from './angles.ts';
 
 const KEY = 'ucp';
-export type GuideTopic = 'radians';
+export type GuideTopic = 'radians' | 'circle';
 type Saved = { radians: boolean; unit: Unit; completed: Partial<Record<GuideTopic, boolean>>; step: Partial<Record<GuideTopic, number>> };
 
 function load(): Saved {

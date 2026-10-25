@@ -18,6 +18,7 @@
   import Chips from './Chips.svelte';
   import InverseLayer from './InverseLayer.svelte';
   import RadiansLayer from './RadiansLayer.svelte';
+  import UnitGuideLayer from './UnitGuideLayer.svelte';
 
   /** How close (px) to the circle a press must be to grab the point. */
   const BAND = input.grabBand;
@@ -144,9 +145,10 @@
     <InverseLayer />
     <RadiansLayer />
     <CircleLayer {scene} ghost={ghostDraw} />
+    <UnitGuideLayer />
   </g>
 </svg>
-{#if ui.topic === 'circle'}<div in:fade={{ duration: 200 }} out:fade={{ duration: 160 }}><Chips {scene} /></div>{/if}
+{#if ui.topic === 'circle' && ui.mode !== 'guide'}<div in:fade={{ duration: 200 }} out:fade={{ duration: 160 }}><Chips {scene} /></div>{/if}
 
 <style>
   .plane { position: fixed; inset: 0; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
