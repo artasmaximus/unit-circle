@@ -15,6 +15,7 @@ import { Arc } from '../../figures/arc.ts';
 import { Label } from '../../figures/label.ts';
 import { NumberLine } from '../../figures/numberLine.ts';
 import { Point } from '../../figures/point.ts';
+import { Trail } from '../../figures/trail.ts';
 import { Sector } from '../../figures/sector.ts';
 import { Segment } from '../../figures/segment.ts';
 
@@ -40,6 +41,9 @@ export type InvInput = {
   dragging: boolean;
   /** The free probe point (degrees, not wrapped), or null when there is none. */
   probe: number | null;
+  /** The arcs (radians) of the colored tails behind the answer's point and the probe. */
+  tail: number;
+  probeTail: number;
   /**
    * Line width, label size and decimal places, as camera.stroke, camera.labelBoost and
    * camera.thetaDecimals give them.
@@ -53,6 +57,8 @@ export type InvInput = {
 const COLORS = { asin: 'var(--sin)', acos: 'var(--cos)', atan: 'var(--slope)' } as const;
 /** The dash the topic uses for guide lines, in stroke units. */
 const DASH: [number, number] = [3, 4];
+/** A trail sticks to the instant it moves: no entrance or exit of its own. */
+const NOW = { dur: 0, exitDur: 0, enter: 'fade' } as const;
 /** A point on a circle at an angle in degrees. */
 const at = (deg: number, r = S): Pt => polar(rad(deg), r);
 /** Whether two angles are different points on the circle (at ±1 the two crossings meet). */
@@ -196,6 +202,13 @@ export function inverseScene(i: InvInput): Mark[] {
       Segment(
         'ray',
         { from: [0, 0], to: P, color: c, width: 1.75, round: true, z: 6, enter: 'draw', dur: 450 },
+        ctx,
+      ),
+    );
+    add(
+      Trail(
+        'trail',
+        { r: S, head: rad(i.angle), length: i.tail, steps: 28, color: () => c, z: 3, ...NOW },
         ctx,
       ),
     );
@@ -374,6 +387,13 @@ export function inverseScene(i: InvInput): Mark[] {
       NumberLine('probe:axisX', { axis: 'x', r: S, values: SPECIAL_VALUES.asin, color: blue }, ctx),
     );
     const drop = { width: 1.25, dash: DASH, z: 5, enter: 'draw', dur: 350 } as const;
+    add(
+      Trail(
+        'probe:trail',
+        { r: S, head: rad(pa), length: i.probeTail, steps: 28, color: () => fg, z: 3, ...NOW },
+        ctx,
+      ),
+    );
     add(Segment('probe:dropY', { from: PP, to: Hy, color: red, ...drop }, ctx));
     add(Segment('probe:dropX', { from: PP, to: Hx, color: blue, ...drop }, ctx));
     add(

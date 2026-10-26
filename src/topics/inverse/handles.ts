@@ -30,12 +30,12 @@ function probeHandles(): Handle[] {
   const grip = (by: 'ring' | 'y' | 'x'): Handle => ({
     key: `probe:${by}`,
     hit: by === 'ring' ? { kind: 'ring', r: S } : { kind: 'axis', axis: by, r: S },
-    drag: (at, a) => inverse.moveProbe(probeAngle(by, at, a), 90),
+    drag: (at, a) => inverse.moveProbe(probeAngle(by, at, a)),
   });
   return [
     {
       ...grip('ring'),
-      nudge: (dir, big) => inverse.moveProbe(inverse.probe! + dir * step(big, 1, 15), 90),
+      nudge: (dir, big) => inverse.moveProbe(inverse.probe! + dir * step(big, 1, 15)),
     },
     grip('y'),
     grip('x'),

@@ -11,6 +11,7 @@ import { Arc } from '../../figures/arc.ts';
 import { ArcRuler } from '../../figures/arcRuler.ts';
 import { Label } from '../../figures/label.ts';
 import { Point } from '../../figures/point.ts';
+import { Trail } from '../../figures/trail.ts';
 import { Segment } from '../../figures/segment.ts';
 import { Wedges } from '../../figures/wedges.ts';
 
@@ -22,6 +23,8 @@ export type RadiansInput = {
   features: ReadonlySet<Feature>;
   /** The point's angle in radians (it springs, so this moves smoothly). */
   ang: number;
+  /** The arc (radians) of the colored tail chasing the point. */
+  tail: number;
   /** Where the point is headed, in radians: the slices follow this, not the spring. */
   target: number;
   sw: number;
@@ -184,6 +187,23 @@ export function radiansScene(i: RadiansInput): Mark[] {
 
   // ---- the point and its radius line
   if (f.size) {
+    add(
+      Trail(
+        'rad:trail',
+        {
+          r: S,
+          head: a,
+          length: i.tail,
+          steps: 28,
+          color: () => COLOR,
+          z: 3,
+          dur: 0,
+          exitDur: 0,
+          enter: 'fade',
+        },
+        ctx,
+      ),
+    );
     add(
       Segment(
         'rad:ray',

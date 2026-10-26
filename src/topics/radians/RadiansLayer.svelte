@@ -22,6 +22,7 @@
       active: ui.topic === 'radians',
       features: radians.features,
       ang: point.ang,
+      tail: point.tail,
       target: point.target,
       sw: camera.stroke,
       lb: camera.labelBoost,

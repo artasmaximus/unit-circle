@@ -30,6 +30,8 @@
       ghost: inverse.ghost,
       dragging: inverse.dragging,
       probe: inverse.probe === null ? null : inverse.probeAngle,
+      tail: inverse.tail,
+      probeTail: inverse.probeTail,
       sw: camera.stroke,
       lb: camera.labelBoost,
       decimals: camera.thetaDecimals,

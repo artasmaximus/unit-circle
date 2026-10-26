@@ -41,7 +41,7 @@ function stage(s: Setup) {
     inverse.stopProbe();
     inverse.shown = true;
     inverse.locked = false;
-    inverse.setAngle(s.angle ?? 0, 450);
+    inverse.setAngle(s.angle ?? 0);
   }
 }
 
@@ -97,9 +97,12 @@ class InverseGuide {
 }
 export const inverseGuideRun = new InverseGuide();
 
+// a drag step counts as done only while the point sits on its target, and goes back to undone when
+// it is moved off
 $effect.root(() => {
   $effect(() => {
-    if (inverseGuideRun.atTarget) inverseGuideRun.solved = true;
+    if (inverseGuideRun.step.task.kind === 'drag')
+      inverseGuideRun.solved = inverseGuideRun.atTarget;
   });
 });
 
