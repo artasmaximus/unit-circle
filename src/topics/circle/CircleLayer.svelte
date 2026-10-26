@@ -20,7 +20,7 @@
       t: penClock.current,
       pen: pen.current,
       wasRevealed: penFrom.revealed,
-      ghost: circleView.ghost,
+      hintAt: circleView.hintAt,
       dotR: point.dotR,
       sw: camera.stroke,
       lb: camera.labelBoost,

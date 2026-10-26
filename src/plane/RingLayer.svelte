@@ -7,7 +7,7 @@
   import { progress } from '../core/progress.svelte.ts';
   import { radians } from '../topics/radians/state.svelte.ts';
   import { penClock, penFrom, revealed, ui } from '../core/app.svelte.ts';
-  import { aim } from './pointHandle.svelte.ts';
+  import { aim, preview } from './pointHandle.svelte.ts';
   import MarkLayer from './MarkLayer.svelte';
 
   /** The inverse topic writes the label for the angles it marks, so the ring leaves those out. */
@@ -21,7 +21,8 @@
       revealed: revealed(),
       highlight: ui.highlight,
       aim: aim.deg,
-      writesAim: ui.topic === 'circle' && ui.mode !== 'guide',
+      preview: preview.deg,
+      decimals: camera.thetaDecimals,
       taken,
       sw: camera.stroke,
       lb: camera.labelBoost,

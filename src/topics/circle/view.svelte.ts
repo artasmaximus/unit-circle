@@ -1,13 +1,11 @@
 // The unit circle's view of the plane for the current frame: its layout (where everything sits,
-// see layout.ts), and the faded preview of where a press on the ring would put the point. The
-// layer draws from it, and the floating chips read its layout.
-import { angleTex } from '../../core/angles.ts';
+// see layout.ts), and where the Practice hint's coordinates go. The layer draws from it, and the
+// floating chips read its layout.
 import { revealed, ui } from '../../core/app.svelte.ts';
-import { camera, S } from '../../core/camera.svelte.ts';
+import { camera } from '../../core/camera.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
-import { SPECIAL, colorOf, norm, rad } from '../../core/trig.ts';
-import { ringHover } from '../../plane/pointHandle.svelte.ts';
+import { preview } from '../../plane/pointHandle.svelte.ts';
 import { buildLayout } from './layout.ts';
 import { quiz } from './quiz.svelte.ts';
 
@@ -35,23 +33,9 @@ class CircleView {
     }),
   );
   /**
-   * The preview sits exactly where the pointer aims near the ring (see
-   * plane/pointHandle.svelte.ts); its label rides out to the ring label's own spot on a snap
-   * angle, and takes that label's place there. None while dragging, or where the point already is.
+   * Where a press would put the point, when Practice's hint is showing coordinates and the answer
+   * is still hidden: the hint then works at the spot being aimed at too.
    */
-  ghost = $derived.by(() => {
-    const g = ringHover.deg;
-    if (g === null || ringHover.held || Math.abs(g - point.deg) < 0.5) return null;
-    const a = rad(g),
-      special = SPECIAL.includes(g);
-    return {
-      x: S * Math.cos(a),
-      y: -S * Math.sin(a),
-      deg: g,
-      special,
-      tex: angleTex(norm(g), progress.unit, camera.thetaDecimals),
-      color: special && revealed() ? colorOf(g) : 'var(--muted)',
-    };
-  });
+  hintAt = $derived(ui.mode === 'practice' && quiz.hint && !ui.revealed ? preview.deg : null);
 }
 export const circleView = new CircleView();

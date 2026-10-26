@@ -1,6 +1,7 @@
 // The unit circle itself and its 16 snap points, as keyed marks (see figures/). The ring belongs to
 // every topic, so it never asks to leave. During a mode switch the dots pulse in one after another
-// around it, each changing color at the peak of its pulse.
+// around it, each changing color at the peak of its pulse. While the pointer hovers near the ring
+// it also shows where a press would put the point.
 import { angleTex, type Unit } from '../core/angles.ts';
 import { LABEL_R, S } from '../core/camera.svelte.ts';
 import type { Mark } from './marks.ts';
@@ -8,7 +9,8 @@ import type { Ctx } from '../figures/figure.ts';
 import { Circle } from '../figures/circle.ts';
 import { Label } from '../figures/label.ts';
 import { Point } from '../figures/point.ts';
-import { SPECIAL, colorOf, rad } from '../core/trig.ts';
+import { Segment } from '../figures/segment.ts';
+import { SPECIAL, colorOf, norm, rad } from '../core/trig.ts';
 import { input } from '../core/tuning.ts';
 
 export type RingInput = {
@@ -36,10 +38,11 @@ export type RingInput = {
    */
   labels?: boolean;
   /**
-   * False where nothing else writes the label of the angle being aimed at, so the ring keeps it
-   * (only the unit circle's hover ghost writes it).
+   * Where a press would put the point (see pointHandle.svelte.ts), with the decimals its angle is
+   * written to: a faded ray and dot go there, and its angle label takes the ring label's spot.
    */
-  writesAim?: boolean;
+  preview: number | null;
+  decimals: number;
 };
 
 const PULSE = input.pulseShare,
@@ -79,7 +82,7 @@ export function ringScene(i: RingInput): Mark[] {
         ctx,
       ).marks,
     );
-    if (i.labels !== false && (i.aim !== a || i.writesAim === false) && !i.taken(a))
+    if (i.labels !== false && i.preview !== a && !i.taken(a))
       out.push(
         ...Label(
           `ring:label:${a}`,
@@ -98,5 +101,42 @@ export function ringScene(i: RingInput): Mark[] {
         ).marks,
       );
   });
+
+  // ---- the preview of a press: a faded ray to where the point would go, a dot there unless a snap
+  // dot already is, and the angle, written where that angle's ring label would be
+  const g = i.preview;
+  if (g !== null) {
+    const a = rad(g),
+      special = SPECIAL.includes(g),
+      grey = 'var(--muted)',
+      at: [number, number] = [S * Math.cos(a), -S * Math.sin(a)],
+      q = { z: 8, enter: 'fade', dur: 100, exitDur: 100 } as const;
+    out.push(
+      ...Segment(
+        'ring:preview:ray',
+        { from: [0, 0], to: at, color: grey, width: 1, dash: [2, 4], opacity: 0.45, ...q },
+        ctx,
+      ).marks,
+    );
+    if (!special)
+      out.push(
+        ...Point('ring:preview:dot', { at, r: 6, fill: grey, opacity: 0.45, ...q }, ctx).marks,
+      );
+    if (i.labels !== false)
+      out.push(
+        ...Label(
+          'ring:preview:label',
+          {
+            tex: angleTex(norm(g), i.unit, i.decimals),
+            size: 10,
+            at: [LABEL_R * Math.cos(a), -LABEL_R * Math.sin(a)],
+            color: special && i.revealed ? colorOf(g) : grey,
+            opacity: special ? 1 : 0.45,
+            ...q,
+          },
+          ctx,
+        ).marks,
+      );
+  }
   return out;
 }

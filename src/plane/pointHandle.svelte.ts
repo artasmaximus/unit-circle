@@ -15,15 +15,20 @@ export const angleOf = ([x, y]: Pt) => (Math.atan2(-y, x) * 180) / Math.PI;
 export const ringHover = $state<{ deg: number | null; held: boolean }>({ deg: null, held: false });
 
 /**
- * The snap angle being aimed at, when a press there would move the point: the ring grows that dot,
- * and leaves its label to the preview.
+ * Where a press would put the point, for the ring's preview: the hovered angle, unless the point
+ * is being dragged or is already there.
  */
-export const aim = {
+export const preview = {
   get deg() {
     const d = ringHover.deg;
-    return d !== null && !ringHover.held && SPECIAL.includes(d) && Math.abs(d - point.deg) >= 0.5
-      ? d
-      : null;
+    return d !== null && !ringHover.held && Math.abs(d - point.deg) >= 0.5 ? d : null;
+  },
+};
+/** The snap angle the preview is on, if any: the ring grows that dot. */
+export const aim = {
+  get deg() {
+    const d = preview.deg;
+    return d !== null && SPECIAL.includes(d) ? d : null;
   },
 };
 

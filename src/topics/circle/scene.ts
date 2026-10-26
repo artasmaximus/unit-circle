@@ -1,11 +1,12 @@
 // What the unit circle topic puts on the plane, composed from figures (see figures/figure.ts): the
 // triangle's legs and their braces and labels, the angle arc, the mirror lines, the reference
-// angle, the trail, the point, and the faded preview under the pointer. Where things sit comes from
+// angle, the trail, the point, and (with the Practice hint) the coordinates where a press would go.
+// The ring draws the hover preview itself. Where things sit comes from
 // the layout (layout.ts); this file decides how each is drawn and how it moves through a mode
 // switch. When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
-import { LABEL_R, S } from '../../core/camera.svelte.ts';
+import { S } from '../../core/camera.svelte.ts';
 import { figure as F } from '../../core/tuning.ts';
-import { colorOf, rad } from '../../core/trig.ts';
+import { colorOf, rad, trigTex } from '../../core/trig.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { polar, type Ctx, type Look, type Pt } from '../../figures/figure.ts';
 import { AngleArc } from '../../figures/angleArc.ts';
@@ -26,8 +27,8 @@ export type CircleInput = {
   t: number;
   pen: number;
   wasRevealed: boolean;
-  /** The preview under the pointer (see Plane.svelte), or null. */
-  ghost: { x: number; y: number; deg: number; special: boolean; tex: string; color: string } | null;
+  /** Where a press would put the point, when the Practice hint shows coordinates there; else null. */
+  hintAt: number | null;
   dotR: number;
   sw: number;
   lb: number;
@@ -367,30 +368,26 @@ export function circleScene(i: CircleInput): Mark[] {
       );
   }
 
-  // ---- the faded preview under the pointer
-  if (i.ghost) {
-    const g = i.ghost,
-      grey = 'var(--muted)',
-      q = { z: 8, enter: 'fade', dur: 100, exitDur: 100 } as const;
-    add(
-      Segment(
-        'ghost:ray',
-        { from: [0, 0], to: [g.x, g.y], color: grey, width: 1, dash: [2, 4], opacity: 0.45, ...q },
-        ctx,
-      ),
-    );
-    if (!g.special)
-      add(Point('ghost:dot', { at: [g.x, g.y], r: 6, fill: grey, opacity: 0.45, ...q }, ctx));
+  // ---- with the hint taken in Practice, the coordinates of the spot a press would go to, just
+  // inside the ring (the ring draws the preview itself)
+  if (i.hintAt !== null) {
+    const d = i.hintAt;
     add(
       Label(
-        'ghost:label',
+        'preview:coords',
         {
-          tex: g.tex,
+          tex: `\\left(${trigTex('cos', d)},\\ ${trigTex('sin', d)}\\right)`,
           size: 10,
-          at: polar(rad(g.deg), LABEL_R),
-          color: g.color,
-          opacity: g.special ? 1 : 0.45,
-          ...q,
+          // its edge nearest the ring sits just inside it, so it never covers the dot
+          at: polar(rad(d), S - 14 * i.sw),
+          anchor: [(1 + Math.cos(rad(d))) / 2, (1 - Math.sin(rad(d))) / 2],
+          color: 'var(--fg)',
+          opacity: 0.8,
+          back: true,
+          z: 9,
+          enter: 'fade',
+          dur: 100,
+          exitDur: 100,
         },
         ctx,
       ),
