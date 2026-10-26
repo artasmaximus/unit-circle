@@ -20,6 +20,8 @@ Code is grouped by topic, with shared pieces beside the topics:
   its own state in its folder.
 - `src/plane/`: the full-viewport drawing: `Plane.svelte`, the keyed mark model (`marks.ts`) and
   `MarkLayer.svelte` that animates marks in and out, plus the grid and the ring every topic shares.
+  What a pointer can grab are handles (`handles.svelte.ts`): each topic's layer offers its own, and
+  the plane passes hover, drag and arrow keys to the nearest one.
 - `src/figures/`: reusable, topic-free pieces of a drawing (a labelled arc, a brace, a right
   triangle, a number line). Each takes a key, its own options and the zoom, and returns marks.
 

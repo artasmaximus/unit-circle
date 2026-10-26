@@ -6,12 +6,6 @@ import { progress } from './progress.svelte.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
 
-/**
- * The snap angle the pointer is aiming at: its ring label is drawn by the hover ghost, so the ring
- * skips it.
- */
-export const aim = $state<{ deg: number | null }>({ deg: null });
-
 export type Topic = 'circle' | 'inverse' | 'radians';
 /**
  * How a topic is being used: Guide is the guided path (only some topics have one), Explore is free

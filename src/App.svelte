@@ -8,6 +8,16 @@
   import { point } from './core/point.svelte.ts';
   import { quiz } from './topics/circle/quiz.svelte.ts';
   import { ui } from './core/app.svelte.ts';
+  import { nudge } from './plane/handles.svelte.ts';
+  import { fade } from 'svelte/transition';
+  import Grid from './plane/Grid.svelte';
+  import RingLayer from './plane/RingLayer.svelte';
+  import CircleLayer from './topics/circle/CircleLayer.svelte';
+  import Chips from './topics/circle/Chips.svelte';
+  import UnitGuideLayer from './topics/circle/UnitGuideLayer.svelte';
+  import { circleView } from './topics/circle/view.svelte.ts';
+  import InverseLayer from './topics/inverse/InverseLayer.svelte';
+  import RadiansLayer from './topics/radians/RadiansLayer.svelte';
 
   // ?lab=solver opens the equation solver's test bench in place of the panel
   const lab =
@@ -22,8 +32,8 @@
       ({ flushSync }) => ((window as any).__uc = { point, inverse, ui, camera, flushSync }),
     );
 
-  // arrow keys turn the point by 1° (15° with Shift); in inverse trig they nudge the value (0.01,
-  // or 0.1 with Shift), or the ray's angle for arctan
+  // arrow keys go to whatever the topic offers to move: the point, or in inverse trig the value,
+  // the ray's angle or the probe (see each topic's handles)
   const onkeydown = (e: KeyboardEvent) => {
     if (e.defaultPrevented || (e.target as HTMLElement).tagName === 'INPUT') return;
     const dir =
@@ -32,16 +42,7 @@
         : e.key === 'ArrowRight' || e.key === 'ArrowUp'
           ? 1
           : 0;
-    if (!dir) return;
-    if (ui.topic === 'inverse') {
-      if (inverse.probe !== null)
-        return inverse.moveProbe(inverse.probe + dir * (e.shiftKey ? 15 : 1), 90);
-      if (inverse.locked) return;
-      return inverse.fn === 'atan'
-        ? inverse.setAngle(inverse.target + dir * (e.shiftKey ? 15 : 1))
-        : inverse.setValue(inverse.valueTo + dir * (e.shiftKey ? 0.1 : 0.01));
-    }
-    point.set(point.deg + dir * (e.shiftKey ? 15 : 1), true);
+    if (dir) nudge(dir, e.shiftKey);
   };
   // tooltips open upward when their button sits in the lower half of the window, so they are never
   // cut off
@@ -54,5 +55,25 @@
 <svelte:window {onkeydown} />
 <svelte:document onpointerover={flipTip} onfocusin={flipTip} />
 
-<Plane />
+<Plane>
+  {#snippet layers()}
+    <Grid />
+    <!-- every topic's layer is always mounted: when a topic is left its marks play their own
+         exits, and the next topic's marks enter -->
+    <RadiansLayer under />
+    <RingLayer />
+    <InverseLayer />
+    <RadiansLayer />
+    <CircleLayer />
+    <UnitGuideLayer />
+  {/snippet}
+  {#snippet overlay()}
+    {#if ui.topic === 'circle' && ui.mode !== 'guide'}<div
+        in:fade={{ duration: 200 }}
+        out:fade={{ duration: 160 }}
+      >
+        <Chips layout={circleView.layout} />
+      </div>{/if}
+  {/snippet}
+</Plane>
 {#if lab}<SolverLab />{:else}<Panel />{#if camera.wide}<TabBar />{/if}{/if}

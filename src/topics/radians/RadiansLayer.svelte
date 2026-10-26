@@ -8,11 +8,15 @@
   import { point } from '../../core/point.svelte.ts';
   import { ui } from '../../core/app.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
+  import { useHandles } from '../../plane/handles.svelte.ts';
+  import { pointHandle } from '../../plane/pointHandle.svelte.ts';
 
   /**
    * `under` is the part drawn beneath the ring's dots (the shading), the rest sits on top of them.
    */
   let { under = false }: { under?: boolean } = $props();
+  // in Radians a press near the ring turns the point (the layer is mounted twice; one offers it)
+  useHandles(() => (ui.topic === 'radians' && !under ? [pointHandle] : []));
   const marks = $derived(
     radiansScene({
       active: ui.topic === 'radians',

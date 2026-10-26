@@ -8,6 +8,10 @@
   import { progress } from '../../core/progress.svelte.ts';
   import { ui } from '../../core/app.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
+  import { useHandles } from '../../plane/handles.svelte.ts';
+  import { inverseHandles } from './handles.ts';
+
+  useHandles(() => (ui.topic === 'inverse' ? inverseHandles() : []));
 
   const marks = $derived(
     inverseScene({
