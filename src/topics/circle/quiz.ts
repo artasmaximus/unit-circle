@@ -45,9 +45,15 @@ export function makeQ(): Question {
   return { t: 1, fn, a: SPECIAL[rnd(SPECIAL.length)] };
 }
 
-/** A new question, sometimes one from the missed list, never the same as `prev`. */
-export function pickQ(missed: Question[], prev: Question | null): Question {
-  if (missed.length && Math.random() < 0.4) return missed[rnd(missed.length)];
+/** The skill a question practises, for Practice's tally. */
+export function skillOf(q: Question): string {
+  if (q.t === 2) return 'finding both angles';
+  if (q.a % 90 === 0) return 'values on the axes';
+  return q.fn === 'tan' ? 'tangent as sin ÷ cos' : 'reference angles and signs';
+}
+
+/** A new question, never the same as `prev`. */
+export function pickQ(prev: Question | null): Question {
   let q: Question,
     n = 0;
   do q = makeQ();

@@ -6,7 +6,7 @@ import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { SPECIAL, type Fn } from '../../core/trig.ts';
 import { Session, type Adapter } from '../../practice/session.svelte.ts';
-import { makeChoices, pickQ, qKey, trigTexAnswer, type Question } from './quiz.ts';
+import { makeChoices, pickQ, qKey, skillOf, trigTexAnswer, type Question } from './quiz.ts';
 
 /** How many in a row the exam wants, and the functions it wants among them. */
 export const EXAM_STREAK = 10;
@@ -22,6 +22,7 @@ function adapter(strict: boolean): Adapter<Question, string> {
     storageKey: 'ucq',
     keyOf: qKey,
     make: pickQ,
+    skillOf,
     choices: (q) => (q.t === 1 ? makeChoices(q) : []),
     isRight: (q, c) => q.t === 1 && c === trigTexAnswer(q),
     // type 2: is the point on one of the solutions?
@@ -47,9 +48,12 @@ function adapter(strict: boolean): Adapter<Question, string> {
         ui.revealed = false;
       });
     },
+    // the point goes to the answer, and the ring marks it larger (both angles, for type 2)
     reveal: (q, _ok, s) => {
-      if (q.t === 1) point.set(q.a, true);
-      else {
+      if (q.t === 1) {
+        point.set(q.a, true);
+        if (!strict) ui.highlight = [q.a];
+      } else {
         ui.highlight = [...q.sols];
         point.set(q.sols.find((a) => !s.found.includes(a)) ?? q.sols[q.sols.length - 1], true);
       }

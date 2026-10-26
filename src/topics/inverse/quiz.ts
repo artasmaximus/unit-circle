@@ -95,8 +95,14 @@ export const iqKey = (q: IQ) =>
     : q.t === 2
       ? `2|${q.fn}|${q.theta}|${q.dom.lo}`
       : `3|${q.fn}|${q.ang}`;
-export function pickQ(missed: IQ[], prev: IQ | null): IQ {
-  if (missed.length && Math.random() < 0.4) return pick(missed);
+/** The skill a question practises, for Practice's tally. */
+export const skillOf = (q: IQ) =>
+  q.t === 1
+    ? 'evaluating an inverse'
+    : q.t === 2
+      ? 'compositions and domains'
+      : 'placing the inverse';
+export function pickQ(prev: IQ | null): IQ {
   let q: IQ,
     n = 0;
   do q = makeQ();

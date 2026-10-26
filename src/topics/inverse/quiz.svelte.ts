@@ -4,9 +4,10 @@
 // is pure and lives in quiz.ts.
 import { inverse } from './state.svelte.ts';
 import { partnerAt, type InvFn } from './math.ts';
-import { FNS, answerOf, iqKey, makeChoices, makeQ, pickQ, type IQ } from './quiz.ts';
+import { FNS, answerOf, iqKey, makeChoices, makeQ, pickQ, skillOf, type IQ } from './quiz.ts';
 import { Session, type Adapter } from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
+import { ui } from '../../core/app.svelte.ts';
 
 /** How many in a row the exam wants. */
 export const EXAM_STREAK = 10;
@@ -17,6 +18,7 @@ const needsOf = (q: IQ): Need[] => (q.t === 2 ? [q.fn, 'compose'] : [q.fn]);
 
 /** Lay the plane out for a question: the function, the value, what is given, the answer held back. */
 function stage(q: IQ) {
+  ui.highlight = [];
   inverse.switchTo(q.fn);
   // an evaluate question hands you the circle to probe: you pick angles and read each one's value,
   // but nothing marks the answer. The other two keep the plane still or hold the answer back.
@@ -42,12 +44,16 @@ function reveal(q: IQ) {
   inverse.stopProbe();
   if (q.t === 1) inverse.setValue(q.v);
   if (q.t === 3) inverse.setAngle(q.ang);
+  // the ring marks the answer's angle larger (in Practice)
+  if (ui.mode === 'practice') ui.highlight = [wrap360(q.t === 3 ? q.ang : answerOf(q))];
 }
+const wrap360 = (deg: number) => ((deg % 360) + 360) % 360;
 
 const adapter: Adapter<IQ, number> = {
   storageKey: 'ucq-inv',
   keyOf: iqKey,
   make: pickQ,
+  skillOf,
   // the choices are angles in degrees, written in the learner's unit when drawn, so switching unit
   // mid-question just rewrites them
   choices: (q) => (q.t === 3 ? [] : makeChoices(q)),
