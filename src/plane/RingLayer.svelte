@@ -1,12 +1,12 @@
 <!-- The ring and its snap points: shared by every topic, so it just asks for its marks and
      never leaves. -->
 <script lang="ts">
-  import { camera } from '../lib/camera.svelte.ts';
-  import { inverse } from '../lib/inverse.svelte.ts';
-  import { ringMarks } from '../lib/ringMarks.ts';
-  import { progress } from '../lib/progress.svelte.ts';
-  import { radians } from '../lib/radians.svelte.ts';
-  import { aim, penClock, penFrom, revealed, ui } from '../lib/state.svelte.ts';
+  import { camera } from '../core/camera.svelte.ts';
+  import { inverse } from '../topics/inverse/state.svelte.ts';
+  import { ringMarks } from './ringMarks.ts';
+  import { progress } from '../core/progress.svelte.ts';
+  import { radians } from '../topics/radians/state.svelte.ts';
+  import { aim, penClock, penFrom, revealed, ui } from '../core/state.svelte.ts';
   import MarkLayer from './MarkLayer.svelte';
 
   /** The inverse topic writes the label for the angles it marks, so the ring leaves those out. */

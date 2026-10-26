@@ -1,11 +1,11 @@
 <script lang="ts">
   import Plane from './plane/Plane.svelte';
   import Panel from './panel/Panel.svelte';
-  import SolverLab from './lab/SolverLab.svelte';
+  import SolverLab from './solver/SolverLab.svelte';
   import TabBar from './ui/TabBar.svelte';
-  import { camera } from './lib/camera.svelte.ts';
-  import { inverse } from './lib/inverse.svelte.ts';
-  import { point, quiz, ui } from './lib/state.svelte.ts';
+  import { camera } from './core/camera.svelte.ts';
+  import { inverse } from './topics/inverse/state.svelte.ts';
+  import { point, quiz, ui } from './core/state.svelte.ts';
 
   // ?lab=solver opens the equation solver's test bench in place of the panel
   const lab =

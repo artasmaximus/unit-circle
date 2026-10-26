@@ -2,8 +2,8 @@
      on the axes inside the circle. Drawn as marks (see gridMarks.ts), so it enters like
      everything else. -->
 <script lang="ts">
-  import { camera } from '../lib/camera.svelte.ts';
-  import { gridMarks } from '../lib/gridMarks.ts';
+  import { camera } from '../core/camera.svelte.ts';
+  import { gridMarks } from './gridMarks.ts';
   import MarkLayer from './MarkLayer.svelte';
 
   const marks = $derived(

@@ -2,24 +2,24 @@
      it to the pointer; pressing elsewhere drags the whole view. Scroll (or pinch) zooms about
      the pointer. -->
 <script lang="ts">
-  import { camera, S, LABEL_R } from '../lib/camera.svelte.ts';
+  import { camera, S, LABEL_R } from '../core/camera.svelte.ts';
   import { fade } from 'svelte/transition';
-  import { input } from '../lib/tuning.ts';
-  import { aim, point, quiz, revealed, ui } from '../lib/state.svelte.ts';
-  import { inverse } from '../lib/inverse.svelte.ts';
-  import { snapValue } from '../lib/inverse.ts';
-  import { buildScene } from '../lib/scene.ts';
-  import { angleTex } from '../lib/angles.ts';
-  import { progress } from '../lib/progress.svelte.ts';
-  import { SPECIAL, colorOf, norm, rad, snapDeg } from '../lib/trig.ts';
-  import { texRect } from '../lib/tex.svelte.ts';
+  import { input } from '../core/tuning.ts';
+  import { aim, point, quiz, revealed, ui } from '../core/state.svelte.ts';
+  import { inverse } from '../topics/inverse/state.svelte.ts';
+  import { snapValue } from '../topics/inverse/math.ts';
+  import { buildScene } from '../topics/circle/scene.ts';
+  import { angleTex } from '../core/angles.ts';
+  import { progress } from '../core/progress.svelte.ts';
+  import { SPECIAL, colorOf, norm, rad, snapDeg } from '../core/trig.ts';
+  import { texRect } from '../core/tex.svelte.ts';
   import Grid from './Grid.svelte';
   import RingLayer from './RingLayer.svelte';
-  import CircleLayer from './CircleLayer.svelte';
-  import Chips from './Chips.svelte';
-  import InverseLayer from './InverseLayer.svelte';
-  import RadiansLayer from './RadiansLayer.svelte';
-  import UnitGuideLayer from './UnitGuideLayer.svelte';
+  import CircleLayer from '../topics/circle/CircleLayer.svelte';
+  import Chips from '../topics/circle/Chips.svelte';
+  import InverseLayer from '../topics/inverse/InverseLayer.svelte';
+  import RadiansLayer from '../topics/radians/RadiansLayer.svelte';
+  import UnitGuideLayer from '../topics/circle/UnitGuideLayer.svelte';
 
   /** How close (px) to the circle a press must be to grab the point. */
   const BAND = input.grabBand;

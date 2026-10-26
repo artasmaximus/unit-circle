@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build && node scripts/artifact.mjs",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "node --test --experimental-strip-types src/lib/*.test.ts",
+    "test": "node --test --experimental-strip-types 'src/**/*.test.ts'",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

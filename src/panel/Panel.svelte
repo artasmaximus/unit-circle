@@ -6,23 +6,23 @@
   import { cubicIn, cubicOut } from 'svelte/easing';
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
-  import { panel as panelT } from '../lib/tuning.ts';
-  import { camera } from '../lib/camera.svelte.ts';
-  import { pen, setMode, ui } from '../lib/state.svelte.ts';
-  import Quiz from './Quiz.svelte';
+  import { panel as panelT } from '../core/tuning.ts';
+  import { camera } from '../core/camera.svelte.ts';
+  import { pen, setMode, ui } from '../core/state.svelte.ts';
+  import Quiz from '../topics/circle/Quiz.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import AngleInput from '../ui/AngleInput.svelte';
-  import { progress } from '../lib/progress.svelte.ts';
-  import Reciprocals from './Reciprocals.svelte';
-  import InversePanel from './InversePanel.svelte';
-  import InverseQuiz from './InverseQuiz.svelte';
-  import RadiansGuide from './RadiansGuide.svelte';
-  import UnitGuide from './UnitGuide.svelte';
-  import RadiansPanel from './RadiansPanel.svelte';
-  import RadiansQuiz from './RadiansQuiz.svelte';
-  import { radians } from '../lib/radians.svelte.ts';
-  import { guideTopics } from '../lib/state.svelte.ts';
-  import { inverse } from '../lib/inverse.svelte.ts';
+  import { progress } from '../core/progress.svelte.ts';
+  import Reciprocals from '../topics/circle/Reciprocals.svelte';
+  import InversePanel from '../topics/inverse/InversePanel.svelte';
+  import InverseQuiz from '../topics/inverse/InverseQuiz.svelte';
+  import RadiansGuide from '../topics/radians/RadiansGuide.svelte';
+  import UnitGuide from '../topics/circle/UnitGuide.svelte';
+  import RadiansPanel from '../topics/radians/RadiansPanel.svelte';
+  import RadiansQuiz from '../topics/radians/RadiansQuiz.svelte';
+  import { radians } from '../topics/radians/state.svelte.ts';
+  import { guideTopics } from '../core/state.svelte.ts';
+  import { inverse } from '../topics/inverse/state.svelte.ts';
 
   let w = $state(0),
     h = $state(0);

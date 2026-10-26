@@ -1,7 +1,7 @@
 <!-- Running text with inline math parts. -->
 <script lang="ts">
   import Tex from './Tex.svelte';
-  import type { Rich } from '../lib/quiz.ts';
+  import type { Rich } from '../topics/circle/quiz.ts';
   let { parts }: { parts: Rich | string } = $props();
 </script>
 

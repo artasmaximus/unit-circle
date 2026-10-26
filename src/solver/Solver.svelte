@@ -10,11 +10,11 @@
   import XIcon from '@lucide/svelte/icons/x';
   import Undo2 from '@lucide/svelte/icons/undo-2';
   import X from '@lucide/svelte/icons/x';
-  import { solver } from '../lib/state.svelte.ts';
-  import { changes, eqTex, exactTex, type Op } from '../lib/algebra.ts';
+  import { solver } from '../core/state.svelte.ts';
+  import { changes, eqTex, exactTex, type Op } from './algebra.ts';
   import Tex from '../ui/Tex.svelte';
   import Rich from '../ui/Rich.svelte';
-  import { morph } from '../lib/transition.ts';
+  import { morph } from '../core/transition.ts';
 
   let { bare = false }: { bare?: boolean } = $props();
 

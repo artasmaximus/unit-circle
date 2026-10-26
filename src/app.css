@@ -168,7 +168,7 @@ button[aria-pressed='true'] {
   }
 }
 
-/* view transitions (see lib/transition.ts): only elements with view-transition-class "morph"
+/* view transitions (see core/transition.ts): only elements with view-transition-class "morph"
    animate; the page itself (root) stays still */
 ::view-transition-old(root),
 ::view-transition-new(root) {

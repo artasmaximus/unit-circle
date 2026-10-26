@@ -1,11 +1,11 @@
 <!-- θ = [angle]: shows the point's angle in the learner's unit and accepts either (135, 135°,
      pi/6, 2π/3, 0.5 rad). A bare number is read in the unit being shown. -->
 <script lang="ts">
-  import { angleField, piFraction, type Unit } from '../lib/angles.ts';
-  import { camera } from '../lib/camera.svelte.ts';
-  import { progress } from '../lib/progress.svelte.ts';
-  import { point } from '../lib/state.svelte.ts';
-  import { norm, parseAngle } from '../lib/trig.ts';
+  import { angleField, piFraction, type Unit } from '../core/angles.ts';
+  import { camera } from '../core/camera.svelte.ts';
+  import { progress } from '../core/progress.svelte.ts';
+  import { point } from '../core/state.svelte.ts';
+  import { norm, parseAngle } from '../core/trig.ts';
   import Tex from './Tex.svelte';
 
   /** The unit to write the angle in; the learner's own setting unless a topic (Radians) insists. */

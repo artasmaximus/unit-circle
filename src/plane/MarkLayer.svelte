@@ -6,8 +6,8 @@
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
-  import { DEFAULTS, drawCurve, popCurve, verbFor, type Mark } from '../lib/marks.ts';
-  import { reduce } from '../lib/transition.ts';
+  import { DEFAULTS, drawCurve, popCurve, verbFor, type Mark } from './marks.ts';
+  import { reduce } from '../core/transition.ts';
   import SvgTex from '../ui/SvgTex.svelte';
 
   let { marks }: { marks: Mark[] } = $props();

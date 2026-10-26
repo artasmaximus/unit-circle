@@ -1,6 +1,6 @@
 <!-- Inline math in HTML. Sized in em, so it follows the surrounding font size. -->
 <script lang="ts">
-  import { texBox } from '../lib/tex.svelte.ts';
+  import { texBox } from '../core/tex.svelte.ts';
   let { latex }: { latex: string } = $props();
   const b = $derived(texBox(latex));
 </script>

@@ -12,10 +12,15 @@ npm run build    # dist/index.html (single file) and dist/artifact.html (for the
 
 ## Layout of the code
 
-- `src/lib/trig.ts`, `algebra.ts`, `quiz.ts`: pure logic, no Svelte, covered by `logic.test.ts`.
-- `src/lib/state.svelte.ts`: all app state (the point and its spring, mode, quiz, equation workshop).
-- `src/lib/camera.svelte.ts`: world ↔ screen mapping. The circle is centered in the area the panel leaves free;
-  `zoom` and `pan` are already part of the transform, ready for gestures.
-- `src/lib/scene.ts`: everything drawn on the plane for one frame, as plain data (including label and chip placement).
-- `src/lib/tex.svelte.ts`: LaTeX → SVG via bundled MathJax, sized in em so layout needs no DOM measuring.
-- `src/plane/*`: renders the scene. `src/panel/*`: the panel (controls, quiz, csc/sec/cot cards, workshop dialog).
+Code is grouped by topic, with shared pieces beside the topics:
+
+- `src/core/`: topic-free building blocks: trig and angle math, the camera (world ↔ screen), LaTeX via
+  bundled MathJax, progress saved in the browser, tuning numbers, and app state (`state.svelte.ts`).
+- `src/plane/`: the full-viewport drawing: `Plane.svelte`, the keyed mark model (`marks.ts`) and
+  `MarkLayer.svelte` that animates marks in and out, plus the grid and the ring every topic shares.
+- `src/guide/`: the Guide engine: the step format (`guide.ts`) and the step-by-step panel (`Guide.svelte`).
+- `src/topics/<topic>/`: one folder per topic (`circle`, `inverse`, `radians`): its state, quiz, drawing,
+  Guide steps, panel components and plane layer.
+- `src/solver/`: the equation solver and its test bench (`?lab=solver`).
+- `src/panel/`: the floating panel that hosts each topic's views. `src/ui/`: small shared components.
+- Tests (`*.test.ts`) sit next to the code they cover.
