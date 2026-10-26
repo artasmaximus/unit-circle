@@ -5,7 +5,7 @@
 // all together.
 import { S } from '../../core/camera.svelte.ts';
 import type { Mark } from '../../plane/marks.ts';
-import type { Label } from '../circle/scene.ts';
+import type { Label } from '../../plane/marks.ts';
 import { texRect } from '../../core/tex.svelte.ts';
 import { piFraction, piTex } from '../../core/angles.ts';
 

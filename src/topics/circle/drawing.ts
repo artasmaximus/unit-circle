@@ -4,7 +4,8 @@
 // exits. When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
 import { figure as F } from '../../core/tuning.ts';
 import type { Mark } from '../../plane/marks.ts';
-import type { Label, Scene } from './scene.ts';
+import type { Label } from '../../plane/marks.ts';
+import type { Scene } from './scene.ts';
 
 export type CircleInput = {
   active: boolean;

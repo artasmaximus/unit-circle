@@ -5,9 +5,10 @@ import { angleTex, type Unit } from '../../core/angles.ts';
 import { figure as tuning, tag as tagT } from '../../core/tuning.ts';
 import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from '../../core/trig.ts';
 import { texBox, texRect, type Rect } from '../../core/tex.svelte.ts';
+import type { Label } from '../../plane/marks.ts';
+import { braceShape as brace } from '../../figures/brace.ts';
 
 export type Seg = [number, number, number, number];
-export type Label = { latex: string; size: number; rect: Rect; color: string };
 /**
  * `parts`, when set, render in place of `latex`, each in its own color (it is sized by `latex`).
  */
@@ -74,32 +75,6 @@ const REFL: { ang: (a: number) => number; deg: (d: number) => number; fn: Fn }[]
   { ang: (a) => Math.PI - a, deg: (d) => 540 - d, fn: 'sin' },
   { ang: (a) => a + Math.PI, deg: (d) => d + 180, fn: 'tan' },
 ];
-
-/** A curly brace beside segment (x1,y1)-(x2,y2), tip along the outward normal (nx,ny). */
-export function brace(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  nx: number,
-  ny: number,
-  minLen: number,
-  sf: number,
-) {
-  const L = Math.hypot(x2 - x1, y2 - y1);
-  if (L < minLen) return null;
-  const ux = (x2 - x1) / L,
-    uy = (y2 - y1) / L,
-    d = Math.min(7 * sf, L / 6),
-    m = 5 * sf,
-    h = L / 2;
-  return {
-    d,
-    m,
-    path: `M 0 0 Q 0 ${-d / 2} ${d} ${-d / 2} H ${h - d} Q ${h} ${-d / 2} ${h} ${-d} Q ${h} ${-d / 2} ${h + d} ${-d / 2} H ${L - d} Q ${L} ${-d / 2} ${L} 0`,
-    transform: `matrix(${ux} ${uy} ${-nx} ${-ny} ${x1 + nx * m} ${y1 + ny * m})`,
-  };
-}
 
 export function buildScene(p: SceneInput) {
   const { ang, hit } = p;

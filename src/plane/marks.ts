@@ -3,7 +3,10 @@
 // keeps each mark alive while it leaves, and plays the verb the mark declares: a line draws on and
 // retracts, a dot pops in and shrinks away, a label fades or shoots off. Marks can wait for each
 // other with delays, which is how a feature says "this line, then this point, then that ray".
-import type { Label } from '../topics/circle/scene.ts';
+import type { Rect } from '../core/tex.svelte.ts';
+
+/** Typeset math with its box on the plane (world units). */
+export type Label = { latex: string; size: number; rect: Rect; color: string };
 
 /**
  * How a mark arrives and leaves: `draw` grows a line or path from its start, `pop` grows a dot or

@@ -7,7 +7,7 @@
 import { INV_NAME, SPECIAL_VALUES, otherAngle, valueTex, type InvFn } from './math.ts';
 import { LABEL_R, S } from '../../core/camera.svelte.ts';
 import type { Mark } from '../../plane/marks.ts';
-import type { Label } from '../circle/scene.ts';
+import type { Label } from '../../plane/marks.ts';
 import { texRect } from '../../core/tex.svelte.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
 import { rad } from '../../core/trig.ts';
