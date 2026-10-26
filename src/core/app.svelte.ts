@@ -125,6 +125,12 @@ export const penClock = new Tween(1, { duration: PEN_MS });
  * through.
  */
 export const penFrom = $state({ revealed: true });
+let switchedAt = -Infinity;
+/**
+ * Whether a switch has just begun, so a mark arriving now is part of it and waits for the old
+ * figure to leave (`SWITCH.lead`).
+ */
+export const switchJustBegan = () => performance.now() - switchedAt < 100;
 /**
  * Run `change`, and start the pen motion if it switched the mode or what is revealed (or always,
  * with `force`: a topic switch has to glide the topic bar's thumb even when nothing else changes).
@@ -135,6 +141,7 @@ export function withPen(change: () => void, force = false) {
   change();
   if (force || revealed() !== before || ui.mode !== mode) {
     penFrom.revealed = before;
+    switchedAt = performance.now();
     pen.set(0, { duration: 0 }).then(() => (pen.target = 1));
     penClock.set(0, { duration: 0 }).then(() => (penClock.target = 1));
   }

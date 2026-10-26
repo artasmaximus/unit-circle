@@ -3,14 +3,15 @@
      the mark just follows the geometry it is given (which is already animated by whatever state
      produced it). Features hand this a list; they never track presence themselves. -->
 <script lang="ts">
-  import { DUR } from '../core/tuning.ts';
+  import { DUR, SWITCH } from '../core/tuning.ts';
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
   import { DEFAULTS, drawCurve, popCurve, verbFor, type Mark } from './marks.ts';
   import { reduce } from '../core/transition.ts';
   import SvgTex from '../ui/SvgTex.svelte';
-  import { recordMarks } from '../dev/motion.ts';
+  import { recordLead, recordMarks } from '../dev/motion.ts';
+  import { switchJustBegan } from '../core/app.svelte.ts';
 
   /** `name` says which layer this is, for the dev motion log. */
   let { marks, name = '' }: { marks: Mark[]; name?: string } = $props();
@@ -20,12 +21,15 @@
     leaving = $state(false);
     #tw = new Tween(0, { duration: DEFAULTS.dur });
     onGone: (e: Entry) => void;
+    /** The layer it belongs to, for the dev motion log. */
+    layer: string;
     /**
      * A slice's edges, which glide on their own so the pieces grow, shrink and slide as the target
      * moves.
      */
     geo: Tween<{ a0: number; a1: number }>;
-    constructor(m: Mark, onGone: (e: Entry) => void) {
+    constructor(m: Mark, onGone: (e: Entry) => void, layer: string) {
+      this.layer = layer;
       this.mark = m;
       this.onGone = onGone;
       this.geo = new Tween(m.kind === 'slice' ? { a0: m.a0, a1: m.a0 } : { a0: 0, a1: 0 }, {
@@ -48,8 +52,11 @@
       if (!this.leaving && this.#tw.target === 1) return;
       this.leaving = false;
       const m = this.mark;
+      // a mark arriving with a mode or topic switch waits for the old figure to leave
+      const lead = !reduce && switchJustBegan() ? SWITCH.lead : 0;
+      if (import.meta.env.DEV && lead) recordLead(this.layer);
       this.#tw.set(1, {
-        delay: reduce ? 0 : (m.delay ?? DEFAULTS.delay),
+        delay: reduce ? 0 : (m.delay ?? DEFAULTS.delay) + lead,
         duration: reduce ? 0 : (m.dur ?? DEFAULTS.dur),
       });
     }
@@ -115,7 +122,7 @@
         seen.add(m.key);
         let e = live.get(m.key);
         if (!e) {
-          e = new Entry(m, gone);
+          e = new Entry(m, gone, name);
           live.set(m.key, e);
           added = true;
           e.update(m);

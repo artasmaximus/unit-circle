@@ -26,6 +26,12 @@ export const EASE_POP = 'cubic-bezier(0.22, 0.9, 0.3, 1)';
 /** One beat: the wait between a feature's marks (`after(2)` arrives two beats in). */
 export const BEAT = 150;
 export const after = (beats: number) => beats * BEAT;
+/**
+ * A mode or topic switch has two phases: the old figure leaves (its marks exit, the panel's old view
+ * flies up), then the new one arrives. `lead` is how long marks that arrive with a switch wait first,
+ * so they come in as the old ones are mostly gone, in step with the panel's new view.
+ */
+export const SWITCH = { lead: BEAT };
 /** The gap between the members of a row (the ring's dots, a ruler's ticks). */
 export const STAGGER = { dots: 35, ticks: 25, labels: 120 } as const;
 
@@ -171,7 +177,7 @@ export const tag = {
 /** The panel (Panel.svelte). */
 export const panel = {
   /** A view enters (rises in) and exits (flies up): px, ms and delay. */
-  enter: { y: 10, ms: DUR.base, delay: after(1) },
+  enter: { y: 10, ms: DUR.base, delay: SWITCH.lead },
   exit: { y: -10, ms: DUR.quick },
   /** On phones the plane re-fits to the panel this long (ms) after a view change settles. */
   settleMs: DUR.draw,

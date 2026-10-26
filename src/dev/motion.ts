@@ -14,12 +14,19 @@ export function recordMarks(layer: string, added: string[], removed: string[], c
   frames.push({ layer, t: performance.now() - t0, added, removed, changed });
 }
 
+/** Marks that arrived with a switch and waited for the old figure to leave, per layer. */
+const led: Record<string, number> = {};
+export function recordLead(layer: string) {
+  if (on) led[layer] = (led[layer] ?? 0) + 1;
+}
+
 const kind = (key: string) => key.split(':').slice(0, 2).join(':');
 const kinds = (keys: Set<string>) => [...new Set([...keys].map(kind))].sort();
 
 export const motion = {
   begin() {
     frames = [];
+    for (const k of Object.keys(led)) delete led[k];
     t0 = performance.now();
     on = true;
   },
@@ -28,7 +35,7 @@ export const motion = {
     on = false;
     const out: Record<
       string,
-      { in: number; out: number; changed: number; kinds: string[]; spanMs: number }
+      { in: number; out: number; changed: number; kinds: string[]; led: number; spanMs: number }
     > = {};
     for (const layer of new Set(frames.map((f) => f.layer))) {
       const fs = frames.filter((f) => f.layer === layer);
@@ -40,6 +47,7 @@ export const motion = {
         out: r.size,
         changed: c.size,
         kinds: kinds(new Set([...a, ...r, ...c])),
+        led: led[layer] ?? 0,
         spanMs: Math.round(Math.max(...fs.map((f) => f.t)) - Math.min(...fs.map((f) => f.t))),
       };
     }
