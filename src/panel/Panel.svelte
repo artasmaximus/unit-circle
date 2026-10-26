@@ -8,7 +8,7 @@
   import { Tween } from 'svelte/motion';
   import { panel as panelT } from '../core/tuning.ts';
   import { camera } from '../core/camera.svelte.ts';
-  import { pen, setMode, ui } from '../core/state.svelte.ts';
+  import { pen, setMode, ui } from '../core/app.svelte.ts';
   import Quiz from '../topics/circle/Quiz.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import AngleInput from '../ui/AngleInput.svelte';
@@ -21,7 +21,7 @@
   import RadiansPanel from '../topics/radians/RadiansPanel.svelte';
   import RadiansQuiz from '../topics/radians/RadiansQuiz.svelte';
   import { radians } from '../topics/radians/state.svelte.ts';
-  import { guideTopics } from '../core/state.svelte.ts';
+  import { guideTopics } from '../core/app.svelte.ts';
   import { inverse } from '../topics/inverse/state.svelte.ts';
 
   let w = $state(0),

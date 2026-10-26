@@ -4,7 +4,7 @@
   import { angleField, piFraction, type Unit } from '../core/angles.ts';
   import { camera } from '../core/camera.svelte.ts';
   import { progress } from '../core/progress.svelte.ts';
-  import { point } from '../core/state.svelte.ts';
+  import { point } from '../core/point.svelte.ts';
   import { norm, parseAngle } from '../core/trig.ts';
   import Tex from './Tex.svelte';
 

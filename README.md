@@ -15,7 +15,9 @@ npm run build    # dist/index.html (single file) and dist/artifact.html (for the
 Code is grouped by topic, with shared pieces beside the topics:
 
 - `src/core/`: topic-free building blocks: trig and angle math, the camera (world ↔ screen), LaTeX via
-  bundled MathJax, progress saved in the browser, tuning numbers, and app state (`state.svelte.ts`).
+  bundled MathJax, progress saved in the browser, tuning numbers, the shared point
+  (`point.svelte.ts`), and which topic and mode the app is in (`app.svelte.ts`). Each topic keeps
+  its own state in its folder.
 - `src/plane/`: the full-viewport drawing: `Plane.svelte`, the keyed mark model (`marks.ts`) and
   `MarkLayer.svelte` that animates marks in and out, plus the grid and the ring every topic shares.
 - `src/figures/`: reusable, topic-free pieces of a drawing (a labelled arc, a brace, a right

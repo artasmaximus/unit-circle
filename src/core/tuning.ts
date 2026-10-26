@@ -2,7 +2,7 @@
 // Colors live in app.css. Times are in seconds unless the name says ms; lengths are px unless the
 // name says world (the circle has radius 150 world units).
 
-/** The point's own spring and the trail behind it (state.svelte.ts). */
+/** The point's own spring and the trail behind it (point.svelte.ts). */
 export const point = {
   /** Spring toward the target angle: stiffness and damping, for a short hop. */
   stiffness: 900,
@@ -19,7 +19,7 @@ export const point = {
   trailReel: 3.6,
 };
 
-/** The pen-click motion that drives a mode switch (state.svelte.ts). */
+/** The pen-click motion that drives a mode switch (app.svelte.ts). */
 export const pen = {
   ms: 460,
   /** How far it leans back first, and how far it overshoots (fractions of the full move). */

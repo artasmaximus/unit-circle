@@ -3,7 +3,8 @@
      find the angles. -->
 <script lang="ts">
   import { camera } from '../core/camera.svelte.ts';
-  import { ui, solver, type RecipKey } from '../core/state.svelte.ts';
+  import { ui } from '../core/app.svelte.ts';
+  import { solver, type RecipKey } from './solver.svelte.ts';
   import Solver from './Solver.svelte';
 
   ui.mode = 'explore';

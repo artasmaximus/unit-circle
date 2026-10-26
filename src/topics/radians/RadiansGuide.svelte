@@ -3,7 +3,7 @@
 <script lang="ts">
   import { progress } from '../../core/progress.svelte.ts';
   import { radians } from './state.svelte.ts';
-  import { setMode } from '../../core/state.svelte.ts';
+  import { setMode } from '../../core/app.svelte.ts';
   import Guide from '../../guide/Guide.svelte';
   import RadiansQuiz from './RadiansQuiz.svelte';
 

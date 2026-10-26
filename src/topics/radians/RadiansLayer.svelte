@@ -5,7 +5,8 @@
   import { camera } from '../../core/camera.svelte.ts';
   import { radians } from './state.svelte.ts';
   import { radiansScene } from './scene.ts';
-  import { point, ui } from '../../core/state.svelte.ts';
+  import { point } from '../../core/point.svelte.ts';
+  import { ui } from '../../core/app.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
 
   /**

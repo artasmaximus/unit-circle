@@ -1,9 +1,9 @@
-// State for the Inverse trig topic. Like core/state.svelte.ts it holds the shared state; components
-// read it and call its methods. One number drives everything: the principal angle in degrees (the
-// answer). It is the angle of the ray, and it is what animates, so the ray sweeps when the value
-// moves or the function changes. From it come the value being inverted (its sin, cos or tan, which
-// is where the handle sits) and the other angle with the same value. Because it is a plain angle,
-// it is the same quantity as the unit circle's point, so the two topics can hand it to each other.
+// State for the Inverse trig topic; components read it and call its methods. One number drives
+// everything: the principal angle in degrees (the answer). It is the angle of the ray, and it is
+// what animates, so the ray sweeps when the value moves or the function changes. From it come the
+// value being inverted (its sin, cos or tan, which is where the handle sits) and the other angle
+// with the same value. Because it is a plain angle, it is the same quantity as the unit circle's
+// point, so the two topics can hand it to each other.
 import { Tween } from 'svelte/motion';
 import { cubicOut } from 'svelte/easing';
 import {

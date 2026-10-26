@@ -10,7 +10,7 @@
   import XIcon from '@lucide/svelte/icons/x';
   import Undo2 from '@lucide/svelte/icons/undo-2';
   import X from '@lucide/svelte/icons/x';
-  import { solver } from '../core/state.svelte.ts';
+  import { solver } from './solver.svelte.ts';
   import { changes, eqTex, exactTex, type Op } from './algebra.ts';
   import Tex from '../ui/Tex.svelte';
   import Rich from '../ui/Rich.svelte';

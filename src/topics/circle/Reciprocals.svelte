@@ -3,7 +3,8 @@
      angle in white. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { point, type RecipKey } from '../../core/state.svelte.ts';
+  import { point } from '../../core/point.svelte.ts';
+  import { type RecipKey } from '../../solver/solver.svelte.ts';
   import { recipTex } from '../../core/trig.ts';
   import Tex from '../../ui/Tex.svelte';
 

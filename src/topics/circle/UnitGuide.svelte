@@ -3,7 +3,7 @@
 <script lang="ts">
   import { progress } from '../../core/progress.svelte.ts';
   import { explain, qTex, trigTexAnswer } from './quiz.ts';
-  import { setMode, setTopic } from '../../core/state.svelte.ts';
+  import { setMode, setTopic } from '../../core/app.svelte.ts';
   import { EXAM_FNS, EXAM_STREAK, unitGuide } from './guide.svelte.ts';
   import Rich from '../../ui/Rich.svelte';
   import Tex from '../../ui/Tex.svelte';

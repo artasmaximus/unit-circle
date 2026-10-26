@@ -24,7 +24,7 @@
   import { fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import type { Snippet } from 'svelte';
-  import { setMode } from '../core/state.svelte.ts';
+  import { setMode } from '../core/app.svelte.ts';
   import Rich from '../ui/Rich.svelte';
   import Tex from '../ui/Tex.svelte';
 

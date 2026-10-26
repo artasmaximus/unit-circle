@@ -1,11 +1,14 @@
-// State for the Unit circle Guide: which step, whether its task is done, and its exam. The unit
-// circle's Explore and Practice live in core/state.svelte.ts; this module registers the topic's
-// hooks there, so a mode or topic switch also knows about the Guide.
+// State for the Unit circle Guide: which step, whether its task is done, and its exam. Practice
+// lives in quiz.svelte.ts. This module registers the topic's hooks with core/app.svelte.ts, so a
+// mode or topic switch knows what each mode means here.
 import { unitCircleGuide } from './guideSteps.ts';
 import type { Step } from '../../guide/guide.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { makeChoices, trigTexAnswer, type Question } from './quiz.ts';
-import { point, quiz, solver, topicHooks, ui, type Mode } from '../../core/state.svelte.ts';
+import { point } from '../../core/point.svelte.ts';
+import { quiz } from './quiz.svelte.ts';
+import { solver } from '../../solver/solver.svelte.ts';
+import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
 import { SPECIAL, norm, rad, wrapPi, type Fn } from '../../core/trig.ts';
 import type { Feature } from './features.ts';
 

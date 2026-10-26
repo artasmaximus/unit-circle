@@ -5,7 +5,7 @@
   import CircleDot from '@lucide/svelte/icons/circle-dot';
   import ArrowLeftRight from '@lucide/svelte/icons/arrow-left-right';
   import Ruler from '@lucide/svelte/icons/ruler';
-  import { pen, setTopic, ui } from '../core/state.svelte.ts';
+  import { pen, setTopic, ui } from '../core/app.svelte.ts';
   import { progress } from '../core/progress.svelte.ts';
   import Segmented from './Segmented.svelte';
 

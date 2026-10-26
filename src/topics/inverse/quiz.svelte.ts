@@ -4,7 +4,9 @@ import { inverse } from './state.svelte.ts';
 import { partnerAt } from './math.ts';
 import { answerOf, iqKey, makeChoices, pickQ, type IQ } from './quiz.ts';
 import type { Rich } from '../../core/rich.ts';
-import { point, topicHooks, ui, type Mode } from '../../core/state.svelte.ts';
+import { norm } from '../../core/trig.ts';
+import { point } from '../../core/point.svelte.ts';
+import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
 
 const KEY = 'ucq-inv';
 function load(): { best: number; missed: IQ[] } {
@@ -150,5 +152,9 @@ topicHooks.inverse = {
   enter: (m) => {
     if (m !== 'practice') inverse.adopt(point.deg);
     apply(m);
+  },
+  // leaving the exploration for the unit circle, its point takes the control's angle and slides to it
+  leave: (to, m) => {
+    if (to === 'circle' && m === 'explore') point.set(norm(inverse.angleTo), true);
   },
 };

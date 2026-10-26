@@ -5,7 +5,9 @@
   import { camera, S } from '../core/camera.svelte.ts';
   import { fade } from 'svelte/transition';
   import { input } from '../core/tuning.ts';
-  import { aim, point, quiz, revealed, ui } from '../core/state.svelte.ts';
+  import { aim, revealed, ui } from '../core/app.svelte.ts';
+  import { point } from '../core/point.svelte.ts';
+  import { quiz } from '../topics/circle/quiz.svelte.ts';
   import { inverse } from '../topics/inverse/state.svelte.ts';
   import { snapValue } from '../topics/inverse/math.ts';
   import { buildLayout } from '../topics/circle/layout.ts';

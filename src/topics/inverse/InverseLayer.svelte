@@ -6,7 +6,7 @@
   import { inverse } from './state.svelte.ts';
   import { inverseScene } from './scene.ts';
   import { progress } from '../../core/progress.svelte.ts';
-  import { ui } from '../../core/state.svelte.ts';
+  import { ui } from '../../core/app.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
 
   const marks = $derived(

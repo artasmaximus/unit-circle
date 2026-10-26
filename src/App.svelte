@@ -5,7 +5,9 @@
   import TabBar from './ui/TabBar.svelte';
   import { camera } from './core/camera.svelte.ts';
   import { inverse } from './topics/inverse/state.svelte.ts';
-  import { point, quiz, ui } from './core/state.svelte.ts';
+  import { point } from './core/point.svelte.ts';
+  import { quiz } from './topics/circle/quiz.svelte.ts';
+  import { ui } from './core/app.svelte.ts';
 
   // ?lab=solver opens the equation solver's test bench in place of the panel
   const lab =

@@ -1,12 +1,13 @@
 // State for the Radians topic: the Guide (which step, whether its task is done), the Practice and
 // exam sessions, and which features of the drawing are on. Like the other topics it registers with
-// core/state.svelte.ts what a mode or topic switch means for it.
+// core/app.svelte.ts what a mode or topic switch means for it.
 import { RADIANS_GUIDE } from './guideSteps.ts';
 import type { Step } from '../../guide/guide.ts';
 import { type Feature } from './features.ts';
 import { R_TYPES, makeRQ, pickRQ, rChoices, rqKey, type RQ } from './quiz.ts';
 import { progress } from '../../core/progress.svelte.ts';
-import { point, topicHooks, ui, type Mode } from '../../core/state.svelte.ts';
+import { point } from '../../core/point.svelte.ts';
+import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
 import { wrapPi, rad } from '../../core/trig.ts';
 
 const ALL = new Set<Feature>(['ray', 'pi', 'slices', 'readout']);

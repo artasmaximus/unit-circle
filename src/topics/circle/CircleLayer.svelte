@@ -5,7 +5,8 @@
   import { camera } from '../../core/camera.svelte.ts';
   import { circleScene, type CircleInput } from './scene.ts';
   import type { Layout } from './layout.ts';
-  import { pen, penClock, penFrom, point, ui } from '../../core/state.svelte.ts';
+  import { pen, penClock, penFrom, ui } from '../../core/app.svelte.ts';
+  import { point } from '../../core/point.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
 
   let { layout, ghost }: { layout: Layout; ghost: CircleInput['ghost'] } = $props();

@@ -3,7 +3,7 @@
 <script lang="ts">
   import { angleTex, piFraction } from '../../core/angles.ts';
   import { camera } from '../../core/camera.svelte.ts';
-  import { point } from '../../core/state.svelte.ts';
+  import { point } from '../../core/point.svelte.ts';
   import { norm } from '../../core/trig.ts';
   import InfoTip from '../../ui/InfoTip.svelte';
   import Tex from '../../ui/Tex.svelte';

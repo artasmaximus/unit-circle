@@ -1,6 +1,6 @@
 <script lang="ts">
   import { progress } from '../../core/progress.svelte.ts';
-  import { quiz } from '../../core/state.svelte.ts';
+  import { quiz } from './quiz.svelte.ts';
   import { explain, hintMsg, hintTip, qTex, task, trigTexAnswer } from './quiz.ts';
   import Tex from '../../ui/Tex.svelte';
   import Rich from '../../ui/Rich.svelte';

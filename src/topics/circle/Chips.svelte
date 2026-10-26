@@ -3,7 +3,7 @@
 <script lang="ts">
   import { scale } from 'svelte/transition';
   import { camera } from '../../core/camera.svelte.ts';
-  import { ui } from '../../core/state.svelte.ts';
+  import { ui } from '../../core/app.svelte.ts';
   import { CHIP_FONT, type Chip, type Layout } from './layout.ts';
   import Tex from '../../ui/Tex.svelte';
   let { layout }: { layout: Layout } = $props();
