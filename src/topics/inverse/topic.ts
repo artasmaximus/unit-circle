@@ -11,6 +11,10 @@ import { inverse } from './state.svelte.ts';
 export const inverseTopic: TopicDef = {
   id: 'inverse',
   title: 'Inverse Trig',
+  group: 'trig',
+  order: 2,
+  requires: ['circle'],
+  keywords: 'arcsin arccos arctan',
   tab: { label: 'Inverse trig', icon: ArrowLeftRight },
   hooks: inverseHooks,
   views: { guide: InverseGuide, explore: InverseExplore, practice: InverseQuiz },

@@ -12,6 +12,9 @@ import UnitGuideLayer from './UnitGuideLayer.svelte';
 export const circleTopic: TopicDef = {
   id: 'circle',
   title: 'Unit Circle',
+  group: 'trig',
+  order: 1,
+  keywords: 'sine cosine tangent angle degrees',
   tab: { label: 'Unit circle', icon: CircleDot },
   hooks: circleHooks,
   views: { guide: UnitGuide, explore: CircleExplore, practice: CirclePractice },

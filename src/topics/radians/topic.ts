@@ -11,6 +11,10 @@ import { radians } from './state.svelte.ts';
 export const radiansTopic: TopicDef = {
   id: 'radians',
   title: 'Radians',
+  group: 'trig',
+  order: 3,
+  requires: ['circle'],
+  keywords: 'pi arc length',
   tab: { label: 'Radians', icon: Ruler },
   hooks: radiansHooks,
   views: { guide: RadiansGuide, explore: RadiansPanel, practice: RadiansPractice },
