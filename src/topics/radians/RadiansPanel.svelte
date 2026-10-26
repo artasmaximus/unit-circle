@@ -6,7 +6,7 @@
   import { point } from '../../core/point.svelte.ts';
   import { norm } from '../../core/trig.ts';
   import InfoTip from '../../ui/InfoTip.svelte';
-  import Tex from '../../ui/Tex.svelte';
+  import Tex, { PROSE } from '../../ui/Tex.svelte';
 
   const deg = $derived(norm(point.deg));
   const r = $derived(Math.round(((deg * Math.PI) / 180) * 1000) / 1000);
@@ -41,10 +41,14 @@
       />
     </div>
     <p class="note">
-      A half turn is <Tex latex={'\\pi'} /> radians, so every angle you know is a few wedges of <Tex
-        latex={'\\pi/6'}
-      />, <Tex latex={'\\pi/4'} />, <Tex latex={'\\pi/3'} /> or <Tex latex={'\\pi/2'} />. Here the
-      angle is <Tex latex={angleTex(deg, 'rad', dd)} />.
+      A half turn is <Tex latex={'\\pi'} scale={PROSE} /> radians, so every angle you know is a few wedges
+      of <Tex latex={'\\pi/6'} scale={PROSE} />, <Tex latex={'\\pi/4'} scale={PROSE} />, <Tex
+        latex={'\\pi/3'}
+        scale={PROSE}
+      /> or <Tex latex={'\\pi/2'} scale={PROSE} />. Here the angle is <Tex
+        latex={angleTex(deg, 'rad', dd)}
+        scale={PROSE}
+      />.
     </p>
   </div>
 </section>

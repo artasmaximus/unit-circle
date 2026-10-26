@@ -68,8 +68,8 @@
     display: grid;
     gap: 2px;
     align-content: start;
-    padding: 8px 12px;
-    height: 78px;
+    padding: 12px 12px 14px;
+    height: 96px;
     box-sizing: border-box;
     border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
     border-radius: 8px;
@@ -88,5 +88,6 @@
     height: 44px;
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 </style>

@@ -53,12 +53,15 @@ export const penClock = new Tween(1, { duration: PEN_MS });
  * through.
  */
 export const penFrom = $state({ revealed: true });
-/** Run `change`, and start the pen motion if it switched the mode or what is revealed. */
-export function withPen(change: () => void) {
+/**
+ * Run `change`, and start the pen motion if it switched the mode or what is revealed (or always,
+ * with `force`: a topic switch has to glide the topic bar's thumb even when nothing else changes).
+ */
+export function withPen(change: () => void, force = false) {
   const before = revealed(),
     mode = ui.mode;
   change();
-  if (revealed() !== before || ui.mode !== mode) {
+  if (force || revealed() !== before || ui.mode !== mode) {
     penFrom.revealed = before;
     pen.set(0, { duration: 0 }).then(() => (pen.target = 1));
     penClock.set(0, { duration: 0 }).then(() => (penClock.target = 1));
@@ -89,7 +92,7 @@ export function setTopic(t: Topic) {
     // a topic without a Guide cannot be in Guide mode
     if (ui.mode === 'guide' && !guideTopics.has(t)) ui.mode = 'explore';
     topicHooks[t]?.enter(ui.mode);
-  });
+  }, true);
 }
 
 export function setMode(m: Mode) {

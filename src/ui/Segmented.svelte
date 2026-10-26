@@ -2,7 +2,7 @@
      animation: it follows `progress` (0 → 1, may lean below 0 and overshoot past 1), so it can
      move in lockstep with anything else driven by the same value. -->
 <script lang="ts" generics="T extends string">
-  import type { Component } from 'svelte';
+  import { untrack, type Component } from 'svelte';
   import Lock from '@lucide/svelte/icons/lock';
   import Check from '@lucide/svelte/icons/check';
   /**
@@ -49,6 +49,11 @@
     else if (last === null) from = m;
     to = m;
     last = value;
+  });
+  // once a glide has landed, the thumb has nowhere to come from: the next one that plays on the same
+  // progress (a mode switch drives the topic bar's too) must not start from the old position
+  $effect(() => {
+    if (progress >= 1) untrack(() => (from = to));
   });
   const x = $derived(from && to ? from.x + (to.x - from.x) * progress : 0);
   const w = $derived(
@@ -171,7 +176,7 @@
     height: 13px;
     border-radius: 50%;
     background: var(--rad);
-    color: #fff;
+    color: var(--on-accent);
     pointer-events: none;
   }
   .stacked button:not([aria-pressed='true']) {

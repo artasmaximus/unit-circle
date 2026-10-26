@@ -1,6 +1,6 @@
 <!-- Running text with inline math parts. -->
 <script lang="ts">
-  import Tex from './Tex.svelte';
+  import Tex, { PROSE } from './Tex.svelte';
   import type { Rich } from '../core/rich.ts';
   let { parts }: { parts: Rich | string } = $props();
   // punctuation straight after a formula travels with it, so a line never starts with a lone "."
@@ -22,7 +22,7 @@
 </script>
 
 {#if typeof parts === 'string'}{parts}{:else}{#each segs as s}{#if s.m !== undefined}<span
-        class="im"><Tex latex={s.m} />{s.tail}</span
+        class="im"><Tex latex={s.m} scale={PROSE} />{s.tail}</span
       >{:else}{s.t}{/if}{/each}{/if}
 
 <style>

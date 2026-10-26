@@ -12,7 +12,7 @@
   import X from '@lucide/svelte/icons/x';
   import { solver } from './solver.svelte.ts';
   import { changes, eqTex, exactTex, type Op } from './algebra.ts';
-  import Tex from '../ui/Tex.svelte';
+  import Tex, { PROSE } from '../ui/Tex.svelte';
   import Rich from '../ui/Rich.svelte';
   import { morph } from '../core/transition.ts';
 
@@ -93,13 +93,18 @@
         <span class="m now"><Tex latex={eqTex(solver.current)} /></span>
         {#if solver.done}
           <p class="ok">
-            Solved: <Tex latex={`\\theta=${solver.sols.map((a) => a + '^\\circ').join(',\\ ')}`} />
+            Solved: <Tex
+              latex={`\\theta=${solver.sols.map((a) => a + '^\\circ').join(',\\ ')}`}
+              scale={PROSE}
+            />
           </p>
           <button class="primary" onclick={() => solver.next()}>Next problem</button>
         {:else}
           <p>
-            Drag the point to an angle where <Tex latex={`${fn}=${exactTex(solver.target.v)}`} />,
-            then Check. There are two. <Rich parts={solver.note} />
+            Drag the point to an angle where <Tex
+              latex={`${fn}=${exactTex(solver.target.v)}`}
+              scale={PROSE}
+            />, then Check. There are two. <Rich parts={solver.note} />
           </p>
           <div class="row">
             <button class="primary" onclick={() => solver.check()}>Check</button>

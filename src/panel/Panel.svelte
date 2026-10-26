@@ -479,7 +479,7 @@
   }
   .switch[aria-checked='true'] .knob {
     transform: translateX(14px);
-    background: #fff;
+    background: var(--on-accent);
   }
   .switch:focus-visible {
     outline: 2px solid var(--cos);
