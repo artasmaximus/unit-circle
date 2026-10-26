@@ -4,6 +4,7 @@
 import type { Component } from 'svelte';
 import { Tween } from 'svelte/motion';
 import type { Unit } from './angles.ts';
+import { sections, statusOf, fromSearch, type Status } from './nav.ts';
 import { progress } from './progress.svelte.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
@@ -25,6 +26,18 @@ export type TopicDef = {
   id: Topic;
   /** The heading over the panel. */
   title: string;
+  /** The course or unit it is listed under in the switcher: the id of a group from `groups`. */
+  group: string;
+  /** Its place within the group (lower first); topics without one keep registration order. */
+  order?: number;
+  /**
+   * Topics whose Guide should be completed first. Unmet, the switcher marks the topic as best
+   * after them; with `strict` it stays locked until they are done.
+   */
+  requires?: Topic[];
+  strict?: boolean;
+  /** Extra words the switcher's search matches (synonyms, what the topic is about). */
+  keywords?: string;
   /** Its entry in the tab bar. */
   tab: { label: string; icon: Component<{ size?: number }> };
   /** The panel for each mode; a topic without a `guide` has no Guide. */
@@ -48,8 +61,18 @@ const registry: TopicDef[] = [];
 export function registerTopics(...defs: TopicDef[]) {
   registry.push(...defs);
 }
+const groupList: { id: string; title: string }[] = [];
+/** Name the courses or units topics are listed under, in the order they are shown. */
+export function registerGroups(...gs: { id: string; title: string }[]) {
+  groupList.push(...gs);
+}
 /** Every topic, in tab bar order. */
 export const topics: readonly TopicDef[] = registry;
+export const groups: readonly { id: string; title: string }[] = groupList;
+/** The topics under their headings, as the switcher lists them. */
+export const topicSections = () => sections(registry, groupList);
+/** Whether a topic is open, recommended after others, or locked (see `TopicDef.requires`). */
+export const topicStatus = (t: TopicDef): Status => statusOf(t, progress.completed);
 export const topicDef = (id: Topic): TopicDef => registry.find((t) => t.id === id) ?? registry[0];
 /** Whether a topic has a Guide. */
 export const hasGuide = (id: Topic) => !!topicDef(id).views.guide;
@@ -119,19 +142,33 @@ export type TopicHooks = {
 
 /** Set the topic the app opens on up for the mode it opens in. */
 export function startApp() {
+  // an address that names a topic (and mode) opens there, as if the learner had switched to it
+  const at = fromSearch(location.search, registry, progress.completed);
+  if (at.topic && at.topic !== ui.topic) {
+    ui.topic = at.topic;
+    ui.mode = at.mode ?? defaultMode(at.topic, 'explore');
+    topicDef(at.topic).hooks.enter?.(ui.mode);
+  } else if (at.mode) ui.mode = at.mode;
   topicDef(ui.topic).hooks.mode(ui.mode);
 }
 
+/** The mode a topic opens in: its Guide until that is done, else `last` (never Guide without one). */
+const defaultMode = (t: Topic, last: Mode): Mode =>
+  hasGuide(t) && !progress.completed[t]
+    ? 'guide'
+    : last === 'guide' && !hasGuide(t)
+      ? 'explore'
+      : last;
+
 export function setTopic(t: Topic) {
-  if (ui.topic === t) return;
+  if (ui.topic === t || topicStatus(topicDef(t)).state === 'locked') return;
   topicDef(ui.topic).hooks.leave?.(t, ui.mode);
   withPen(() => {
     ui.topic = t;
     ui.highlight = [];
     // a topic with a Guide opens in it until the Guide is done; after that in whichever mode was
     // last used, and a topic without a Guide cannot be in Guide mode
-    if (hasGuide(t) && !progress.completed[t]) ui.mode = 'guide';
-    else if (ui.mode === 'guide') ui.mode = 'explore';
+    ui.mode = defaultMode(t, ui.mode === 'guide' ? 'explore' : ui.mode);
     const hooks = topicDef(t).hooks;
     hooks.enter?.(ui.mode);
     hooks.mode(ui.mode);

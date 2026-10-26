@@ -13,6 +13,8 @@
   import AngleInput from '../ui/AngleInput.svelte';
   import { progress } from '../core/progress.svelte.ts';
   import { hasGuide, topicDef } from '../core/app.svelte.ts';
+  import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down';
+  import { topicMenu } from '../ui/topicMenu.svelte.ts';
 
   const topic = $derived(topicDef(ui.topic));
   const angleInput = $derived(topic.angleInput?.());
@@ -105,7 +107,18 @@
         onclick={() => (folded = !folded)}><span></span></button
       >
       <div class="title">
-        <h1>{topic.title}</h1>
+        <!-- on phones the title is where the topic switcher opens (wide screens have the tab bar) -->
+        {#if camera.wide}
+          <h1>{topic.title}</h1>
+        {:else}
+          <button
+            class="switch-topic"
+            aria-haspopup="dialog"
+            onclick={() => (topicMenu.open = true)}
+            ><h1>{topic.title}</h1>
+            <ChevronsUpDown size={16} /></button
+          >
+        {/if}
         <Segmented
           label="Mode"
           value={ui.mode}
@@ -374,6 +387,21 @@
     display: grid;
     justify-items: end;
     gap: 8px;
+  }
+  /* the phone title as a button: bare, so it reads as the heading it is, with a chevron */
+  .switch-topic {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 4px 6px 4px 0;
+    border: 0;
+    background: transparent;
+    color: var(--fg);
+  }
+  .switch-topic :global(svg) {
+    flex: none;
+    color: var(--muted);
   }
   .reset {
     padding: 3px 9px;
