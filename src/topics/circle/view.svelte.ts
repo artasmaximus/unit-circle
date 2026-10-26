@@ -37,6 +37,6 @@ class CircleView {
    * Where a press would put the point, when Practice's hint is showing coordinates and the answer
    * is still hidden: the hint then works at the spot being aimed at too.
    */
-  hintAt = $derived(ui.mode === 'practice' && quiz.hint && !ui.revealed ? preview.deg : null);
+  hintAt = $derived(ui.mode === 'practice' && quiz.hint && !revealed() ? preview.deg : null);
 }
 export const circleView = new CircleView();

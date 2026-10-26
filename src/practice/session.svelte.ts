@@ -14,6 +14,7 @@
 //   and comes back in a few questions.
 // A skill is marked right for a first-time answer, and wrong for a miss or a second try; a hint
 // leaves it alone.
+import { withPen } from '../core/app.svelte.ts';
 import type { Rich } from '../core/rich.ts';
 import {
   SET_SIZE,
@@ -188,6 +189,10 @@ export class Session<Q, C> {
   }
   /** Ask a question (the next one, unless given): a finished set begins a new one. */
   start(q: Q = this.#next()) {
+    // an open question hides the plane's answers, so asking one is a reveal change and plays it
+    withPen(() => this.#ask(q));
+  }
+  #ask(q: Q) {
     if (!this.strict) {
       if (this.setFull) this.round = [];
       this.summary = false;
@@ -253,6 +258,9 @@ export class Session<Q, C> {
       : 'Not quite. The streak holds while you try once more: move the point and press Check.';
   }
   #finish(ok: boolean) {
+    withPen(() => this.#end(ok));
+  }
+  #end(ok: boolean) {
     const q = this.cur!,
       a = this.#a,
       retried = this.tries > 0;

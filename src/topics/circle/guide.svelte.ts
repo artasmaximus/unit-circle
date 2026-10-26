@@ -80,15 +80,12 @@ $effect.root(() => {
 function apply(m: Mode) {
   if (m === 'guide') {
     ui.highlight = [];
-    ui.revealed = true;
     solver.close();
     unitGuide.goTo(progress.step.circle ?? 0);
   } else if (m === 'practice') {
     if (!quiz.cur || quiz.answered) quiz.start();
-    else ui.revealed = quiz.answered;
   } else {
     ui.highlight = [];
-    ui.revealed = true;
     solver.close();
   }
 }

@@ -108,7 +108,6 @@ $effect.root(() => {
 
 // what switching to this topic, or switching mode inside it, does to the plane
 function apply(m: Mode) {
-  ui.revealed = true;
   ui.highlight = [];
   if (m === 'guide')
     return inverseGuideRun.goTo(

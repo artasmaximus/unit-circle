@@ -147,7 +147,6 @@ $effect.root(() => {
 });
 
 function apply(m: Mode) {
-  ui.revealed = true;
   ui.highlight = [];
   if (m === 'guide') radians.goTo(Math.min(progress.step.radians ?? 0, radians.steps.length - 1));
   else if (m === 'practice' && (!radians.practice.cur || radians.practice.answered))

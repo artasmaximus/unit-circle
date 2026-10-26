@@ -52,6 +52,11 @@ export type TopicDef = {
   overlay?: Component;
   /** What switching mode, arriving and leaving mean for the topic (its state lives in its folder). */
   hooks: TopicHooks;
+  /**
+   * The run of questions in play in the current mode, if any (Practice, or the Guide's exam
+   * step). While one of its questions is open the plane hides its answers: see `revealed`.
+   */
+  session?: () => { cur: unknown; answered: boolean } | null;
   /** The angle readout in the plane's corner: absent, or the unit it insists on. */
   angleInput?: () => { unit?: Unit } | null;
   /** How the shared ring is written while this topic shows. */
@@ -83,13 +88,18 @@ export const ui = $state({
   topic: HOME,
   /** A learner who has not finished the unit circle's Guide starts in it. */
   mode: (progress.completed.circle ? 'practice' : 'guide') as Mode,
-  /** In Practice, answers stay hidden until the question is answered. */
-  revealed: true,
   /** Snap points drawn larger: the angles found in Practice. */
   highlight: [] as number[],
 });
-/** Whether answers (colors, values, labels) may show. */
-export const revealed = () => ui.mode !== 'practice' || ui.revealed;
+/**
+ * Whether answers (colors, values, labels) may show: not while a question is open. It follows the
+ * topic's session, so Practice and every exam hide and reveal the same way, and the one motion that
+ * plays when this changes (`withPen`) is the same everywhere.
+ */
+export const revealed = () => {
+  const s = topicDef(ui.topic).session?.();
+  return !(s && s.cur && !s.answered);
+};
 
 /* ---------- the pen motion ---------- */
 // One motion drives every reaction to a mode switch or a reveal: the segmented control's thumb and

@@ -1,7 +1,7 @@
 // The unit circle's Practice and its Guide exam: a run of questions (see practice/session.svelte.ts)
 // and how each question sets up the plane. Question content itself is pure and lives in quiz.ts.
 import { angleTex } from '../../core/angles.ts';
-import { ui, withPen } from '../../core/app.svelte.ts';
+import { ui } from '../../core/app.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { SPECIAL, type Fn } from '../../core/trig.ts';
@@ -42,11 +42,7 @@ function adapter(strict: boolean): Adapter<Question, string> {
       return null;
     },
     stage: () => {
-      if (strict) return;
-      withPen(() => {
-        ui.highlight = [];
-        ui.revealed = false;
-      });
+      if (!strict) ui.highlight = [];
     },
     // the point goes to the answer, and the ring marks it larger (both angles, for type 2)
     reveal: (q, _ok, s) => {
@@ -57,7 +53,6 @@ function adapter(strict: boolean): Adapter<Question, string> {
         ui.highlight = [...q.sols];
         point.set(q.sols.find((a) => !s.found.includes(a)) ?? q.sols[q.sols.length - 1], true);
       }
-      if (!strict) withPen(() => (ui.revealed = true));
     },
     // the exam: exact values of sin, cos and tan at the special angles, ten in a row
     exam: {
