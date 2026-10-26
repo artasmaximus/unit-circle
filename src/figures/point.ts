@@ -10,6 +10,7 @@ export type PointProps = Timing & {
   /** A ring around it, `width` stroke units wide. */
   stroke?: string;
   width?: number;
+  opacity?: number;
   z?: number;
 };
 
@@ -26,6 +27,7 @@ export function Point(key: string, p: PointProps, ctx: Ctx): Drawn {
         fill: p.fill,
         stroke: p.stroke,
         width: p.width === undefined ? undefined : p.width * ctx.sw,
+        opacity: p.opacity,
         ...timing(p),
         enter: p.enter ?? 'pop',
       },

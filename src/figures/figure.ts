@@ -34,6 +34,8 @@ export type Look = {
 /** When and how a figure's marks arrive and leave (milliseconds). */
 export type Timing = {
   enter?: Verb;
+  /** How it leaves, when not the same verb run backwards. */
+  exit?: Verb;
   delay?: number;
   dur?: number;
   exitDelay?: number;
@@ -43,6 +45,7 @@ export type Timing = {
 /** A figure's timing, copied onto a mark. */
 export const timing = (p: Timing) => ({
   enter: p.enter,
+  exit: p.exit,
   delay: p.delay,
   dur: p.dur,
   exitDelay: p.exitDelay,
