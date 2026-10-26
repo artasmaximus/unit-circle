@@ -3,6 +3,7 @@
 // other, landing exactly on the final layout. Where the API is missing (or motion is reduced) the
 // change just happens.
 import { tick } from 'svelte';
+import { BEAT, DUR, EASE_POP } from './tuning.ts';
 
 export const reduce =
   typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -33,4 +34,9 @@ if (typeof document !== 'undefined') {
   const s = springCurve();
   document.documentElement.style.setProperty('--spring', s.easing);
   document.documentElement.style.setProperty('--spring-ms', `${s.ms}ms`);
+  // the timing vocabulary, for CSS (see DUR in tuning.ts)
+  for (const [k, v] of Object.entries(DUR))
+    document.documentElement.style.setProperty(`--dur-${k}`, `${v}ms`);
+  document.documentElement.style.setProperty('--beat', `${BEAT}ms`);
+  document.documentElement.style.setProperty('--ease-pop', EASE_POP);
 }

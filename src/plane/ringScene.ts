@@ -11,7 +11,7 @@ import { Label } from '../figures/label.ts';
 import { Point } from '../figures/point.ts';
 import { Segment } from '../figures/segment.ts';
 import { SPECIAL, colorOf, norm, rad } from '../core/trig.ts';
-import { input } from '../core/tuning.ts';
+import { DUR, STAGGER, after, input } from '../core/tuning.ts';
 
 export type RingInput = {
   /**
@@ -52,7 +52,7 @@ const local = (t: number, i: number) => Math.min(1, Math.max(0, (t - i * STEP) /
 export function ringScene(i: RingInput): Mark[] {
   const ctx: Ctx = { sw: i.sw, lb: i.lb };
   const out: Mark[] = [
-    ...Circle('ring', { r: S, color: 'var(--muted)', width: 1, z: 0, dur: 700 }, ctx).marks,
+    ...Circle('ring', { r: S, color: 'var(--muted)', width: 1, z: 0, dur: DUR.grand }, ctx).marks,
   ];
   SPECIAL.forEach((a, k) => {
     const q = local(i.t, k),
@@ -76,7 +76,7 @@ export function ringScene(i: RingInput): Mark[] {
           stroke: 'var(--bg)',
           width: 1.2,
           z: 1,
-          delay: 120 + 35 * k,
+          delay: after(1) + STAGGER.dots * k,
           glide: i.t < 1 ? 0 : 140,
         },
         ctx,
@@ -93,9 +93,9 @@ export function ringScene(i: RingInput): Mark[] {
             color,
             z: 2,
             enter: 'fade',
-            delay: 200 + 35 * k,
-            dur: 200,
-            exitDur: 120,
+            delay: after(1) + STAGGER.dots * k,
+            dur: DUR.quick,
+            exitDur: DUR.blink,
           },
           ctx,
         ).marks,
@@ -110,7 +110,7 @@ export function ringScene(i: RingInput): Mark[] {
       special = SPECIAL.includes(g),
       grey = 'var(--muted)',
       at: [number, number] = [S * Math.cos(a), -S * Math.sin(a)],
-      q = { z: 8, enter: 'fade', dur: 100, exitDur: 100 } as const;
+      q = { z: 8, enter: 'fade', dur: DUR.blink, exitDur: DUR.blink } as const;
     out.push(
       ...Segment(
         'ring:preview:ray',

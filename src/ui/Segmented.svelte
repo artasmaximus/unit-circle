@@ -116,7 +116,7 @@
     box-shadow:
       0 2px 6px -1px var(--sh),
       0 6px 14px -6px var(--sh);
-    transition: scale 0.12s ease-out;
+    transition: scale var(--dur-blink) ease-out;
   }
   .pressed .thumb {
     scale: 0.96;
@@ -128,7 +128,7 @@
     padding: 5px 13px;
     background: transparent;
     color: var(--fg);
-    transition: color 0.18s 0.12s;
+    transition: color var(--dur-quick) var(--dur-blink);
   }
   button[aria-pressed='true'] {
     background: transparent;

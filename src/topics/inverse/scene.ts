@@ -18,6 +18,7 @@ import { Point } from '../../figures/point.ts';
 import { Trail } from '../../figures/trail.ts';
 import { Sector } from '../../figures/sector.ts';
 import { Segment } from '../../figures/segment.ts';
+import { DUR, after } from '../../core/tuning.ts';
 
 export type InvInput = {
   /**
@@ -58,7 +59,7 @@ const COLORS = { asin: 'var(--sin)', acos: 'var(--cos)', atan: 'var(--slope)' } 
 /** The dash the topic uses for guide lines, in stroke units. */
 const DASH: [number, number] = [3, 4];
 /** A trail sticks to the instant it moves: no entrance or exit of its own. */
-const NOW = { dur: 0, exitDur: 0, enter: 'fade' } as const;
+const NOW = { dur: DUR.instant, exitDur: DUR.instant, enter: 'fade' } as const;
 /** A point on a circle at an angle in degrees. */
 const at = (deg: number, r = S): Pt => polar(rad(deg), r);
 /** Whether two angles are different points on the circle (at ±1 the two crossings meet). */
@@ -92,7 +93,17 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       Sector(
         `band:${fn}`,
-        { from, to, r: S, fill: c, opacity: 0.07, z: 0, enter: 'fade', dur: 450, exitDur: 300 },
+        {
+          from,
+          to,
+          r: S,
+          fill: c,
+          opacity: 0.07,
+          z: 0,
+          enter: 'fade',
+          dur: DUR.draw,
+          exitDur: DUR.base,
+        },
         ctx,
       ),
     );
@@ -109,7 +120,7 @@ export function inverseScene(i: InvInput): Mark[] {
           width: 3.5,
           opacity: 0.35,
           z: 1,
-          dur: 500,
+          dur: DUR.draw,
         },
         ctx,
       ),
@@ -143,19 +154,33 @@ export function inverseScene(i: InvInput): Mark[] {
         z: 4,
         enter: 'draw',
       } as const;
-    add(Segment('given:ray', { from: [0, 0], to: G, ...guide, dur: 400 }, ctx));
+    add(Segment('given:ray', { from: [0, 0], to: G, ...guide, dur: DUR.draw }, ctx));
     if (fn !== 'atan')
       add(
         Segment(
           'given:drop',
-          { from: G, to: fn === 'asin' ? [0, G[1]] : [G[0], 0], ...guide, delay: 300, dur: 400 },
+          {
+            from: G,
+            to: fn === 'asin' ? [0, G[1]] : [G[0], 0],
+            ...guide,
+            delay: after(2),
+            dur: DUR.draw,
+          },
           ctx,
         ),
       );
     add(
       Point(
         'given:dot',
-        { at: G, r: 5.5, fill: 'var(--bg)', stroke: 'var(--muted)', width: 1.5, z: 7, delay: 200 },
+        {
+          at: G,
+          r: 5.5,
+          fill: 'var(--bg)',
+          stroke: 'var(--muted)',
+          width: 1.5,
+          z: 7,
+          delay: after(1),
+        },
         ctx,
       ),
     );
@@ -169,7 +194,7 @@ export function inverseScene(i: InvInput): Mark[] {
           color: 'var(--muted)',
           z: 9,
           enter: 'fade',
-          delay: 300,
+          delay: after(2),
         },
         ctx,
       ),
@@ -192,8 +217,8 @@ export function inverseScene(i: InvInput): Mark[] {
             round: true,
             z: 5,
             enter: 'draw',
-            delay: 150,
-            dur: 450,
+            delay: after(1),
+            dur: DUR.draw,
           },
           ctx,
         ),
@@ -201,7 +226,16 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       Segment(
         'ray',
-        { from: [0, 0], to: P, color: c, width: 1.75, round: true, z: 6, enter: 'draw', dur: 450 },
+        {
+          from: [0, 0],
+          to: P,
+          color: c,
+          width: 1.75,
+          round: true,
+          z: 6,
+          enter: 'draw',
+          dur: DUR.draw,
+        },
         ctx,
       ),
     );
@@ -221,9 +255,9 @@ export function inverseScene(i: InvInput): Mark[] {
           color: c,
           width: 1.25,
           z: 6,
-          delay: 120,
-          dur: 400,
-          head: { min: rad(9), delay: 380 },
+          delay: after(1),
+          dur: DUR.draw,
+          head: { min: rad(9), delay: after(3) },
         },
         ctx,
       ),
@@ -231,7 +265,7 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       Point(
         'P',
-        { at: P, r: 6.5, fill: c, stroke: 'var(--panel)', width: 2, z: 7, delay: 300 },
+        { at: P, r: 6.5, fill: c, stroke: 'var(--panel)', width: 2, z: 7, delay: after(2) },
         ctx,
       ),
     );
@@ -245,7 +279,7 @@ export function inverseScene(i: InvInput): Mark[] {
           color: c,
           z: 9,
           enter: 'fade',
-          delay: 350,
+          delay: after(2),
         },
         ctx,
       ),
@@ -266,7 +300,7 @@ export function inverseScene(i: InvInput): Mark[] {
             back: true,
             z: 9,
             enter: 'fade',
-            delay: 380,
+            delay: after(3),
           },
           ctx,
         ),
@@ -277,7 +311,7 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       Point(
         `${fn}:handle`,
-        { at: handle, r: 5, fill: c, stroke: 'var(--panel)', width: 2, z: 7, delay: 250 },
+        { at: handle, r: 5, fill: c, stroke: 'var(--panel)', width: 2, z: 7, delay: after(2) },
         ctx,
       ),
     );
@@ -296,7 +330,7 @@ export function inverseScene(i: InvInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 300,
+          delay: after(2),
         },
         ctx,
       ),
@@ -316,9 +350,9 @@ export function inverseScene(i: InvInput): Mark[] {
           to: Q,
           ...faint,
           z: 5,
-          dur: 320,
-          exitDelay: 160,
-          exitDur: 220,
+          dur: DUR.base,
+          exitDelay: after(1),
+          exitDur: DUR.quick,
         },
         ctx,
       ),
@@ -333,10 +367,10 @@ export function inverseScene(i: InvInput): Mark[] {
           stroke: c,
           width: 1.5,
           z: 7,
-          delay: 300,
-          dur: 250,
-          exitDelay: 80,
-          exitDur: 160,
+          delay: after(2),
+          dur: DUR.quick,
+          exitDelay: after(0.5),
+          exitDur: DUR.blink,
         },
         ctx,
       ),
@@ -345,7 +379,15 @@ export function inverseScene(i: InvInput): Mark[] {
       add(
         Segment(
           'other:ray',
-          { from: Q, to: [0, 0], ...faint, z: 6, delay: 420, dur: 320, exitDur: 200 },
+          {
+            from: Q,
+            to: [0, 0],
+            ...faint,
+            z: 6,
+            delay: after(3),
+            dur: DUR.base,
+            exitDur: DUR.quick,
+          },
           ctx,
         ),
       );
@@ -360,8 +402,8 @@ export function inverseScene(i: InvInput): Mark[] {
           opacity: 0.7,
           z: 9,
           enter: 'fade',
-          delay: 380,
-          exitDur: 120,
+          delay: after(3),
+          exitDur: DUR.blink,
         },
         ctx,
       ),
@@ -386,7 +428,7 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       NumberLine('probe:axisX', { axis: 'x', r: S, values: SPECIAL_VALUES.asin, color: blue }, ctx),
     );
-    const drop = { width: 1.25, dash: DASH, z: 5, enter: 'draw', dur: 350 } as const;
+    const drop = { width: 1.25, dash: DASH, z: 5, enter: 'draw', dur: DUR.base } as const;
     add(
       Trail(
         'probe:trail',
@@ -407,7 +449,7 @@ export function inverseScene(i: InvInput): Mark[] {
           round: true,
           z: 6,
           enter: 'draw',
-          dur: 450,
+          dur: DUR.draw,
         },
         ctx,
       ),
@@ -418,21 +460,30 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       AngleArc(
         'probe:arc',
-        { to: rad(pa), r: S / 5, ccw: true, color: fg, width: 1.25, z: 6, delay: 120, dur: 400 },
+        {
+          to: rad(pa),
+          r: S / 5,
+          ccw: true,
+          color: fg,
+          width: 1.25,
+          z: 6,
+          delay: after(1),
+          dur: DUR.draw,
+        },
         ctx,
       ),
     );
-    const knob = { r: 5, stroke: 'var(--panel)', width: 2, z: 7, delay: 250 };
+    const knob = { r: 5, stroke: 'var(--panel)', width: 2, z: 7, delay: after(2) };
     add(Point('probe:Hy', { at: Hy, fill: red, ...knob }, ctx));
     add(Point('probe:Hx', { at: Hx, fill: blue, ...knob }, ctx));
     add(
       Point(
         'probe:P',
-        { at: PP, r: 6.5, fill: fg, stroke: 'var(--panel)', width: 2, z: 8, delay: 300 },
+        { at: PP, r: 6.5, fill: fg, stroke: 'var(--panel)', width: 2, z: 8, delay: after(2) },
         ctx,
       ),
     );
-    const reading = { size: 11, back: true, z: 9, enter: 'fade', delay: 300 } as const;
+    const reading = { size: 11, back: true, z: 9, enter: 'fade', delay: after(2) } as const;
     add(
       Label(
         'probe:vy',
@@ -469,7 +520,7 @@ export function inverseScene(i: InvInput): Mark[] {
           color: fg,
           z: 9,
           enter: 'fade',
-          delay: 350,
+          delay: after(2),
         },
         ctx,
       ),
@@ -482,7 +533,7 @@ export function inverseScene(i: InvInput): Mark[] {
       go = otherAngle(fn, i.ghost),
       gQ = at(go),
       both = apart(i.ghost, go);
-    const g = { z: 8, enter: 'fade', dur: 120, exitDur: 120 } as const,
+    const g = { z: 8, enter: 'fade', dur: DUR.blink, exitDur: DUR.blink } as const,
       grey = 'var(--muted)',
       ring = { r: 5, fill: 'none', stroke: grey, width: 1.5, opacity: 0.45, ...g };
     add(

@@ -6,6 +6,7 @@
 // Part keys: `${key}:dots`, `${key}:minor`, `${key}:major`, `${key}:axes`, `${key}:ticks` and
 // `${key}:ticks:half`.
 import type { Ctx, Drawn } from './figure.ts';
+import { DUR } from '../core/tuning.ts';
 
 export type GraphPaperProps = {
   /** The window to cover, in world units. */
@@ -41,7 +42,7 @@ export function GraphPaper(key: string, p: GraphPaperProps, _ctx: Ctx): Drawn {
     if (i) ticks += `M${i * step} -3.5V3.5M-3.5 ${i * step}H3.5`;
     if (i < p.ticks) half += `M${(i + 0.5) * step} -2.2V2.2M-2.2 ${(i + 0.5) * step}H2.2`;
   }
-  const fixed = { kind: 'path', fixed: true, enter: 'fade', dur: 600 } as const;
+  const fixed = { kind: 'path', fixed: true, enter: 'fade', dur: DUR.grand } as const;
   return {
     marks: [
       {
@@ -57,7 +58,7 @@ export function GraphPaper(key: string, p: GraphPaperProps, _ctx: Ctx): Drawn {
         w: v.w,
         h: v.h,
         enter: 'fade',
-        dur: 600,
+        dur: DUR.grand,
       },
       {
         ...fixed,

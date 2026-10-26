@@ -3,6 +3,7 @@
      Opened from the tab bar, the panel's title or "/" ; Enter takes the first match, the arrow
      keys walk the list. Topics read from the registry (core/app.svelte.ts). -->
 <script lang="ts">
+  import { DUR } from '../core/tuning.ts';
   import { fade, fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import Check from '@lucide/svelte/icons/check';
@@ -81,7 +82,7 @@
 
 {#if topicMenu.open}
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-  <div class="scrim" transition:fade={{ duration: 150 }} onclick={close}></div>
+  <div class="scrim" transition:fade={{ duration: DUR.quick }} onclick={close}></div>
   <div
     class="menu"
     class:wide={camera.wide}
@@ -89,7 +90,7 @@
     aria-label="Topics"
     tabindex="-1"
     {onkeydown}
-    transition:fly={{ y: camera.wide ? 8 : 40, duration: 200, easing: cubicOut }}
+    transition:fly={{ y: camera.wide ? 8 : 40, duration: DUR.quick, easing: cubicOut }}
   >
     <label class="find">
       <Search size={15} />

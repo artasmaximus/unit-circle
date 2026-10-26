@@ -1,6 +1,7 @@
 <!-- Labels floating over the plane: the point's θ and coordinates, and the slope on the radius,
      which unfolds its working when clicked. Positions come from the layout, in world units. -->
 <script lang="ts">
+  import { DUR } from '../../core/tuning.ts';
   import { scale } from 'svelte/transition';
   import { camera } from '../../core/camera.svelte.ts';
   import { circleUi } from './ui.svelte.ts';
@@ -31,7 +32,7 @@
     <!-- no card: a soft blur behind the values keeps them readable over the grid and lines -->
     <div class="tag" style={box(t)}>
       {#if t.values}
-        <span class="values" transition:scale={{ start: 0.6, duration: 200 }}>
+        <span class="values" transition:scale={{ start: 0.6, duration: DUR.quick }}>
           {#each t.parts ?? [] as part}<span style:color={part.color}
               ><Tex latex={part.latex} /></span
             >{/each}
@@ -51,7 +52,7 @@
       aria-label="Slope: click to show the calculation"
       onclick={() => (circleUi.slopeOpen = !circleUi.slopeOpen)}
       onblur={close}
-      transition:scale={{ start: 0.6, duration: 200 }}
+      transition:scale={{ start: 0.6, duration: DUR.quick }}
     >
       <span class="badge">slope</span><Tex latex={layout.slope.latex} />
     </button>
@@ -66,7 +67,7 @@
     box-sizing: border-box;
     display: grid;
     place-items: center;
-    transition: transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1);
+    transition: transform var(--dur-quick) var(--ease-pop);
   }
   .values {
     position: relative;
@@ -109,10 +110,10 @@
     -webkit-backdrop-filter: blur(3px);
     backdrop-filter: blur(3px);
     transition:
-      transform 0.24s cubic-bezier(0.22, 0.9, 0.3, 1),
-      width 0.24s cubic-bezier(0.22, 0.9, 0.3, 1),
-      height 0.24s cubic-bezier(0.22, 0.9, 0.3, 1),
-      border-color 0.15s;
+      transform var(--dur-quick) var(--ease-pop),
+      width var(--dur-quick) var(--ease-pop),
+      height var(--dur-quick) var(--ease-pop),
+      border-color var(--dur-quick);
   }
   /* amber-tinted glass with a soft amber edge */
   .slope {
@@ -143,8 +144,8 @@
     transform: translateY(2px);
     pointer-events: none;
     transition:
-      opacity 0.15s,
-      transform 0.15s;
+      opacity var(--dur-quick),
+      transform var(--dur-quick);
   }
   .slope:hover .badge,
   .slope:focus-visible .badge,

@@ -55,8 +55,8 @@
     transform: translateY(-4px);
     pointer-events: none;
     transition:
-      opacity 0.15s ease-out,
-      transform 0.15s ease-out;
+      opacity var(--dur-quick) ease-out,
+      transform var(--dur-quick) ease-out;
   }
   .info:hover .pop,
   .info:focus-within .pop {

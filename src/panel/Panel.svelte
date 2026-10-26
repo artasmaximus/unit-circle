@@ -309,7 +309,7 @@
       margin: 8px auto 0;
       border-radius: 999px;
       background: var(--line);
-      transition: background 0.2s;
+      transition: background var(--dur-quick);
     }
     .fold:hover span {
       background: var(--muted);
@@ -340,7 +340,7 @@
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
     border-bottom: 1px solid transparent;
-    transition: border-color 0.2s;
+    transition: border-color var(--dur-quick);
   }
   header.scrolled {
     border-bottom-color: var(--line);

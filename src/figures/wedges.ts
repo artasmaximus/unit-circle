@@ -7,6 +7,7 @@
 import type { Ctx, Drawn } from './figure.ts';
 import { polar } from './figure.ts';
 import { Label } from './label.ts';
+import { DUR, after } from '../core/tuning.ts';
 
 export type WedgesProps = {
   n: number;
@@ -39,8 +40,8 @@ export function Wedges(key: string, p: WedgesProps, ctx: Ctx): Drawn {
       fill: p.fill,
       opacity: p.opacity,
       enter: 'fade',
-      dur: 200,
-      exitDur: 200,
+      dur: DUR.quick,
+      exitDur: DUR.quick,
     });
     if (p.labels) {
       const l = p.labels;
@@ -54,9 +55,9 @@ export function Wedges(key: string, p: WedgesProps, ctx: Ctx): Drawn {
             color: l.color,
             z: 9,
             enter: 'fade',
-            delay: 220,
-            dur: 200,
-            exitDur: 120,
+            delay: after(1),
+            dur: DUR.quick,
+            exitDur: DUR.blink,
           },
           ctx,
         ).marks,

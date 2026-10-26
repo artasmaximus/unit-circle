@@ -5,7 +5,7 @@
 // the layout (layout.ts); this file decides how each is drawn and how it moves through a mode
 // switch. When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
 import { S } from '../../core/camera.svelte.ts';
-import { figure as F } from '../../core/tuning.ts';
+import { DUR, after, figure as F } from '../../core/tuning.ts';
 import { colorOf, rad, trigTex } from '../../core/trig.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { polar, type Ctx, type Look, type Pt } from '../../figures/figure.ts';
@@ -54,7 +54,7 @@ export const give = (u: number) => {
  * Marks that follow a changing value frame by frame (a wash front, the half of a dash pattern left
  * behind) take no time to arrive or leave.
  */
-const NOW = { dur: 0, exitDur: 0, enter: 'fade' } as const;
+const NOW = { dur: DUR.instant, exitDur: DUR.instant, enter: 'fade' } as const;
 const ends = (g: Seg): { from: Pt; to: Pt } => ({ from: [g[0], g[1]], to: [g[2], g[3]] });
 
 export function circleScene(i: CircleInput): Mark[] {
@@ -90,8 +90,8 @@ export function circleScene(i: CircleInput): Mark[] {
     power: F.mirrorEase,
     enter: 'draw',
     dur: F.mirrorMs * F.mirrorLineShare,
-    exitDelay: 150,
-    exitDur: 300,
+    exitDelay: after(1),
+    exitDur: DUR.base,
   } as const;
   add(
     Segment(
@@ -103,7 +103,7 @@ export function circleScene(i: CircleInput): Mark[] {
         ...legDash,
         z: 3,
         enter: 'draw',
-        dur: 350,
+        dur: DUR.base,
       },
       ctx,
     ),
@@ -125,13 +125,13 @@ export function circleScene(i: CircleInput): Mark[] {
       {
         ...wedge,
         color: moving ? before : lo.col,
-        dur: 400,
+        dur: DUR.draw,
         head: {
           min: 0.16,
           max: 2 * Math.PI - 0.02,
           color: moving && arcWash < 1 ? before : lo.col,
           round: true,
-          delay: 250,
+          delay: after(2),
         },
       },
       ctx,
@@ -177,7 +177,7 @@ export function circleScene(i: CircleInput): Mark[] {
             color: leg.now,
             dashOffset: tick(9),
             enter: 'draw',
-            dur: 350,
+            dur: DUR.base,
           },
           ctx,
         ),
@@ -193,7 +193,7 @@ export function circleScene(i: CircleInput): Mark[] {
             color: leg.now,
             dashOffset: tick(9),
             enter: 'draw',
-            dur: 350,
+            dur: DUR.base,
           },
           ctx,
         ),
@@ -213,7 +213,7 @@ export function circleScene(i: CircleInput): Mark[] {
   add(
     Segment(
       'ray',
-      { ...ray, to: [lo.x, lo.y], color: moving ? before : lo.col, enter: 'draw', dur: 450 },
+      { ...ray, to: [lo.x, lo.y], color: moving ? before : lo.col, enter: 'draw', dur: DUR.draw },
       ctx,
     ),
   );
@@ -277,7 +277,7 @@ export function circleScene(i: CircleInput): Mark[] {
       curve: give,
       fadeBy: F.refFadeBy,
       dur: F.refSettle * 1000,
-      exitDur: 300,
+      exitDur: DUR.base,
       delay: moving ? F.refLabel[0] * 460 : 0,
       enter: 'pop',
     } as const;
@@ -345,7 +345,7 @@ export function circleScene(i: CircleInput): Mark[] {
           z: 7,
           delay: landing,
           dur: F.mirrorMs - landing,
-          exitDur: 200,
+          exitDur: DUR.quick,
         },
         ctx,
       ),
@@ -360,8 +360,8 @@ export function circleScene(i: CircleInput): Mark[] {
             z: 9,
             enter: 'fade',
             delay: landing,
-            dur: 300,
-            exitDur: 150,
+            dur: DUR.base,
+            exitDur: DUR.blink,
           },
           ctx,
         ),
@@ -386,8 +386,8 @@ export function circleScene(i: CircleInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          dur: 100,
-          exitDur: 100,
+          dur: DUR.blink,
+          exitDur: DUR.blink,
         },
         ctx,
       ),
@@ -405,7 +405,7 @@ export function circleScene(i: CircleInput): Mark[] {
         stroke: 'var(--panel)',
         width: 2,
         z: 10,
-        delay: 150,
+        delay: after(1),
       },
       ctx,
     ),

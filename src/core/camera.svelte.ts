@@ -3,7 +3,7 @@
 // later.
 import { Tween } from 'svelte/motion';
 import { cubicOut } from 'svelte/easing';
-import { camera as T } from './tuning.ts';
+import { DUR, camera as T } from './tuning.ts';
 import { reduce } from './transition.ts';
 export const S = 150;
 /** Radius (world) of the ring's degree labels; the hover ghost's label takes their place. */
@@ -63,7 +63,7 @@ class Camera {
    * in, and `dy` to slide the circle up by (so the extra sits below it). It glides, so the circle
    * makes way when the extra drawing arrives and takes its place back when it leaves.
    */
-  #frame = new Tween({ dy: 0, extra: 0 }, { duration: 500, easing: cubicOut });
+  #frame = new Tween({ dy: 0, extra: 0 }, { duration: DUR.draw, easing: cubicOut });
   get frame() {
     return this.#frame.current;
   }

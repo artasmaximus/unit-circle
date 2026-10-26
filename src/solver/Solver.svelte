@@ -3,6 +3,7 @@
      circle. Vertical, so it fits the panel (in place of the definitions) or a column of its own
      on very wide screens. -->
 <script lang="ts">
+  import { DUR } from '../core/tuning.ts';
   import { fly } from 'svelte/transition';
   import ArrowUpDown from '@lucide/svelte/icons/arrow-up-down';
   import Shrink from '@lucide/svelte/icons/shrink';
@@ -65,7 +66,7 @@
     {#if !solver.target}
       <ol class="steps">
         {#each solver.steps as s, i (i)}
-          <li in:fly={{ y: -14, duration: 260 }}>
+          <li in:fly={{ y: -14, duration: DUR.base }}>
             {#if i}<span class="op">{s.label}</span>{/if}
             <span class="m" class:now={i === solver.steps.length - 1}
               ><Tex latex={eqTex(s.eq)} /></span
@@ -210,9 +211,9 @@
     color: var(--fg);
     box-shadow: 0 3px 0 var(--line);
     transition:
-      transform 0.07s,
-      box-shadow 0.07s,
-      border-color 0.15s;
+      transform var(--dur-blink),
+      box-shadow var(--dur-blink),
+      border-color var(--dur-quick);
   }
   .key:hover:not(:disabled) {
     border-color: var(--slope);

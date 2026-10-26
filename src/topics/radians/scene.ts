@@ -16,6 +16,7 @@ import { Wedges } from '../../figures/wedges.ts';
 
 export { FEATURES, type Feature } from './features.ts';
 import type { Feature } from './features.ts';
+import { DUR, after } from '../../core/tuning.ts';
 
 export type RadiansInput = {
   active: boolean;
@@ -56,7 +57,7 @@ export function radiansScene(i: RadiansInput): Mark[] {
           round: true,
           z: 4,
           enter: 'draw',
-          dur: 600,
+          dur: DUR.grand,
         },
         ctx,
       ),
@@ -64,7 +65,15 @@ export function radiansScene(i: RadiansInput): Mark[] {
     add(
       Point(
         'rad:radius:end',
-        { at: [S, 0], r: 4, fill: COLOR, stroke: 'var(--panel)', width: 1.5, z: 5, delay: 450 },
+        {
+          at: [S, 0],
+          r: 4,
+          fill: COLOR,
+          stroke: 'var(--panel)',
+          width: 1.5,
+          z: 5,
+          delay: after(3),
+        },
         ctx,
       ),
     );
@@ -79,7 +88,7 @@ export function radiansScene(i: RadiansInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 500,
+          delay: after(3),
         },
         ctx,
       ),
@@ -107,8 +116,8 @@ export function radiansScene(i: RadiansInput): Mark[] {
             dash: last ? [1.2, 1.6] : undefined,
             z: 4,
             delay,
-            dur: 560,
-            exitDur: 160,
+            dur: DUR.grand,
+            exitDur: DUR.blink,
           },
           ctx,
         ),
@@ -125,7 +134,7 @@ export function radiansScene(i: RadiansInput): Mark[] {
             z: 9,
             enter: 'fade',
             delay: delay + 380,
-            exitDur: 120,
+            exitDur: DUR.blink,
           },
           ctx,
         ),
@@ -141,7 +150,7 @@ export function radiansScene(i: RadiansInput): Mark[] {
             width: 1.5,
             z: 6,
             delay: delay + 480,
-            exitDur: 120,
+            exitDur: DUR.blink,
           },
           ctx,
         ),
@@ -164,8 +173,8 @@ export function radiansScene(i: RadiansInput): Mark[] {
             width: 4,
             round: true,
             z: 1,
-            delay: 200,
-            dur: 700,
+            delay: after(1),
+            dur: DUR.grand,
           },
           ctx,
         ),
@@ -229,9 +238,9 @@ export function radiansScene(i: RadiansInput): Mark[] {
             back: true,
             z: 9,
             enter: 'fade',
-            delay: 120,
-            dur: 200,
-            exitDur: 120,
+            delay: after(1),
+            dur: DUR.quick,
+            exitDur: DUR.blink,
           },
           ctx,
         ),
@@ -251,8 +260,8 @@ export function radiansScene(i: RadiansInput): Mark[] {
           steps: 28,
           color: () => COLOR,
           z: 3,
-          dur: 0,
-          exitDur: 0,
+          dur: DUR.instant,
+          exitDur: DUR.instant,
           enter: 'fade',
         },
         ctx,
@@ -261,14 +270,22 @@ export function radiansScene(i: RadiansInput): Mark[] {
     add(
       Segment(
         'rad:ray',
-        { from: [0, 0], to: P, width: 1.75, round: true, z: 6, enter: 'draw', dur: 450 },
+        { from: [0, 0], to: P, width: 1.75, round: true, z: 6, enter: 'draw', dur: DUR.draw },
         ctx,
       ),
     );
     add(
       Point(
         'rad:point',
-        { at: P, r: 7, fill: 'var(--fg)', stroke: 'var(--panel)', width: 2, z: 10, delay: 150 },
+        {
+          at: P,
+          r: 7,
+          fill: 'var(--fg)',
+          stroke: 'var(--panel)',
+          width: 2,
+          z: 10,
+          delay: after(1),
+        },
         ctx,
       ),
     );

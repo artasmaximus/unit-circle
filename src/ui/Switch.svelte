@@ -37,7 +37,7 @@
     height: 18px;
     border-radius: 999px;
     background: color-mix(in srgb, var(--muted) 35%, transparent);
-    transition: background 0.18s;
+    transition: background var(--dur-quick);
   }
   .knob {
     position: absolute;
@@ -47,7 +47,7 @@
     height: 14px;
     border-radius: 50%;
     background: var(--fg);
-    transition: transform 0.18s cubic-bezier(0.22, 0.9, 0.3, 1);
+    transition: transform var(--dur-quick) var(--ease-pop);
   }
   .switch[aria-checked='true'] .track {
     background: var(--cos);

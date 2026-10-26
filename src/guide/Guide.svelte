@@ -23,6 +23,7 @@
 </script>
 
 <script lang="ts">
+  import { DUR, after } from '../core/tuning.ts';
   import { fly } from 'svelte/transition';
   import { cubicOut } from 'svelte/easing';
   import type { Snippet } from 'svelte';
@@ -67,7 +68,7 @@
   </div>
 
   {#key s.id}
-    <div class="step" in:fly={{ y: 10, duration: 260, delay: 120, easing: cubicOut }}>
+    <div class="step" in:fly={{ y: 10, duration: DUR.base, delay: after(1), easing: cubicOut }}>
       {#if i === 0}{@render intro?.()}{/if}
       <div class="heading">
         <h2>{s.title}</h2>
@@ -138,7 +139,7 @@
     height: 100%;
     border-radius: inherit;
     background: var(--c);
-    transition: width 0.35s cubic-bezier(0.22, 0.9, 0.3, 1);
+    transition: width var(--dur-base) var(--ease-pop);
   }
   .count {
     color: var(--muted);
@@ -184,8 +185,8 @@
   }
   .task {
     transition:
-      border-color 0.3s,
-      background 0.3s;
+      border-color var(--dur-base),
+      background var(--dur-base);
   }
   .task.solved {
     border-color: color-mix(in srgb, var(--ok) 55%, transparent);

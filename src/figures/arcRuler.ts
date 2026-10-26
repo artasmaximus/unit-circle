@@ -8,6 +8,7 @@ import type { Ctx, Drawn } from './figure.ts';
 import { polar } from './figure.ts';
 import { Label } from './label.ts';
 import { Point } from './point.ts';
+import { DUR, STAGGER } from '../core/tuning.ts';
 
 export type ArcRulerProps = {
   r: number;
@@ -40,9 +41,9 @@ export function ArcRuler(key: string, p: ArcRulerProps, ctx: Ctx): Drawn {
           width: 1.75,
           z: 6,
           delay,
-          dur: 320,
-          exitDelay: 40 * (p.count - k),
-          exitDur: 160,
+          dur: DUR.base,
+          exitDelay: STAGGER.dots * (p.count - k),
+          exitDur: DUR.blink,
         },
         ctx,
       ).marks,
@@ -57,7 +58,7 @@ export function ArcRuler(key: string, p: ArcRulerProps, ctx: Ctx): Drawn {
           z: 8,
           enter: 'fade',
           delay: delay + 60,
-          exitDur: 120,
+          exitDur: DUR.blink,
         },
         ctx,
       ).marks,

@@ -8,6 +8,7 @@ import type { Ctx, Drawn, Pt } from './figure.ts';
 import { Label } from './label.ts';
 import { Point } from './point.ts';
 import { Segment } from './segment.ts';
+import { DUR, STAGGER, after } from '../core/tuning.ts';
 
 export type NumberLineProps = {
   axis: 'x' | 'y';
@@ -36,7 +37,7 @@ export function NumberLine(key: string, p: NumberLineProps, ctx: Ctx): Drawn {
         opacity: 0.55,
         z: 2,
         enter: 'draw',
-        dur: 500,
+        dur: DUR.draw,
         exit: p.exit,
       },
       ctx,
@@ -53,8 +54,8 @@ export function NumberLine(key: string, p: NumberLineProps, ctx: Ctx): Drawn {
           fill: p.color,
           opacity: 0.8,
           z: 3,
-          delay: 220 + 25 * k,
-          dur: 220,
+          delay: after(1) + STAGGER.ticks * k,
+          dur: DUR.quick,
           exitDur: p.tickExitDur,
         },
         ctx,
@@ -69,7 +70,7 @@ export function NumberLine(key: string, p: NumberLineProps, ctx: Ctx): Drawn {
           color: 'var(--muted)',
           z: 3,
           enter: 'fade',
-          delay: 260 + 25 * k,
+          delay: after(2) + STAGGER.ticks * k,
           exitDur: p.tickExitDur,
         },
         ctx,

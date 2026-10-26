@@ -81,7 +81,7 @@ button[aria-pressed='true'] {
 [data-tip]:hover::after,
 [data-tip]:focus-visible::after {
   display: block;
-  animation: tipin 0.15s ease-out 0.2s both;
+  animation: tipin var(--dur-quick) ease-out var(--dur-quick) both;
 }
 .tip-up::after {
   top: auto;

@@ -2,6 +2,33 @@
 // Colors live in app.css. Times are in seconds unless the name says ms; lengths are px unless the
 // name says world (the circle has radius 150 world units).
 
+/**
+ * The vocabulary of timing, in ms. A mark says how long it takes by role, and when it arrives by how
+ * many beats after the first mark of its feature, so a feature reads as a sequence ("this line, then
+ * this point, then that ray") and one number here retunes every feature at once.
+ */
+export const DUR = {
+  /** No motion: the mark just follows its geometry. */
+  instant: 0,
+  /** A tiny fade, a label blinking in or out. */
+  blink: 120,
+  /** Small marks and most exits. */
+  quick: 200,
+  /** The usual entrance. */
+  base: 300,
+  /** A line, ray or arc drawing itself on. */
+  draw: 450,
+  /** The big ones: a whole arc, the graph paper. */
+  grand: 650,
+} as const;
+/** The easing a pop or a glide settles with (also `--ease-pop` in CSS). */
+export const EASE_POP = 'cubic-bezier(0.22, 0.9, 0.3, 1)';
+/** One beat: the wait between a feature's marks (`after(2)` arrives two beats in). */
+export const BEAT = 150;
+export const after = (beats: number) => beats * BEAT;
+/** The gap between the members of a row (the ring's dots, a ruler's ticks). */
+export const STAGGER = { dots: 35, ticks: 25, labels: 120 } as const;
+
 /** The point's own spring and the trail behind it (point.svelte.ts). */
 export const point = {
   /** Spring toward the target angle: stiffness and damping, for a short hop. */
@@ -21,7 +48,7 @@ export const point = {
 
 /** The pen-click motion that drives a mode switch (app.svelte.ts). */
 export const pen = {
-  ms: 460,
+  ms: DUR.draw,
   /** How far it leans back first, and how far it overshoots (fractions of the full move). */
   lean: 0.08,
   over: 0.04,
@@ -144,10 +171,10 @@ export const tag = {
 /** The panel (Panel.svelte). */
 export const panel = {
   /** A view enters (rises in) and exits (flies up): px, ms and delay. */
-  enter: { y: 10, ms: 280, delay: 140 },
-  exit: { y: -10, ms: 180 },
+  enter: { y: 10, ms: DUR.base, delay: after(1) },
+  exit: { y: -10, ms: DUR.quick },
   /** On phones the plane re-fits to the panel this long (ms) after a view change settles. */
-  settleMs: 450,
+  settleMs: DUR.draw,
   /** Progressive blur layers [blur px, solid up to %, gone by %], strongest first. */
   blur: [
     [6, 52, 68],
@@ -156,7 +183,7 @@ export const panel = {
     [1, 70, 88],
   ] as [number, number, number][],
   /** The blur glides to a new content height over this long (ms). */
-  blurGlideMs: 380,
+  blurGlideMs: DUR.draw,
 };
 
 /** Moving between topics (TabBar.svelte, TopicMenu.svelte). */

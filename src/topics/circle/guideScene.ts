@@ -17,6 +17,7 @@ import { RightTriangle } from '../../figures/rightTriangle.ts';
 import { Sector } from '../../figures/sector.ts';
 import { Segment } from '../../figures/segment.ts';
 import type { Feature } from './features.ts';
+import { DUR, STAGGER, after } from '../../core/tuning.ts';
 
 export type UnitGuideInput = {
   active: boolean;
@@ -69,9 +70,9 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
   // ---- where each value is positive: the right half (cos > 0) tinted in cos's color, the top half
   // (sin > 0) in sin's. A quadrant's signs are which tints cover it; quadrant III has neither.
   if (f.has('quads')) {
-    const tint = { r: S, opacity: 0.1, z: 1, enter: 'fade', dur: 400 } as const;
+    const tint = { r: S, opacity: 0.1, z: 1, enter: 'fade', dur: DUR.draw } as const;
     add(Sector('ug:quads:cos', { from: -Math.PI / 2, to: Math.PI / 2, fill: COS, ...tint }, ctx));
-    add(Sector('ug:quads:sin', { from: 0, to: Math.PI, fill: SIN, ...tint, delay: 150 }, ctx));
+    add(Sector('ug:quads:sin', { from: 0, to: Math.PI, fill: SIN, ...tint, delay: after(1) }, ctx));
   }
 
   // ---- the point's mirror images in the other quadrants, each with its own faint triangle
@@ -99,8 +100,8 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
             opacity: 0.6,
             z: 2,
             enter: 'fade',
-            delay: 120 * k,
-            dur: 300,
+            delay: STAGGER.labels * k,
+            dur: DUR.base,
           },
           ctx,
         ),
@@ -115,7 +116,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
             stroke: 'var(--muted)',
             width: 1.5,
             z: 7,
-            delay: 120 * k + 200,
+            delay: STAGGER.labels * k + after(1),
           },
           ctx,
         ),
@@ -141,7 +142,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           ...DASHED,
           z: 3,
           enter: 'draw',
-          dur: 350,
+          dur: DUR.base,
         },
         ctx,
       ),
@@ -149,7 +150,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
     add(
       Segment(
         'ug:shadow:x',
-        { from: [0, 0], to: [px, 0], color: cc, ...shadow, enter: 'draw', dur: 400 },
+        { from: [0, 0], to: [px, 0], color: cc, ...shadow, enter: 'draw', dur: DUR.draw },
         ctx,
       ),
     );
@@ -163,7 +164,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           ...shadow,
           opacity: tri ? 0.45 : 1,
           enter: 'draw',
-          dur: 400,
+          dur: DUR.draw,
         },
         ctx,
       ),
@@ -179,7 +180,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
             ...DASHED,
             z: 3,
             enter: 'draw',
-            dur: 350,
+            dur: DUR.base,
           },
           ctx,
         ),
@@ -189,7 +190,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
   // ---- the right triangle under the ray: a soft fill and the right-angle mark; with the shadows
   // on, its upright side is the sin leg, and a brace on the outer side of each leg says which
   // length its label is
-  const braceLook = { width: 1, z: 5, dur: 450 } as const;
+  const braceLook = { width: 1, z: 5, dur: DUR.draw } as const;
   let reach = { base: 0, upright: 0 };
   if (tri) {
     reach = add(
@@ -199,19 +200,19 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           start: [0, 0],
           corner: [px, 0],
           apex: [px, py],
-          fill: { color: 'var(--fg)', opacity: 0.07, z: 2, enter: 'fade', dur: 300 },
+          fill: { color: 'var(--fg)', opacity: 0.07, z: 2, enter: 'fade', dur: DUR.base },
           rightAngle: {
             size: 9,
             minLeg: S * 0.12,
             color: 'var(--muted)',
             z: 4,
             enter: 'fade',
-            delay: 200,
+            delay: after(1),
           },
           sides: shadows
             ? {
                 upright: {
-                  line: { color: sc, ...shadow, enter: 'draw', dur: 400 },
+                  line: { color: sc, ...shadow, enter: 'draw', dur: DUR.draw },
                   brace: { color: sc, opacity: 0.8, ...braceLook },
                 },
                 base: { brace: { color: cc, opacity: 0.8, ...braceLook } },
@@ -219,7 +220,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
             : undefined,
           equal:
             shadows && f.has('equal') && Math.abs(ref - 45) < 0.5
-              ? { size: 6, color: 'var(--fg)', width: 2, z: 6, enter: 'draw', delay: 200 }
+              ? { size: 6, color: 'var(--fg)', width: 2, z: 6, enter: 'draw', delay: after(1) }
               : undefined,
         },
         ctx,
@@ -246,7 +247,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           fill: 'none',
           z: 2,
           enter: 'draw',
-          dur: 600,
+          dur: DUR.grand,
         },
         ctx,
       ),
@@ -261,7 +262,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           stroke: 'var(--muted)',
           width: 1.5,
           z: 7,
-          delay: 450,
+          delay: after(3),
         },
         ctx,
       ),
@@ -277,7 +278,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
               side: [side, 0],
               color: 'var(--ok)',
               ...braceLook,
-              delay: 400,
+              delay: after(3),
             },
             ctx,
           ),
@@ -297,7 +298,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
               back: true,
               z: 9,
               enter: 'fade',
-              delay: 600,
+              delay: after(4),
             },
             ctx,
           ),
@@ -327,7 +328,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 250,
+          delay: after(2),
         },
         ctx,
       ),
@@ -346,7 +347,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 300,
+          delay: after(2),
         },
         ctx,
       ),
@@ -368,8 +369,8 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           width: 2.5,
           round: true,
           z: 6,
-          dur: 400,
-          label: { tex: angleTex(ref, i.unit), size: 10, gap: 14, delay: 250 },
+          dur: DUR.draw,
+          label: { tex: angleTex(ref, i.unit), size: 10, gap: 14, delay: after(2) },
         },
         ctx,
       ),
@@ -395,7 +396,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 300,
+          delay: after(2),
         },
         ctx,
       ),
@@ -413,8 +414,8 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           r: S * 0.18,
           width: 1.25,
           z: 6,
-          dur: 400,
-          label: { tex: `\\theta=${angleTex(i.deg, i.unit)}`, size: 9, gap: 12, delay: 200 },
+          dur: DUR.draw,
+          label: { tex: `\\theta=${angleTex(i.deg, i.unit)}`, size: 9, gap: 12, delay: after(1) },
         },
         ctx,
       ),
@@ -436,7 +437,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 200,
+          delay: after(1),
         },
         ctx,
       ),
@@ -460,7 +461,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 200,
+          delay: after(1),
         },
         ctx,
       ),
@@ -470,7 +471,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
   add(
     Segment(
       'ug:ray',
-      { from: [0, 0], to: [px, py], width: 1.75, round: true, z: 6, enter: 'draw', dur: 450 },
+      { from: [0, 0], to: [px, py], width: 1.75, round: true, z: 6, enter: 'draw', dur: DUR.draw },
       ctx,
     ),
   );
@@ -484,7 +485,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
         stroke: 'var(--panel)',
         width: 2,
         z: 10,
-        delay: 150,
+        delay: after(1),
       },
       ctx,
     ),

@@ -3,6 +3,7 @@
      the mark just follows the geometry it is given (which is already animated by whatever state
      produced it). Features hand this a list; they never track presence themselves. -->
 <script lang="ts">
+  import { DUR } from '../core/tuning.ts';
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -28,14 +29,14 @@
       this.mark = m;
       this.onGone = onGone;
       this.geo = new Tween(m.kind === 'slice' ? { a0: m.a0, a1: m.a0 } : { a0: 0, a1: 0 }, {
-        duration: 240,
+        duration: DUR.base,
         easing: cubicOut,
       });
     }
     update(m: Mark) {
       this.mark = m;
       if (m.kind === 'slice')
-        this.geo.set({ a0: m.a0, a1: m.a1 }, { duration: reduce ? 0 : (m.glide ?? 240) });
+        this.geo.set({ a0: m.a0, a1: m.a1 }, { duration: reduce ? 0 : (m.glide ?? DUR.base) });
     }
     get key() {
       return this.mark.key;

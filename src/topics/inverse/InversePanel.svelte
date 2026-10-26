@@ -2,6 +2,7 @@
      read the equation it gives, what the function accepts and returns, and the other angle it
      could have been. -->
 <script lang="ts">
+  import { DUR } from '../../core/tuning.ts';
   import type { Snippet } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicOut } from 'svelte/easing';
@@ -23,7 +24,7 @@
   const HUE = { asin: 'var(--sin)', acos: 'var(--cos)', atan: 'var(--slope)' };
   // the function switcher's thumb glides on its own run (the Segmented control follows a progress
   // value)
-  const slide = new Tween(1, { duration: 280, easing: cubicOut });
+  const slide = new Tween(1, { duration: DUR.base, easing: cubicOut });
   const pick = (fn: InvFn) => {
     if (fn === inverse.fn) return;
     inverse.switchTo(fn);

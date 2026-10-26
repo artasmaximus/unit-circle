@@ -4,6 +4,7 @@
 // retracts, a dot pops in and shrinks away, a label fades or shoots off. Marks can wait for each
 // other with delays, which is how a feature says "this line, then this point, then that ray".
 import type { Rect } from '../core/tex.svelte.ts';
+import { DUR } from '../core/tuning.ts';
 
 /** Typeset math with its box on the plane (world units). */
 export type Label = { latex: string; size: number; rect: Rect; color: string };
@@ -152,9 +153,9 @@ export type Mark =
 export const DEFAULTS = {
   enter: 'fade',
   delay: 0,
-  dur: 260,
+  dur: DUR.base,
   exitDelay: 0,
-  exitDur: 200,
+  exitDur: DUR.quick,
   z: 5,
 } as const;
 
