@@ -7,7 +7,7 @@
 
   /* ---- surfaces and text */
   /* the page behind everything, and the panel and cards that sit on it */
-  --bg: light-dark(#f5f5f5, #141414);
+  --bg: light-dark(#fafafa, #141414);
   --panel: light-dark(#ffffff, #1e1e1e);
   --fg: light-dark(#161616, #ededed);
   --muted: light-dark(#6a6a6a, #9c9c9c);
@@ -23,9 +23,9 @@
   --on-accent: #ffffff;
 
   /* ---- the three functions, and radians. Points blend cos and sin by angle. */
-  --cos: light-dark(#0b73ff, #359dff); /* x, blue */
-  --sin: light-dark(#e6176a, #ff344c); /* y, magenta */
-  --slope: light-dark(#f09000, #ffd43b); /* tan, amber */
+  --cos: light-dark(#005eff, #359dff); /* x, blue */
+  --sin: light-dark(#e1015b, #ff344c); /* y, magenta */
+  --slope: light-dark(#fb9600, #ffd43b); /* tan, amber */
   --rad: light-dark(#00b27a, #20c997); /* radians, green */
 
   /* ---- right and wrong */
