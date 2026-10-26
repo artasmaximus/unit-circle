@@ -1,10 +1,13 @@
-// The unit circle itself and its 16 snap points, as keyed marks (see marks.ts). The ring belongs to
+// The unit circle itself and its 16 snap points, as keyed marks (see figures/). The ring belongs to
 // every topic, so it never asks to leave. During a mode switch the dots pulse in one after another
 // around it, each changing color at the peak of its pulse.
 import { angleTex, type Unit } from '../core/angles.ts';
 import { LABEL_R, S } from '../core/camera.svelte.ts';
 import type { Mark } from './marks.ts';
-import { texRect } from '../core/tex.svelte.ts';
+import type { Ctx } from '../figures/figure.ts';
+import { Circle } from '../figures/circle.ts';
+import { Label } from '../figures/label.ts';
+import { Point } from '../figures/point.ts';
 import { SPECIAL, colorOf, rad } from '../core/trig.ts';
 import { input } from '../core/tuning.ts';
 
@@ -44,17 +47,9 @@ const PULSE = input.pulseShare,
 const local = (t: number, i: number) => Math.min(1, Math.max(0, (t - i * STEP) / PULSE));
 
 export function ringScene(i: RingInput): Mark[] {
+  const ctx: Ctx = { sw: i.sw, lb: i.lb };
   const out: Mark[] = [
-    {
-      kind: 'path',
-      key: 'ring',
-      z: 0,
-      d: `M ${S} 0 A ${S} ${S} 0 1 0 ${-S} 0 A ${S} ${S} 0 1 0 ${S} 0`,
-      color: 'var(--muted)',
-      width: 1 * i.sw,
-      enter: 'draw',
-      dur: 700,
-    },
+    ...Circle('ring', { r: S, color: 'var(--muted)', width: 1, z: 0, dur: 700 }, ctx).marks,
   ];
   SPECIAL.forEach((a, k) => {
     const q = local(i.t, k),
@@ -65,39 +60,43 @@ export function ringScene(i: RingInput): Mark[] {
     const r =
       (i.highlight.includes(a) ? 6.5 : 3.5) *
       (1 + input.pulseGrow * Math.sin(Math.PI * q)) *
-      (i.aim === a ? input.aimGrow : 1) *
-      i.sw;
+      (i.aim === a ? input.aimGrow : 1);
     // hover growth glides; the mode switch's pulse already moves frame by frame, so it must not be
     // smoothed on top
-    out.push({
-      kind: 'dot',
-      key: `ring:${a}`,
-      z: 1,
-      x: c * S,
-      y: s * S,
-      r,
-      fill: color,
-      stroke: 'var(--bg)',
-      width: 1.2 * i.sw,
-      enter: 'pop',
-      delay: 120 + 35 * k,
-      glide: i.t < 1 ? 0 : 140,
-    });
-    if (i.labels !== false && (i.aim !== a || i.writesAim === false) && !i.taken(a)) {
-      const latex = angleTex(a, i.unit),
-        rect = texRect(latex, 10 * i.lb, c * LABEL_R, s * LABEL_R);
-      if (rect)
-        out.push({
-          kind: 'label',
-          key: `ring:label:${a}`,
-          z: 2,
-          label: { latex, size: 10 * i.lb, rect, color },
-          enter: 'fade',
-          delay: 200 + 35 * k,
-          dur: 200,
-          exitDur: 120,
-        });
-    }
+    out.push(
+      ...Point(
+        `ring:${a}`,
+        {
+          at: [c * S, s * S],
+          r,
+          fill: color,
+          stroke: 'var(--bg)',
+          width: 1.2,
+          z: 1,
+          delay: 120 + 35 * k,
+          glide: i.t < 1 ? 0 : 140,
+        },
+        ctx,
+      ).marks,
+    );
+    if (i.labels !== false && (i.aim !== a || i.writesAim === false) && !i.taken(a))
+      out.push(
+        ...Label(
+          `ring:label:${a}`,
+          {
+            tex: angleTex(a, i.unit),
+            size: 10,
+            at: [c * LABEL_R, s * LABEL_R],
+            color,
+            z: 2,
+            enter: 'fade',
+            delay: 200 + 35 * k,
+            dur: 200,
+            exitDur: 120,
+          },
+          ctx,
+        ).marks,
+      );
   });
   return out;
 }

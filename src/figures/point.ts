@@ -12,6 +12,8 @@ export type PointProps = Timing & {
   width?: number;
   opacity?: number;
   z?: number;
+  /** Milliseconds a change of radius glides over (a hover growing it); 0 for none. */
+  glide?: number;
 };
 
 export function Point(key: string, p: PointProps, ctx: Ctx): Drawn {
@@ -28,6 +30,7 @@ export function Point(key: string, p: PointProps, ctx: Ctx): Drawn {
         stroke: p.stroke,
         width: p.width === undefined ? undefined : p.width * ctx.sw,
         opacity: p.opacity,
+        glide: p.glide,
         ...timing(p),
         enter: p.enter ?? 'pop',
       },
