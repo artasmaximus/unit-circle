@@ -14,7 +14,7 @@ import {
 } from './math.ts';
 import { angleTex, angleText, trigOf, type Unit } from '../../core/angles.ts';
 import { SPECIAL } from '../../core/trig.ts';
-import type { Rich } from '../circle/quiz.ts';
+import type { Rich } from '../../core/rich.ts';
 
 /**
  * The stretch of angles θ may come from, in degrees. `closed` says whether the top end is included

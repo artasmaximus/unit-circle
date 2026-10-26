@@ -2,7 +2,7 @@
 // the point at an angle given in radians. These questions name their own unit, so they ignore the
 // learner's unit setting: the unit is the thing being learned.
 import { angleTex, piFraction, piTex } from '../../core/angles.ts';
-import type { Rich } from '../circle/quiz.ts';
+import type { Rich } from '../../core/rich.ts';
 import { SPECIAL } from '../../core/trig.ts';
 
 /**

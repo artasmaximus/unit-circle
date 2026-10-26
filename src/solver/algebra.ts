@@ -2,16 +2,8 @@
 // this file adds the trig vocabulary (csc = 1/sin, …), the exact display of constants like √3/2,
 // and the operations a learner applies to both sides of an equation. Everything is in terms of θ,
 // written `theta`.
-import {
-  create,
-  all,
-  type MathNode,
-  type ConstantNode,
-  type FunctionNode,
-  type OperatorNode,
-} from 'mathjs';
-
-export const math = create(all);
+import type { MathNode, ConstantNode, FunctionNode, OperatorNode } from 'mathjs';
+import { math } from '../core/math.ts';
 
 export type Atom = 'sin' | 'cos' | 'tan' | 'csc' | 'sec' | 'cot';
 export type Expr = MathNode;

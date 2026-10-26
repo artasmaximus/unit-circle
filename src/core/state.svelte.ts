@@ -1,14 +1,8 @@
 // All app state in one place. Components read it and call its methods; nothing else holds state.
 import { Tween } from 'svelte/motion';
 import { SPECIAL, norm, rad, snapDeg, specialOf, wrapPi } from './trig.ts';
-import {
-  makeChoices,
-  pickQ,
-  qKey,
-  trigTexAnswer,
-  type Question,
-  type Rich,
-} from '../topics/circle/quiz.ts';
+import { makeChoices, pickQ, qKey, trigTexAnswer, type Question } from '../topics/circle/quiz.ts';
+import type { Rich } from './rich.ts';
 import { apply, atom, num, solvedForm, type Eq, type Op } from '../solver/algebra.ts';
 import { angleTex } from './angles.ts';
 import { inverse } from '../topics/inverse/state.svelte.ts';

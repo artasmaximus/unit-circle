@@ -1,4 +1,4 @@
-import { math } from '../solver/algebra.ts';
+import { math } from './math.ts';
 import { input } from './tuning.ts';
 
 // Pure unit-circle math: special angles, exact values as LaTeX, angle parsing and snapping.

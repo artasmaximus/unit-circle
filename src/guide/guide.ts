@@ -1,7 +1,7 @@
 // The shape of a Guide: an ordered list of steps. Each step says which features of the drawing are
 // on, what to read, and what the learner has to do to go on. Content is plain data (each topic's
 // guideSteps.ts), so it can be written and changed without touching the drawing or the screens.
-import type { Rich } from '../topics/circle/quiz.ts';
+import type { Rich } from '../core/rich.ts';
 
 /**
  * What a step asks of the learner. `read` is just going on; `choice` is one question; `drag` is

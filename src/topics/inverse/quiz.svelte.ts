@@ -3,7 +3,7 @@
 import { inverse } from './state.svelte.ts';
 import { partnerAt } from './math.ts';
 import { answerOf, iqKey, makeChoices, pickQ, type IQ } from './quiz.ts';
-import type { Rich } from '../circle/quiz.ts';
+import type { Rich } from '../../core/rich.ts';
 import { point, topicHooks, ui, type Mode } from '../../core/state.svelte.ts';
 
 const KEY = 'ucq-inv';

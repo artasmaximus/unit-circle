@@ -1,6 +1,7 @@
 // Pure quiz content: question generation, answer choices, explanations and hint text.
 import { angleText, angleTex, trigOf, type Unit } from '../../core/angles.ts';
 import { SPECIAL, refOf, trigTex, UNDEF, type Fn } from '../../core/trig.ts';
+import type { Rich } from '../../core/rich.ts';
 
 /**
  * The question types:
@@ -10,7 +11,6 @@ import { SPECIAL, refOf, trigTex, UNDEF, type Fn } from '../../core/trig.ts';
 export type Question = { t: 1; fn: Fn; a: number } | { t: 2; fn: Fn; val: string; sols: number[] };
 
 /** Running text with inline math: plain strings, and { m } parts that are typeset. */
-export type Rich = (string | { m: string })[];
 const m = (t: string) => ({ m: t });
 
 export const FN_TEX: Record<Fn, string> = { sin: '\\sin', cos: '\\cos', tan: '\\tan' };
