@@ -201,3 +201,66 @@
   opacity: 1;
   color: var(--ok);
 }
+
+/* the summary after a set of ten: the score, what to go over, the weakest skills */
+.quiz .summary {
+  display: grid;
+  gap: 18px;
+}
+.quiz .summary .score {
+  font-size: 1.7rem;
+  line-height: 1.3;
+}
+.quiz .summary .score b {
+  color: var(--ok);
+  font-variant-numeric: tabular-nums;
+}
+.quiz .summary .sub {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.quiz .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.quiz .chip.bad {
+  border-color: color-mix(in srgb, var(--bad) 55%, var(--line));
+}
+.quiz .chip small {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.quiz .skills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.quiz .skills li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.95rem;
+}
+.quiz .skills .bar {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--ok) var(--p), var(--bad) var(--p));
+  opacity: 0.85;
+}
+.quiz .skills .n {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+.quiz .skills li > span:first-child::first-letter {
+  text-transform: uppercase;
+}

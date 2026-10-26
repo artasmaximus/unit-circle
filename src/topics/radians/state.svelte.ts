@@ -4,7 +4,7 @@
 import { RADIANS_GUIDE } from './guideSteps.ts';
 import type { Step } from '../../guide/guide.ts';
 import { type Feature } from './features.ts';
-import { R_TYPES, makeRQ, pickRQ, rChoices, rqKey, type RQ } from './quiz.ts';
+import { R_TYPES, makeRQ, pickRQ, rChoices, rSkillOf, rqKey, type RQ } from './quiz.ts';
 import { Session as PracticeSession, type Adapter } from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
@@ -26,6 +26,7 @@ const adapter: Adapter<RQ, number> = {
   storageKey: 'ucq-rad',
   keyOf: rqKey,
   make: pickRQ,
+  skillOf: rSkillOf,
   // for the two conversion types, the choices are degrees, written in the right unit when drawn
   choices: (q) => (q.t === 3 ? [] : rChoices(q as RQ & { t: 1 | 2 })),
   isRight: (q, deg) => deg === q.deg,
@@ -33,9 +34,14 @@ const adapter: Adapter<RQ, number> = {
   check: (q) => Math.abs(wrapPi(rad(point.deg) - rad(q.deg))) < rad(1.5),
   // a placing question starts with the point out of the way, so the angle is not already there
   stage: (q) => {
+    ui.highlight = [];
     if (q.t === 3) point.set(q.deg > 180 ? 20 : 340, true);
   },
-  reveal: (q) => point.set(q.deg, true),
+  // the point goes to the angle, and the ring marks it larger (in Practice)
+  reveal: (q) => {
+    point.set(q.deg, true);
+    if (ui.mode === 'practice') ui.highlight = [q.deg];
+  },
   exam: {
     streak: EXAM_STREAK,
     needs: R_TYPES.map(String),

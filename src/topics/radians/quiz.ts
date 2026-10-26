@@ -30,8 +30,13 @@ export const R_ANGLES = SPECIAL.filter((a) => a > 0);
 
 export const makeRQ = (): RQ => ({ t: pick(R_TYPES), deg: pick(R_ANGLES) });
 export const rqKey = (q: RQ) => `${q.t}|${q.deg}`;
-export function pickRQ(missed: RQ[], prev: RQ | null): RQ {
-  if (missed.length && Math.random() < 0.4) return pick(missed);
+export const rSkillOf = (q: RQ) =>
+  q.t === 1
+    ? 'degrees to radians'
+    : q.t === 2
+      ? 'radians to degrees'
+      : 'placing an angle in radians';
+export function pickRQ(prev: RQ | null): RQ {
   let q: RQ,
     n = 0;
   do q = makeRQ();
