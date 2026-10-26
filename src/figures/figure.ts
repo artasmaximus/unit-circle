@@ -40,6 +40,11 @@ export type Timing = {
   dur?: number;
   exitDelay?: number;
   exitDur?: number;
+  /** How hard a `draw` eases out (1 is linear). */
+  power?: number;
+  /** How a `pop` runs: progress to size (it may overshoot), and the progress below which it is still fading in. */
+  curve?: (p: number) => number;
+  fadeBy?: number;
 };
 
 /** A figure's timing, copied onto a mark. */
@@ -50,6 +55,9 @@ export const timing = (p: Timing) => ({
   dur: p.dur,
   exitDelay: p.exitDelay,
   exitDur: p.exitDur,
+  power: p.power,
+  curve: p.curve,
+  fadeBy: p.fadeBy,
 });
 
 /** A look's dash in world units, or none. */

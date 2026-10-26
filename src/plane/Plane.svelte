@@ -2,7 +2,7 @@
      it to the pointer; pressing elsewhere drags the whole view. Scroll (or pinch) zooms about
      the pointer. -->
 <script lang="ts">
-  import { camera, S, LABEL_R } from '../core/camera.svelte.ts';
+  import { camera, S } from '../core/camera.svelte.ts';
   import { fade } from 'svelte/transition';
   import { input } from '../core/tuning.ts';
   import { aim, point, quiz, revealed, ui } from '../core/state.svelte.ts';
@@ -12,7 +12,6 @@
   import { angleTex } from '../core/angles.ts';
   import { progress } from '../core/progress.svelte.ts';
   import { SPECIAL, colorOf, norm, rad, snapDeg } from '../core/trig.ts';
-  import { texRect } from '../core/tex.svelte.ts';
   import Grid from './Grid.svelte';
   import RingLayer from './RingLayer.svelte';
   import CircleLayer from '../topics/circle/CircleLayer.svelte';
@@ -210,11 +209,9 @@
       x = S * Math.cos(a),
       y = -S * Math.sin(a),
       latex = angleTex(norm(ghost), progress.unit, camera.thetaDecimals);
-    const special = SPECIAL.includes(ghost),
-      size = 10 * camera.labelBoost;
-    const rect = texRect(latex, size, LABEL_R * Math.cos(a), -LABEL_R * Math.sin(a));
+    const special = SPECIAL.includes(ghost);
     const color = special && revealed() ? colorOf(ghost) : 'var(--muted)';
-    return { x, y, special, label: rect && { latex, size, rect, color } };
+    return { x, y, deg: ghost, special, tex: latex, color };
   });
   $effect(() => {
     aim.deg = ghostDraw?.special ? ghost : null;

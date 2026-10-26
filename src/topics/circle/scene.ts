@@ -1,12 +1,15 @@
-// Everything drawn on the plane for one frame, as plain data. Components only render what this
-// returns. World units: the circle has radius S, y points down (so sin is drawn as -y).
+// Where everything on the unit circle sits for one frame, as plain data: the point and its colors,
+// its mirror images, the reference angle, the legs' braces and labels, and the floating chips
+// (placed clear of the labels). The drawing (drawing.ts) turns this into figures. World units:
+// the circle has radius S, y points down (so sin is drawn as -y).
 import { S } from '../../core/camera.svelte.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
 import { figure as tuning, tag as tagT } from '../../core/tuning.ts';
 import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from '../../core/trig.ts';
-import { texBox, texRect, type Rect } from '../../core/tex.svelte.ts';
-import type { Label } from '../../plane/marks.ts';
-import { braceShape as brace } from '../../figures/brace.ts';
+import { texBox, type Rect } from '../../core/tex.svelte.ts';
+import { braceShape } from '../../figures/brace.ts';
+import type { Pt } from '../../figures/figure.ts';
+import { labelData } from '../../figures/label.ts';
 
 export type Seg = [number, number, number, number];
 /**
@@ -55,19 +58,6 @@ export type SceneInput = {
   memo: { b: number };
 };
 
-const label = (
-  latex: string,
-  size: number,
-  x: number,
-  y: number,
-  color: string,
-  ax = 0.5,
-  ay = 0.5,
-): Label | null => {
-  const rect = texRect(latex, size, x, y, ax, ay);
-  return rect && { latex, size, rect, color };
-};
-
 // Each reflection keeps one function's value: across the x-axis (cos), the y-axis (sin), through
 // the origin (tan).
 const REFL: { ang: (a: number) => number; deg: (d: number) => number; fn: Fn }[] = [
@@ -75,6 +65,16 @@ const REFL: { ang: (a: number) => number; deg: (d: number) => number; fn: Fn }[]
   { ang: (a) => Math.PI - a, deg: (d) => 540 - d, fn: 'sin' },
   { ang: (a) => a + Math.PI, deg: (d) => d + 180, fn: 'tan' },
 ];
+
+/** A label's text and where it sits, sized before the zoom's label scale. */
+export type Placed = { tex: string; size: number; at: Pt; anchor?: Pt };
+/** A leg's brace, the label past it, and which ways the label bobs and leaves. */
+export type Leg = {
+  brace: { from: Pt; to: Pt; side: Pt; minLen: number };
+  label: Placed;
+  dir: Pt;
+  exit: Pt;
+};
 
 export function buildScene(p: SceneInput) {
   const { ang, hit } = p;
@@ -84,27 +84,13 @@ export function buildScene(p: SceneInput) {
     y = -s * S;
   const deg = hit ?? norm((ang * 180) / Math.PI);
   const col = p.revealed ? colorOf(deg) : 'var(--fg)';
+  const ctx = { sw: p.stroke, lb: p.labelBoost };
 
-  // angle arc with a small open arrowhead whose tip sits on the terminal side
-  const r = S / 5;
-  const wedge = `M ${r} 0 A ${r} ${r} 0 ${ang > Math.PI ? 1 : 0} 0 ${r * Math.cos(-ang)} ${r * Math.sin(-ang)}`;
-  const px = r * c,
-    py = -r * s,
-    tx = -s,
-    ty = -c,
-    L = 4.6 * p.stroke,
-    W = 2.6 * p.stroke;
-  const wedgeHead =
-    ang > 0.16 && ang < 2 * Math.PI - 0.02
-      ? `M ${px - tx * L - ty * W} ${py - ty * L + tx * W} L ${px} ${py} L ${px - tx * L + ty * W} ${py - ty * L - tx * W}`
-      : null;
-
-  // legs of the triangle; mirror mode adds a line out to each reflected point, with the reflected
-  // dot at its tip
+  // mirror mode adds a line out to each reflected point, with the reflected dot at its tip
   const sinLeg: Seg = [x, 0, x, y];
   let sinExt: Seg | null = null;
   let guide2: Seg | null = null;
-  const mirrors: { i: number; line: Seg | null; dot: [number, number]; label: Label | null }[] = [];
+  const mirrors: { i: number; line: Seg | null; dot: Pt; label: Placed | null }[] = [];
   REFL.forEach((rf, i) => {
     if (!p.mirror || (p.mirrorOnly && p.mirrorOnly !== rf.fn)) return;
     const a = rf.ang(ang),
@@ -116,64 +102,48 @@ export function buildScene(p: SceneInput) {
     else if (i === 1) guide2 = [0, y, gx, y];
     else line = [x, y, gx, gy];
     // a ghost on a snap point is already named by the ring label
-    const lb =
+    const label: Placed | null =
       specialOf(gd) !== undefined
         ? null
-        : label(
-            angleTex(gd, p.unit, 0),
-            11 * p.labelBoost,
-            (S + 17) * Math.cos(a),
-            -(S + 17) * Math.sin(a),
-            col,
-          );
-    mirrors.push({ i, line, dot: [gx, gy], label: lb });
+        : {
+            tex: angleTex(gd, p.unit, 0),
+            size: 11,
+            at: [(S + 17) * Math.cos(a), -(S + 17) * Math.sin(a)],
+          };
+    mirrors.push({ i, line, dot: [gx, gy], label });
   });
 
   // reference angle: quadrants II–IV get a small arc from the nearest x-axis; in quadrant I the
-  // label rides the θ arc
-  let refLabel: Label | null = null;
-  /**
-   * The reference arc at pop `e` (0 = lying on the θ arc, 1 = out at its own radius), so it can pop
-   * out of the θ arc.
-   */
-  let refArcAt: ((e: number) => string) | null = null;
-  /**
-   * Where the reference label sits (polar, y up) and the x-axis angle it grows out of, so it can
-   * glide along the arc.
-   */
-  let refPolar: { rr: number; from: number; to: number; dy: number } | null = null;
+  // label rides the θ arc. The arc runs from the nearest x-axis (`from`) and swells out of the θ arc
+  // (radius `swell`) to its own (`r`).
+  let ref: { label: Placed; arc: { from: number; r: number; swell: number } | null } | null = null;
   if (hit !== undefined && p.revealed) {
-    const ref = refOf(hit);
+    const refDeg = refOf(hit),
+      r0 = S / 5;
     let mid: number,
       rr = tagT.refRadius,
-      from = 0;
-    if (hit > 90 && ref > 0) {
-      const ra = (S / 5) * 1.3,
-        phiA = c >= -1e-9 ? 0 : Math.PI;
+      arc = null;
+    if (hit > 90 && refDeg > 0) {
+      const phiA = c >= -1e-9 ? 0 : Math.PI;
       const diff =
         ((((ang - phiA + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
-      refArcAt = (e) => {
-        const q = r + (ra - r) * e;
-        return `M ${q * Math.cos(phiA)} ${-q * Math.sin(phiA)} A ${q} ${q} 0 0 ${diff > 0 ? 0 : 1} ${q * c} ${-q * s}`;
-      };
+      arc = { from: phiA, r: r0 * 1.3, swell: r0 };
       mid = phiA + diff / 2;
-      from = phiA;
     } else if (hit > 90) {
       mid = (hit * Math.PI) / 180;
-      from = mid;
     } else {
       mid = ang / 2;
       rr = tagT.refRadius - 4;
     }
-    const dy = ref === 0 ? -9 : 0;
-    refPolar = { rr, from, to: mid, dy };
-    refLabel = label(
-      angleTex(ref, p.unit, 0),
-      tagT.refFont * p.labelBoost,
-      rr * Math.cos(mid),
-      -rr * Math.sin(mid) + dy,
-      col,
-    );
+    const dy = refDeg === 0 ? -9 : 0;
+    ref = {
+      label: {
+        tex: angleTex(refDeg, p.unit, 0),
+        size: tagT.refFont,
+        at: [rr * Math.cos(mid), -rr * Math.sin(mid) + dy],
+      },
+      arc,
+    };
   }
 
   // leg labels sit past a curly brace on the outside of each leg, so they read as lengths
@@ -183,50 +153,65 @@ export function buildScene(p: SceneInput) {
     sinCol = p.revealed ? 'var(--sin)' : 'var(--fg)';
   // each leg's label bounces away from its brace; leaving, the cosine label continues that way and
   // the sine label goes right
-  const cosDir: [number, number] = [0, ncy],
-    sinDir: [number, number] = [ncx, 0],
-    cosExit = cosDir,
-    sinExit: [number, number] = [1, 0];
-  const braceC = brace(0, 0, x, 0, 0, ncy, tuning.braceMinPx[0] / p.k, p.stroke),
-    braceS = brace(x, 0, x, y, ncx, 0, tuning.braceMinPx[1] / p.k, p.stroke);
+  const braceC = {
+      from: [0, 0],
+      to: [x, 0],
+      side: [0, ncy],
+      minLen: tuning.braceMinPx[0] / p.k,
+    } as Leg['brace'],
+    braceS = {
+      from: [x, 0],
+      to: [x, y],
+      side: [ncx, 0],
+      minLen: tuning.braceMinPx[1] / p.k,
+    } as Leg['brace'];
+  const shapeC = braceShape(0, 0, x, 0, 0, ncy, braceC.minLen, p.stroke),
+    shapeS = braceShape(x, 0, x, y, ncx, 0, braceS.minLen, p.stroke);
   const obstacles: (Rect & { k?: number })[] = [];
-  let cosLabel: Label | null = null,
-    sinLabel: Label | null = null;
-  if (braceC) {
+  let cos: Leg | null = null,
+    sin: Leg | null = null;
+  if (shapeC) {
     const h = (texBox('x=\\cos\\theta')?.h ?? 0) * 12 * p.labelBoost;
-    cosLabel = label(
-      'x=\\cos\\theta',
-      12 * p.labelBoost,
-      x / 2,
-      ncy * (braceC.m + braceC.d + 4 * p.stroke + h / 2),
-      cosCol,
-    );
+    cos = {
+      brace: braceC,
+      label: {
+        tex: 'x=\\cos\\theta',
+        size: 12,
+        at: [x / 2, ncy * (shapeC.m + shapeC.d + 4 * p.stroke + h / 2)],
+      },
+      dir: [0, ncy],
+      exit: [0, ncy],
+    };
     obstacles.push({
       x: Math.min(0, x),
-      y: Math.min(ncy * braceC.m, ncy * (braceC.m + braceC.d)),
+      y: Math.min(ncy * shapeC.m, ncy * (shapeC.m + shapeC.d)),
       w: Math.abs(x),
-      h: braceC.d,
+      h: shapeC.d,
     });
   }
-  if (braceS) {
-    sinLabel = label(
-      'y=\\sin\\theta',
-      12 * p.labelBoost,
-      x + ncx * (braceS.m + braceS.d + 5 * p.stroke),
-      y / 2,
-      sinCol,
-      ncx > 0 ? 0 : 1,
-      0.5,
-    );
+  if (shapeS) {
+    sin = {
+      brace: braceS,
+      label: {
+        tex: 'y=\\sin\\theta',
+        size: 12,
+        at: [x + ncx * (shapeS.m + shapeS.d + 5 * p.stroke), y / 2],
+        anchor: [ncx > 0 ? 0 : 1, 0.5],
+      },
+      dir: [ncx, 0],
+      exit: [1, 0],
+    };
     obstacles.push({
-      x: Math.min(x + ncx * braceS.m, x + ncx * (braceS.m + braceS.d)),
+      x: Math.min(x + ncx * shapeS.m, x + ncx * (shapeS.m + shapeS.d)),
       y: Math.min(0, y),
-      w: braceS.d,
+      w: shapeS.d,
       h: Math.abs(y),
     });
   }
-  if (cosLabel) obstacles.push(cosLabel.rect);
-  if (sinLabel) obstacles.push(sinLabel.rect);
+  for (const leg of [cos, sin]) {
+    const l = leg && labelData({ ...leg.label, color: '' }, ctx);
+    if (l) obstacles.push(l.rect);
+  }
 
   // floating chips: point coordinates and slope
   const cx = trigTex('cos', deg),
@@ -306,49 +291,22 @@ export function buildScene(p: SceneInput) {
     ];
   }
 
-  // the trail: short segments from the tail up to the point, thickening and taking the nearest snap
-  // color
-  const TRAIL_N = 28;
-  const trail = p.tail
-    ? Array.from({ length: TRAIL_N }, (_, i) => {
-        const u0 = i / TRAIL_N,
-          u1 = (i + 1) / TRAIL_N,
-          a0 = ang - p.tail * (1 - u0),
-          a1 = ang - p.tail * (1 - u1);
-        return {
-          seg: [S * Math.cos(a0), -S * Math.sin(a0), S * Math.cos(a1), -S * Math.sin(a1)] as Seg,
-          color: p.revealed ? colorOf((a1 * 180) / Math.PI) : 'var(--muted)',
-          width: 0.8 + 3.4 * u1,
-          opacity: 0.9 * Math.pow(u1, 1.3),
-        };
-      })
-    : [];
-
   return {
+    ang,
     x,
     y,
     col,
     cosCol,
     sinCol,
     blend: colorOf(deg),
-    trail,
-    wedge,
-    wedgeHead,
+    tail: p.tail,
+    revealed: p.revealed,
     sinLeg,
     sinExt,
     guide2,
     mirrors,
-    refArcAt,
-    refLabel,
-    refPolar,
-    braceC,
-    braceS,
-    cosLabel,
-    sinLabel,
-    cosDir,
-    sinDir,
-    cosExit,
-    sinExit,
+    ref,
+    legs: { cos, sin },
     tag,
     slope,
   };

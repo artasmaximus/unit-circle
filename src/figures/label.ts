@@ -16,6 +16,10 @@ export type LabelProps = Timing & {
   back?: boolean;
   opacity?: number;
   z?: number;
+  /** For a `pop`: the share of its progress it waits out before it starts to grow. */
+  popFrom?: number;
+  /** Which way (world units) a `shoot` exit carries it. */
+  shoot?: Pt;
 };
 
 /** The label's data alone, for callers that need its box before deciding where it goes. */
@@ -37,6 +41,8 @@ export function Label(key: string, p: LabelProps, ctx: Ctx): Drawn<{ rect: Rect 
     z: p.z,
     back: p.back ? ctx.lb : undefined,
     opacity: p.opacity,
+    popFrom: p.popFrom,
+    shoot: p.shoot,
     ...timing(p),
   };
   return { marks: [mark], rect: label.rect };

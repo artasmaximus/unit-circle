@@ -1,11 +1,20 @@
-// What the unit circle topic puts on the plane, as keyed marks (see plane/marks.ts): the triangle,
-// its angle arcs, braces and labels, the mirror lines, the reference angle, the trail, the point,
-// and the faded preview under the pointer. State in, marks out; nothing here tracks arrivals or
-// exits. When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
+// What the unit circle topic puts on the plane, composed from figures (see figures/figure.ts): the
+// triangle's legs and their braces and labels, the angle arc, the mirror lines, the reference angle,
+// the trail, the point, and the faded preview under the pointer. Where things sit comes from the
+// scene (scene.ts); this file decides how each is drawn and how it moves through a mode switch.
+// When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
+import { LABEL_R, S } from '../../core/camera.svelte.ts';
 import { figure as F } from '../../core/tuning.ts';
+import { colorOf, rad } from '../../core/trig.ts';
 import type { Mark } from '../../plane/marks.ts';
-import type { Label } from '../../plane/marks.ts';
-import type { Scene } from './scene.ts';
+import { polar, type Ctx, type Look, type Pt } from '../../figures/figure.ts';
+import { AngleArc } from '../../figures/angleArc.ts';
+import { Brace } from '../../figures/brace.ts';
+import { Label } from '../../figures/label.ts';
+import { Point } from '../../figures/point.ts';
+import { Segment } from '../../figures/segment.ts';
+import { Trail } from '../../figures/trail.ts';
+import type { Scene, Seg } from './scene.ts';
 
 export type CircleInput = {
   active: boolean;
@@ -17,8 +26,8 @@ export type CircleInput = {
   t: number;
   pen: number;
   wasRevealed: boolean;
-  /** The preview under the pointer, already worked out (see Plane.svelte), or null. */
-  ghost: { x: number; y: number; special: boolean; label: Label | null } | null;
+  /** The preview under the pointer (see Plane.svelte), or null. */
+  ghost: { x: number; y: number; deg: number; special: boolean; tex: string; color: string } | null;
   dotR: number;
   sw: number;
   lb: number;
@@ -45,333 +54,270 @@ export const give = (u: number) => {
  * behind) take no time to arrive or leave.
  */
 const NOW = { dur: 0, exitDur: 0, enter: 'fade' } as const;
+const ends = (g: Seg): { from: Pt; to: Pt } => ({ from: [g[0], g[1]], to: [g[2], g[3]] });
 
 export function circleMarks(i: CircleInput): Mark[] {
   if (!i.active) return [];
-  const { sc, sw, lb } = i,
+  const { sc } = i,
+    ctx: Ctx = { sw: i.sw, lb: i.lb },
     out: Mark[] = [];
+  const add = (d: { marks: Mark[] }) => out.push(...d.marks);
   const win = (a: number, b: number) => clamp01((i.t - a) / (b - a));
   const moving = i.t < 1;
   const before = i.wasRevealed ? sc.blend : 'var(--fg)';
   const legBefore = (fn: 'cos' | 'sin') => (i.wasRevealed ? `var(--${fn})` : 'var(--fg)');
   // one dash period per switch, on the pen's own lean-and-snap curve, so the dashes tick like the
   // switch
-  const tick = (period: number) => period * sw * i.pen;
+  const tick = (period: number) => period * i.sw * i.pen;
   const wash = clamp01(i.pen);
   const arcWash = win(...F.arcWash),
     rayWash = win(...F.rayWash),
     braceDraw = win(...F.braceDraw);
   const axisCol = sc.cosCol === 'var(--fg)' ? 'var(--muted)' : sc.cosCol;
   const bob = (F.bob / i.k) * Math.sin(Math.PI * win(0, F.bobEnd));
-  const label = (m: Omit<Extract<Mark, { kind: 'label' }>, 'kind' | 'label'>, l: Label | null) => {
-    if (l) out.push({ kind: 'label', label: l, ...m });
-  };
 
-  // ---- the guides to the axes the guides across to the y-axis, and out to the mirrored points,
-  // are dashed like the legs so the whole figure reads as one family
-  const legDash = {
-    width: 2 * sw,
-    dash: [3 * sw, 6 * sw] as [number, number],
+  // ---- the guides across to the y-axis, and out to the mirrored points, are dashed like the legs
+  // so the whole figure reads as one family
+  const legDash: Look & { dashOffset: number } = {
+    width: 2,
+    dash: [3, 6],
     round: true,
     opacity: 0.7,
-    offset: tick(9),
+    dashOffset: tick(9),
   };
-  out.push({
-    kind: 'line',
-    key: 'guide:x',
-    z: 3,
-    x1: sc.x,
-    y1: sc.y,
-    x2: 0,
-    y2: sc.y,
-    color: axisCol,
-    ...legDash,
+  const mirrorLine = {
+    power: F.mirrorEase,
     enter: 'draw',
-    dur: 350,
-  });
-  if (sc.guide2) {
-    const g = sc.guide2;
-    out.push({
-      kind: 'line',
-      key: 'mirror:guide',
-      z: 6,
-      x1: g[0],
-      y1: g[1],
-      x2: g[2],
-      y2: g[3],
-      color: axisCol,
-      ...legDash,
-      power: F.mirrorEase,
-      enter: 'draw',
-      dur: F.mirrorMs * F.mirrorLineShare,
-      exitDelay: 150,
-      exitDur: 300,
-    });
-  }
+    dur: F.mirrorMs * F.mirrorLineShare,
+    exitDelay: 150,
+    exitDur: 300,
+  } as const;
+  add(
+    Segment(
+      'guide:x',
+      {
+        from: [sc.x, sc.y],
+        to: [0, sc.y],
+        color: axisCol,
+        ...legDash,
+        z: 3,
+        enter: 'draw',
+        dur: 350,
+      },
+      ctx,
+    ),
+  );
+  if (sc.guide2)
+    add(
+      Segment(
+        'mirror:guide',
+        { ...ends(sc.guide2), color: axisCol, ...legDash, z: 6, ...mirrorLine },
+        ctx,
+      ),
+    );
 
   // ---- the angle arc, with the new color washing along it as a mode switch plays
-  out.push({
-    kind: 'path',
-    key: 'wedge',
-    z: 4,
-    d: sc.wedge,
-    color: moving ? before : sc.col,
-    width: 1.25 * sw,
-    enter: 'draw',
-    dur: 400,
-  });
-  if (moving)
-    out.push({
-      kind: 'path',
-      key: 'wedge:wash',
-      z: 4,
-      d: sc.wedge,
-      color: sc.col,
-      width: 1.25 * sw,
-      part: arcWash,
-      ...NOW,
-    });
-  if (sc.wedgeHead)
-    out.push({
-      kind: 'path',
-      key: 'wedge:head',
-      z: 4,
-      d: sc.wedgeHead,
-      color: moving && arcWash < 1 ? before : sc.col,
-      width: 1.25 * sw,
-      round: true,
-      join: true,
-      enter: 'fade',
-      delay: 250,
-    });
+  const wedge = { to: sc.ang, r: S / 5, ccw: true, width: 1.25, z: 4 } as const;
+  add(
+    AngleArc(
+      'wedge',
+      {
+        ...wedge,
+        color: moving ? before : sc.col,
+        dur: 400,
+        head: {
+          min: 0.16,
+          max: 2 * Math.PI - 0.02,
+          color: moving && arcWash < 1 ? before : sc.col,
+          round: true,
+          delay: 250,
+        },
+      },
+      ctx,
+    ),
+  );
+  if (moving) add(AngleArc('wedge:wash', { ...wedge, color: sc.col, part: arcWash, ...NOW }, ctx));
 
   // ---- the legs: dashes that tick through a mode switch, the new color filling along each leg in
   // step with it
   const legs = [
-    { fn: 'cos' as const, seg: [0, 0, sc.x, 0], now: sc.cosCol },
-    { fn: 'sin' as const, seg: sc.sinLeg as number[], now: sc.sinCol },
+    { fn: 'cos' as const, seg: [0, 0, sc.x, 0] as Seg, now: sc.cosCol },
+    { fn: 'sin' as const, seg: sc.sinLeg, now: sc.sinCol },
   ];
   for (const leg of legs) {
     const [x1, y1, x2, y2] = leg.seg,
       len = Math.hypot(x2 - x1, y2 - y1),
-      dash: [number, number] = [3 * sw, 6 * sw];
-    const base = { z: 4, width: 2 * sw, dash, round: true, opacity: 0.7 } as const;
+      look: Look = { width: 2, dash: [3, 6], round: true, opacity: 0.7, z: 4 },
+      front: Pt = [x1 + (x2 - x1) * wash, y1 + (y2 - y1) * wash];
     if (moving) {
       // the old color keeps only the part ahead of the wash front (its dashes continue the same
       // pattern), so the two never overlap
-      out.push({
-        kind: 'line',
-        key: `leg:${leg.fn}:rest`,
-        ...base,
-        x1: x1 + (x2 - x1) * wash,
-        y1: y1 + (y2 - y1) * wash,
-        x2,
-        y2,
-        color: legBefore(leg.fn),
-        offset: tick(9) + wash * len,
-        ...NOW,
-      });
-      out.push({
-        kind: 'line',
-        key: `leg:${leg.fn}`,
-        ...base,
-        x1,
-        y1,
-        x2: x1 + (x2 - x1) * wash,
-        y2: y1 + (y2 - y1) * wash,
-        color: leg.now,
-        offset: tick(9),
-        enter: 'draw',
-        dur: 350,
-      });
+      add(
+        Segment(
+          `leg:${leg.fn}:rest`,
+          {
+            from: front,
+            to: [x2, y2],
+            ...look,
+            color: legBefore(leg.fn),
+            dashOffset: tick(9) + wash * len,
+            ...NOW,
+          },
+          ctx,
+        ),
+      );
+      add(
+        Segment(
+          `leg:${leg.fn}`,
+          {
+            from: [x1, y1],
+            to: front,
+            ...look,
+            color: leg.now,
+            dashOffset: tick(9),
+            enter: 'draw',
+            dur: 350,
+          },
+          ctx,
+        ),
+      );
     } else
-      out.push({
-        kind: 'line',
-        key: `leg:${leg.fn}`,
-        ...base,
-        x1,
-        y1,
-        x2,
-        y2,
-        color: leg.now,
-        offset: tick(9),
-        enter: 'draw',
-        dur: 350,
-      });
+      add(
+        Segment(
+          `leg:${leg.fn}`,
+          {
+            from: [x1, y1],
+            to: [x2, y2],
+            ...look,
+            color: leg.now,
+            dashOffset: tick(9),
+            enter: 'draw',
+            dur: 350,
+          },
+          ctx,
+        ),
+      );
   }
-  if (sc.sinExt) {
-    const e = sc.sinExt;
-    out.push({
-      kind: 'line',
-      key: 'mirror:ext',
-      z: 4,
-      x1: e[0],
-      y1: e[1],
-      x2: e[2],
-      y2: e[3],
-      color: sc.sinCol,
-      width: 2 * sw,
-      dash: [3 * sw, 6 * sw],
-      round: true,
-      opacity: 0.7,
-      offset: tick(9),
-      power: F.mirrorEase,
-      enter: 'draw',
-      dur: F.mirrorMs * F.mirrorLineShare,
-      exitDelay: 150,
-      exitDur: 300,
-    });
-  }
+  if (sc.sinExt)
+    add(
+      Segment(
+        'mirror:ext',
+        { ...ends(sc.sinExt), color: sc.sinCol, ...legDash, z: 4, ...mirrorLine },
+        ctx,
+      ),
+    );
 
   // ---- the radius
-  out.push({
-    kind: 'line',
-    key: 'ray',
-    z: 6,
-    x1: 0,
-    y1: 0,
-    x2: sc.x,
-    y2: sc.y,
-    color: moving ? before : sc.col,
-    width: 1.75 * sw,
-    round: true,
-    enter: 'draw',
-    dur: 450,
-  });
+  const ray = { from: [0, 0] as Pt, width: 1.75, round: true, z: 6 };
+  add(
+    Segment(
+      'ray',
+      { ...ray, to: [sc.x, sc.y], color: moving ? before : sc.col, enter: 'draw', dur: 450 },
+      ctx,
+    ),
+  );
   if (moving)
-    out.push({
-      kind: 'line',
-      key: 'ray:wash',
-      z: 6,
-      x1: 0,
-      y1: 0,
-      x2: sc.x * rayWash,
-      y2: sc.y * rayWash,
-      color: sc.col,
-      width: 1.75 * sw,
-      round: true,
-      ...NOW,
-    });
+    add(
+      Segment(
+        'ray:wash',
+        { ...ray, to: [sc.x * rayWash, sc.y * rayWash], color: sc.col, ...NOW },
+        ctx,
+      ),
+    );
 
   // ---- the braces and their labels. A leg too short for a brace simply has none: the brace
   // undraws and its label blurs away.
-  const sides = [
-    {
-      fn: 'cos' as const,
-      brace: sc.braceC,
-      lab: sc.cosLabel,
-      dir: sc.cosDir,
-      exit: sc.cosExit,
-      now: sc.cosCol,
-    },
-    {
-      fn: 'sin' as const,
-      brace: sc.braceS,
-      lab: sc.sinLabel,
-      dir: sc.sinDir,
-      exit: sc.sinExit,
-      now: sc.sinCol,
-    },
-  ];
-  for (const s of sides) {
-    if (!s.brace) continue;
-    const bc = {
-      z: 5,
-      width: 1 * sw,
-      round: true,
-      join: true,
-      opacity: 0.6,
-      d: s.brace.path,
-      transform: s.brace.transform,
-      symmetric: true,
-    } as const;
-    out.push({
-      kind: 'path',
-      key: `brace:${s.fn}`,
-      ...bc,
-      color: moving ? legBefore(s.fn) : s.now,
-      enter: 'draw',
-      dur: F.legExitMs,
-      exitDur: F.legExitMs,
-    });
+  for (const fn of ['cos', 'sin'] as const) {
+    const leg = sc.legs[fn];
+    if (!leg) continue;
+    const now = fn === 'cos' ? sc.cosCol : sc.sinCol,
+      brace = { ...leg.brace, width: 1, opacity: 0.6, z: 5 };
+    add(
+      Brace(
+        `brace:${fn}`,
+        {
+          ...brace,
+          color: moving ? legBefore(fn) : now,
+          enter: 'draw',
+          dur: F.legExitMs,
+          exitDur: F.legExitMs,
+        },
+        ctx,
+      ),
+    );
     // the brace stays put; only its new color draws in, from both ends toward the tip
     if (moving)
-      out.push({
-        kind: 'path',
-        key: `brace:${s.fn}:wash`,
-        ...bc,
-        color: s.now,
-        part: braceDraw,
-        ...NOW,
-      });
-    if (s.lab) {
-      const l = {
-        ...s.lab,
-        color: i.t < F.bobEnd ? legBefore(s.fn) : s.lab.color,
-        rect: { ...s.lab.rect, x: s.lab.rect.x + s.dir[0] * bob, y: s.lab.rect.y + s.dir[1] * bob },
-      };
-      label(
+      add(Brace(`brace:${fn}:wash`, { ...brace, color: now, part: braceDraw, ...NOW }, ctx));
+    const { at } = leg.label;
+    add(
+      Label(
+        `legLabel:${fn}`,
         {
-          key: `legLabel:${s.fn}`,
+          ...leg.label,
+          at: [at[0] + leg.dir[0] * bob, at[1] + leg.dir[1] * bob],
+          color: i.t < F.bobEnd ? legBefore(fn) : now,
+          back: true,
           z: 9,
-          back: lb,
           enter: 'fade',
           dur: F.legExitMs,
           exit: 'shoot',
           exitDur: F.legExitMs,
-          shoot: [s.exit[0] * F.legShoot, s.exit[1] * F.legShoot],
+          shoot: [leg.exit[0] * F.legShoot, leg.exit[1] * F.legShoot],
         },
-        l,
-      );
-    }
+        ctx,
+      ),
+    );
   }
 
   // ---- the reference angle: its arc swells out of the θ arc on a spring and the label pops in on
   // the arc's middle. On a mode switch it waits for the switch to get under way.
-  const wait = moving ? F.refLabel[0] * 460 : 0;
-  const rp = sc.refPolar;
-  if (sc.refLabel && rp) {
-    const refSpring = {
+  if (sc.ref) {
+    const spring = {
       curve: give,
       fadeBy: F.refFadeBy,
       dur: F.refSettle * 1000,
       exitDur: 300,
-      delay: wait,
+      delay: moving ? F.refLabel[0] * 460 : 0,
       enter: 'pop',
     } as const;
-    if (sc.refArcAt)
-      out.push({
-        kind: 'path',
-        key: 'ref:arc',
-        z: 6,
-        d: sc.refArcAt(1),
-        at: sc.refArcAt,
-        color: sc.col,
-        width: 1.75 * sw,
-        round: true,
-        ...refSpring,
-      });
-    label({ key: 'ref:label', z: 9, popFrom: 0.3, ...refSpring }, sc.refLabel);
+    const arc = sc.ref.arc;
+    if (arc)
+      add(
+        AngleArc(
+          'ref:arc',
+          {
+            from: arc.from,
+            to: sc.ang,
+            r: arc.r,
+            swell: arc.swell,
+            color: sc.col,
+            width: 1.75,
+            round: true,
+            z: 6,
+            ...spring,
+          },
+          ctx,
+        ),
+      );
+    add(Label('ref:label', { ...sc.ref.label, color: sc.col, z: 9, popFrom: 0.3, ...spring }, ctx));
   }
 
   // ---- the trail behind the point
-  if (sc.trail.length) {
-    out.push({
-      kind: 'segments',
-      key: 'trail',
-      z: 3,
-      segs: sc.trail.map((tr) => ({
-        x1: tr.seg[0],
-        y1: tr.seg[1],
-        x2: tr.seg[2],
-        y2: tr.seg[3],
-        color: tr.color,
-        width: tr.width * sw,
-        opacity: tr.opacity,
-      })),
-      ...NOW,
-    });
-  }
+  add(
+    Trail(
+      'trail',
+      {
+        r: S,
+        head: sc.ang,
+        length: sc.tail,
+        steps: 28,
+        color: (a) => (sc.revealed ? colorOf((a * 180) / Math.PI) : 'var(--muted)'),
+        z: 3,
+        ...NOW,
+      },
+      ctx,
+    ),
+  );
 
   // ---- the mirror points: a line out to each reflected point, the dot where it lands, and its
   // angle. The lines draw first (above), then the dot pops in as they land, and leaving runs it
@@ -379,41 +325,46 @@ export function circleMarks(i: CircleInput): Mark[] {
   const landing = F.mirrorMs * F.mirrorLineShare * 0.5;
   for (const m of sc.mirrors) {
     if (m.line)
-      out.push({
-        kind: 'line',
-        key: `mirror:line${m.i}`,
-        z: 6,
-        x1: m.line[0],
-        y1: m.line[1],
-        x2: m.line[2],
-        y2: m.line[3],
-        color: sc.col,
-        ...legDash,
-        power: F.mirrorEase,
-        enter: 'draw',
-        dur: F.mirrorMs * F.mirrorLineShare,
-        exitDelay: 150,
-        exitDur: 300,
-      });
-    out.push({
-      kind: 'dot',
-      key: `mirror:dot${m.i}`,
-      z: 7,
-      x: m.dot[0],
-      y: m.dot[1],
-      r: 4.5 * sw,
-      fill: 'var(--bg)',
-      stroke: sc.col,
-      width: 1.5 * sw,
-      enter: 'pop',
-      delay: landing,
-      dur: F.mirrorMs - landing,
-      exitDur: 200,
-    });
-    label(
-      { key: `mirror:label${m.i}`, z: 9, enter: 'fade', delay: landing, dur: 300, exitDur: 150 },
-      m.label,
+      add(
+        Segment(
+          `mirror:line${m.i}`,
+          { ...ends(m.line), color: sc.col, ...legDash, z: 6, ...mirrorLine },
+          ctx,
+        ),
+      );
+    add(
+      Point(
+        `mirror:dot${m.i}`,
+        {
+          at: m.dot,
+          r: 4.5,
+          fill: 'var(--bg)',
+          stroke: sc.col,
+          width: 1.5,
+          z: 7,
+          delay: landing,
+          dur: F.mirrorMs - landing,
+          exitDur: 200,
+        },
+        ctx,
+      ),
     );
+    if (m.label)
+      add(
+        Label(
+          `mirror:label${m.i}`,
+          {
+            ...m.label,
+            color: sc.col,
+            z: 9,
+            enter: 'fade',
+            delay: landing,
+            dur: 300,
+            exitDur: 150,
+          },
+          ctx,
+        ),
+      );
   }
 
   // ---- the faded preview under the pointer
@@ -421,46 +372,46 @@ export function circleMarks(i: CircleInput): Mark[] {
     const g = i.ghost,
       grey = 'var(--muted)',
       q = { z: 8, enter: 'fade', dur: 100, exitDur: 100 } as const;
-    out.push({
-      kind: 'line',
-      key: 'ghost:ray',
-      ...q,
-      x1: 0,
-      y1: 0,
-      x2: g.x,
-      y2: g.y,
-      color: grey,
-      width: sw,
-      dash: [2 * sw, 4 * sw],
-      opacity: 0.45,
-    });
+    add(
+      Segment(
+        'ghost:ray',
+        { from: [0, 0], to: [g.x, g.y], color: grey, width: 1, dash: [2, 4], opacity: 0.45, ...q },
+        ctx,
+      ),
+    );
     if (!g.special)
-      out.push({
-        kind: 'dot',
-        key: 'ghost:dot',
-        ...q,
-        x: g.x,
-        y: g.y,
-        r: 6 * sw,
-        fill: grey,
-        opacity: 0.45,
-      });
-    label({ key: 'ghost:label', ...q, opacity: g.special ? 1 : 0.45 }, g.label);
+      add(Point('ghost:dot', { at: [g.x, g.y], r: 6, fill: grey, opacity: 0.45, ...q }, ctx));
+    add(
+      Label(
+        'ghost:label',
+        {
+          tex: g.tex,
+          size: 10,
+          at: polar(rad(g.deg), LABEL_R),
+          color: g.color,
+          opacity: g.special ? 1 : 0.45,
+          ...q,
+        },
+        ctx,
+      ),
+    );
   }
 
   // ---- the point itself
-  out.push({
-    kind: 'dot',
-    key: 'point',
-    z: 10,
-    x: sc.x,
-    y: sc.y,
-    r: i.dotR * sw,
-    fill: sc.col,
-    stroke: 'var(--panel)',
-    width: 2 * sw,
-    enter: 'pop',
-    delay: 150,
-  });
+  add(
+    Point(
+      'point',
+      {
+        at: [sc.x, sc.y],
+        r: i.dotR,
+        fill: sc.col,
+        stroke: 'var(--panel)',
+        width: 2,
+        z: 10,
+        delay: 150,
+      },
+      ctx,
+    ),
+  );
   return out;
 }

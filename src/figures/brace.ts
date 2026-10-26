@@ -9,8 +9,10 @@ export type BraceProps = Look &
     to: Pt;
     /** Which side it sits on: a unit vector away from the segment. */
     side: Pt;
-    /** Shorter segments (in stroke units) get no brace. */
+    /** Shorter segments (world units) get no brace; 14 stroke units when not given. */
     minLen?: number;
+    /** Only this share (0 to 1) of it is drawn, from both ends toward the tip. */
+    part?: number;
   };
 
 /**
@@ -48,7 +50,7 @@ export function Brace(key: string, p: BraceProps, ctx: Ctx): Drawn<{ reach: numb
   const [x1, y1] = p.from,
     [x2, y2] = p.to,
     [nx, ny] = p.side;
-  const b = braceShape(x1, y1, x2, y2, nx, ny, (p.minLen ?? 14) * ctx.sw, ctx.sw);
+  const b = braceShape(x1, y1, x2, y2, nx, ny, p.minLen ?? 14 * ctx.sw, ctx.sw);
   if (!b) return { marks: [], reach: 0 };
   return {
     marks: [
@@ -64,6 +66,7 @@ export function Brace(key: string, p: BraceProps, ctx: Ctx): Drawn<{ reach: numb
         join: true,
         symmetric: true,
         opacity: p.opacity,
+        part: p.part,
         ...timing(p),
         enter: p.enter ?? 'draw',
       },
