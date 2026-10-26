@@ -1,193 +1,204 @@
-# Graph Report - unit-circle  (2026-10-23)
+# Graph Report - unit-circle  (2026-10-26)
 
 ## Corpus Check
-- 73 files · ~43,979 words
+- 107 files · ~52,126 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 4 file(s) not represented in the graph (top: .css 2, (none) 1, .woff2 1)
+- Unclassified: 5 file(s) not represented in the graph (top: (none) 2, .css 2, .woff2 1)
 
 ## Summary
-- 637 nodes · 1631 edges · 27 communities (23 shown, 4 thin omitted)
+- 765 nodes · 2127 edges · 33 communities (23 shown, 10 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4b200859`
+- Built from commit: `761f4ddf`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- state.svelte.ts
+- inverse/scene.ts
 - Package Dependencies
 - algebra.ts
-- unitGuide.svelte.ts
+- radians/state.svelte.ts
 - Plane.svelte
 - Segmented.svelte
+- trig.ts
 - TypeScript Config
 - Unit Circle Quiz page (index.html)
 - Artifact Build Script
 - Type Check Command
 - Dev Server Command
-- inverseQuiz.ts
-- Panel.svelte
-- inverseQuiz.test.ts
-- MarkLayer.svelte
-- inverseQuiz.svelte.ts
-- quiz.ts
-- radians.svelte.ts
-- camera
-- progress
-- norm
-- scene.ts
-- camera.svelte.ts
-- RingLayer.svelte
 - InversePanel.svelte
-- svelte
+- circle/guide.svelte.ts
+- Panel.svelte
+- app.svelte.ts
+- MarkLayer.svelte
+- camera
+- inverse/quiz.ts
+- progress
+- .goTo
+- InverseGuide
+- .prettierrc.json
+- point.svelte.ts
+- camera.svelte.ts
+- npm test (pure-logic tests via node --test)
+- src/panel (controls, quiz, csc/sec/cot cards, workshop dialog)
+- src/plane (scene renderer)
 - App.svelte
 
 ## God Nodes (most connected - your core abstractions)
-1. `angleTex()` - 39 edges
-2. `camera` - 22 edges
-3. `progress` - 22 edges
-4. `norm()` - 22 edges
-5. `rad()` - 19 edges
-6. `svelte` - 18 edges
-7. `inverse` - 18 edges
-8. `trigTex()` - 16 edges
-9. `point` - 15 edges
-10. `ui` - 15 edges
+1. `angleTex()` - 40 edges
+2. `progress` - 27 edges
+3. `rad()` - 26 edges
+4. `camera` - 23 edges
+5. `norm()` - 22 edges
+6. `timing` - 22 edges
+7. `Ctx` - 21 edges
+8. `Label()` - 21 edges
+9. `polar()` - 20 edges
+10. `trigTex()` - 19 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `unitCircleGuide()` --calls--> `angleTex()`  [EXTRACTED]
-  src/guides/unitCircle.ts → src/lib/angles.ts
-- `unitCircleGuide()` --calls--> `angleText()`  [EXTRACTED]
-  src/guides/unitCircle.ts → src/lib/angles.ts
-- `makeProblem()` --calls--> `num()`  [EXTRACTED]
-  src/lib/state.svelte.ts → src/lib/algebra.ts
-- `radiansMarks()` --calls--> `piFraction()`  [EXTRACTED]
-  src/lib/radiansMarks.ts → src/lib/angles.ts
+- `turn` --calls--> `piFraction()`  [EXTRACTED]
+  src/topics/radians/RadiansPanel.svelte → src/core/angles.ts
+- `deg()` --calls--> `angleTex()`  [EXTRACTED]
+  src/topics/inverse/InversePanel.svelte → src/core/angles.ts
+- `trig()` --calls--> `trigOf()`  [EXTRACTED]
+  src/topics/inverse/InversePanel.svelte → src/core/angles.ts
 - `rExplain()` --calls--> `piFraction()`  [EXTRACTED]
-  src/lib/radiansQuiz.ts → src/lib/angles.ts
+  src/topics/radians/quiz.ts → src/core/angles.ts
+- `radiansScene()` --calls--> `piFraction()`  [EXTRACTED]
+  src/topics/radians/scene.ts → src/core/angles.ts
 
 ## Import Cycles
 - None detected.
 
-## Hyperedges (group relationships)
-- **Pure logic layer** — src_lib_trig, src_lib_algebra, src_lib_quiz, src_lib_logic_test [EXTRACTED 1.00]
-- **State to scene to plane rendering pipeline** — src_lib_state_svelte, src_lib_camera_svelte, src_lib_scene, src_lib_tex_svelte, src_plane, src_panel [INFERRED 0.75]
+## Communities (33 total, 10 thin omitted)
 
-## Communities (27 total, 4 thin omitted)
-
-### Community 1 - "state.svelte.ts"
-Cohesion: 0.11
-Nodes (19): atom, Eq, Op, easeIn(), easeOut(), fnValue(), makeProblem(), PEN_MS (+11 more)
+### Community 0 - "inverse/scene.ts"
+Cohesion: 0.07
+Nodes (81): LABEL_R, S, texRect(), colorOf(), rad(), camera, input, pen (+73 more)
 
 ### Community 2 - "Package Dependencies"
-Cohesion: 0.07
-Nodes (28): dependencies, @lucide/svelte, mathjax, mathjs, svelte, devDependencies, svelte-check, @sveltejs/vite-plugin-svelte (+20 more)
+Cohesion: 0.06
+Nodes (33): dependencies, @lucide/svelte, mathjax, mathjs, svelte, devDependencies, prettier, prettier-plugin-svelte (+25 more)
 
 ### Community 3 - "algebra.ts"
-Cohesion: 0.10
-Nodes (33): apply(), AS_POWER, changes(), DEFINITIONS, eqTex(), EXACT, exactTex(), Expr (+25 more)
-
-### Community 4 - "unitGuide.svelte.ts"
 Cohesion: 0.07
-Nodes (29): m(), unitCircleGuide(), Step, Task, trigTexAnswer(), Mode, topicHooks, wrapPi() (+21 more)
+Nodes (43): mathjs, math, morph(), SPECIAL, apply(), AS_POWER, atom, changes() (+35 more)
+
+### Community 4 - "radians/state.svelte.ts"
+Cohesion: 0.06
+Nodes (42): Rich, GuideRun, i, n, {
+    run,
+    label,
+    color,
+    intro,
+    exam,
+  }, s, Step, t (+34 more)
 
 ### Community 5 - "Plane.svelte"
 Cohesion: 0.14
-Nodes (26): nearestSpecial(), snapDeg(), aimAt(), down(), dragging, ghost, ghostAt(), grain() (+18 more)
+Nodes (22): Aim, distance(), Handle, Hit, nearest(), sources, aim(), down() (+14 more)
 
 ### Community 6 - "Segmented.svelte"
-Cohesion: 0.14
-Nodes (12): @lucide/svelte, pen, { label, children }, Box, from, { options, value, onchange, label, progress = 1, stacked = false }, pressed, root (+4 more)
+Cohesion: 0.15
+Nodes (10): @lucide/svelte, { label, children }, Box, from, {
+    options,
+    value,
+    onchange,
+    label,
+    progress = 1,
+    stacked = false,
+  }, pressed, root, to (+2 more)
+
+### Community 7 - "trig.ts"
+Cohesion: 0.05
+Nodes (58): COS_E, COT_E, CSC_R, dec(), Fn, nearestSpecial(), Recip, recipTex() (+50 more)
 
 ### Community 8 - "TypeScript Config"
 Cohesion: 0.14
 Nodes (13): @tsconfig/svelte/tsconfig.json, compilerOptions, allowImportingTsExtensions, module, moduleResolution, noEmit, skipLibCheck, strict (+5 more)
 
 ### Community 9 - "Unit Circle Quiz page (index.html)"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (8): div#app mount point, IBM Plex Sans (Google Fonts), Unit Circle Quiz page (index.html), dist/artifact.html (build for claude.ai artifact), dist/index.html (single-file build), npm run build, Svelte 5 + Vite + TypeScript stack, Unit Circle (project)
 
-### Community 14 - "inverseQuiz.ts"
-Cohesion: 0.12
-Nodes (26): partnerAt(), anglesIn(), AXIS, Domain, DOMAINS, domainTex(), FNS, hintMsg() (+18 more)
+### Community 13 - "InversePanel.svelte"
+Cohesion: 0.06
+Nodes (40): Swing, norm(), snapDeg(), angleOf(), controlHandle(), inverseHandles(), probeAngle(), probeHandles() (+32 more)
+
+### Community 14 - "circle/guide.svelte.ts"
+Cohesion: 0.17
+Nodes (13): Mode, topicHooks, wrapPi(), EXAM_FNS, EXAM_STREAK, ValueQ, done, q (+5 more)
 
 ### Community 15 - "Panel.svelte"
-Cohesion: 0.20
-Nodes (9): guideTopics, blurH, blurHead, contentH, h, headH, IN, OUT (+1 more)
-
-### Community 16 - "inverseQuiz.test.ts"
 Cohesion: 0.18
-Nodes (16): compose(), DOMAIN, inRange(), otherAngle(), principal(), R3, SC, solutionsIn() (+8 more)
+Nodes (10): guideTopics, panel, blurH, blurHead, contentH, h, headH, IN (+2 more)
+
+### Community 16 - "app.svelte.ts"
+Cohesion: 0.22
+Nodes (12): easeIn(), easeOut(), pen, PEN_MS, penEase(), revealed(), setMode(), setTopic() (+4 more)
 
 ### Community 17 - "MarkLayer.svelte"
-Cohesion: 0.07
-Nodes (26): GridInput, gridMarks(), Base, clamp01(), DEFAULTS, DotGridMark, DotMark, drawCurve() (+18 more)
-
-### Community 18 - "inverseQuiz.svelte.ts"
-Cohesion: 0.20
-Nodes (7): IQ, iqKey(), pickQ(), apply(), invQuiz, load(), Rich
-
-### Community 19 - "quiz.ts"
 Cohesion: 0.06
-Nodes (48): npm test (pure-logic tests via node --test), angleField(), angleTex(), angleText(), clean(), gcd(), piFraction(), piTex() (+40 more)
+Nodes (32): mathjax, cache, math, Rect, texBox, clamp01(), entries, Entry (+24 more)
 
-### Community 20 - "radians.svelte.ts"
-Cohesion: 0.07
-Nodes (36): RADIANS_GUIDE, ALL, apply(), EXAM_STREAK, PRACTICE, radians, Session, Feature (+28 more)
+### Community 18 - "camera"
+Cohesion: 0.14
+Nodes (6): camera, marks, dd, deg, r, turn
 
-### Community 23 - "progress"
-Cohesion: 0.29
-Nodes (4): GuideTopic, load(), progress, Saved
-
-### Community 24 - "norm"
-Cohesion: 0.23
-Nodes (4): InvFn, snapValue(), clamp(), inverse
-
-### Community 25 - "scene.ts"
+### Community 19 - "inverse/quiz.ts"
 Cohesion: 0.05
-Nodes (70): mathjax, Unit, LABEL_R, S, CircleInput, circleMarks(), clamp01(), give() (+62 more)
+Nodes (68): angleField(), angleTex(), angleText(), clean(), gcd(), piFraction(), piTex(), trigOf() (+60 more)
 
-### Community 26 - "camera.svelte.ts"
-Cohesion: 0.19
-Nodes (6): svelte, Chip, CHIP_FONT, reduce, { scene }, slopeEl
+### Community 20 - "progress"
+Cohesion: 0.24
+Nodes (5): GuideTopic, load(), progress, Saved, marks
 
-### Community 28 - "RingLayer.svelte"
-Cohesion: 0.22
-Nodes (7): Scene, aim, penClock, penFrom, marks, { scene, ghost }, marks
+### Community 21 - ".goTo"
+Cohesion: 0.23
+Nodes (4): apply(), Exam, near(), unitGuide
 
-### Community 30 - "InversePanel.svelte"
-Cohesion: 0.13
-Nodes (15): INV_NAME, PARTNER, RANGE, SPAN, dom, fn, FNS, HUE (+7 more)
+### Community 22 - "InverseGuide"
+Cohesion: 0.32
+Nodes (4): apply(), InverseGuide, stage(), explorePlane()
 
-### Community 31 - "svelte"
-Cohesion: 0.22
-Nodes (7): KEYS, w, RecipKey, HUE, KEYS, NAMES, { trailing }
+### Community 23 - ".prettierrc.json"
+Cohesion: 0.29
+Nodes (6): objectWrap, overrides, plugins, printWidth, singleQuote, svelteIndentScriptAndStyle
+
+### Community 26 - "point.svelte.ts"
+Cohesion: 0.23
+Nodes (7): svelte, reduce, RecipKey, HUE, KEYS, NAMES, { trailing }
+
+### Community 28 - "camera.svelte.ts"
+Cohesion: 0.18
+Nodes (13): penClock, penFrom, point, useHandles(), aim, pointHandle, preview, ringHover (+5 more)
 
 ### Community 32 - "App.svelte"
-Cohesion: 0.24
-Nodes (4): point, ui, marks, { under = false }
+Cohesion: 0.23
+Nodes (7): onkeydown(), ui, nudge(), KEYS, w, Saved, marks
 
 ## Knowledge Gaps
-- **13 isolated node(s):** `@tsconfig/svelte`, `svelte-check`, `typescript`, `@tsconfig/svelte/tsconfig.json`, `src/panel (controls, quiz, csc/sec/cot cards, workshop dialog)` (+8 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 254 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **15 isolated node(s):** `@tsconfig/svelte`, `prettier`, `prettier-plugin-svelte`, `svelte-check`, `typescript` (+10 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 292 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `svelte` connect `camera.svelte.ts` to `state.svelte.ts`, `Package Dependencies`, `algebra.ts`, `unitGuide.svelte.ts`, `Plane.svelte`, `Segmented.svelte`, `Unit Circle Quiz page (index.html)`, `inverseQuiz.ts`, `Panel.svelte`, `MarkLayer.svelte`, `quiz.ts`, `InversePanel.svelte`, `svelte`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
-- **What connects `@tsconfig/svelte`, `svelte-check`, `typescript` to the rest of the system?**
-  _13 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `state.svelte.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.11375661375661375 - nodes in this community are weakly interconnected._
-- **Why does `angleTex()` connect `quiz.ts` to `state.svelte.ts`, `unitGuide.svelte.ts`, `Plane.svelte`, `inverseQuiz.ts`, `inverseQuiz.test.ts`, `radians.svelte.ts`, `scene.ts`, `InversePanel.svelte`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `svelte` connect `point.svelte.ts` to `App.svelte`, `Package Dependencies`, `algebra.ts`, `radians/state.svelte.ts`, `Plane.svelte`, `Segmented.svelte`, `trig.ts`, `Unit Circle Quiz page (index.html)`, `InversePanel.svelte`, `Panel.svelte`, `app.svelte.ts`, `MarkLayer.svelte`, `inverse/quiz.ts`, `camera.svelte.ts`?**
+  _High betweenness centrality (0.118) - this node is a cross-community bridge._
+- **What connects `@tsconfig/svelte`, `prettier`, `prettier-plugin-svelte` to the rest of the system?**
+  _15 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `inverse/scene.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.07132188200149366 - nodes in this community are weakly interconnected._
+- **Why does `angleTex()` connect `inverse/quiz.ts` to `inverse/scene.ts`, `App.svelte`, `algebra.ts`, `radians/state.svelte.ts`, `trig.ts`, `InversePanel.svelte`, `camera`?**
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
 - **Should `Package Dependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.06881720430107527 - nodes in this community are weakly interconnected._
-- **Why does `progress` connect `progress` to `state.svelte.ts`, `unitGuide.svelte.ts`, `Plane.svelte`, `Segmented.svelte`, `inverseQuiz.ts`, `Panel.svelte`, `quiz.ts`, `radians.svelte.ts`, `scene.ts`, `RingLayer.svelte`, `InversePanel.svelte`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+  _Cohesion score 0.05873015873015873 - nodes in this community are weakly interconnected._
+- **Why does `rad()` connect `inverse/scene.ts` to `algebra.ts`, `radians/state.svelte.ts`, `trig.ts`, `InversePanel.svelte`, `circle/guide.svelte.ts`, `.goTo`, `point.svelte.ts`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Should `algebra.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.10420168067226891 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._

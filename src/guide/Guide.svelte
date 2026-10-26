@@ -52,17 +52,16 @@
 <section class="guide" aria-label={label} style:--c={color}>
   <div class="top">
     <div
-      class="dots"
+      class="bar"
       role="progressbar"
       aria-valuemin={1}
       aria-valuemax={n}
       aria-valuenow={i + 1}
       aria-label="Step {i + 1} of {n}"
     >
-      {#each run.steps as _, k}<span class="dot" class:now={k === i} class:past={k < i}
-        ></span>{/each}
+      <span class="fill" style:width="{((i + 1) / n) * 100}%"></span>
     </div>
-    <button class="skip" onclick={() => setMode('explore')}>Skip to Explore</button>
+    <span class="count">{i + 1} / {n}</span>
   </div>
 
   {#key s.id}
@@ -72,7 +71,7 @@
       {#each s.say as para}<p><Rich parts={para} /></p>{/each}
 
       {#if t.kind === 'choice'}
-        <div class="task">
+        <div class="task" class:solved={run.solved}>
           <p class="ask"><Rich parts={t.prompt} /></p>
           <div class="opts">
             {#each t.choices as c, k}
@@ -88,7 +87,7 @@
           {:else if run.chosen !== null}<p class="fb"><Rich parts={t.wrong} /></p>{/if}
         </div>
       {:else if t.kind === 'drag'}
-        <div class="task">
+        <div class="task" class:solved={run.solved}>
           <p class="ask"><Rich parts={t.prompt} /></p>
           {#if run.solved}<p class="fb good"><Rich parts={t.right} /></p>{:else}<p class="fb">
               <Rich parts={t.how ?? ['Drag the point round the edge of the circle.']} />
@@ -102,8 +101,9 @@
 
   <div class="nav">
     <button onclick={() => run.back()} disabled={i === 0}>Back</button>
+    <button class="skip" onclick={() => setMode('explore')} title="Skip to Explore">Skip</button>
     {#if i < n - 1}<button class="primary" onclick={() => run.next()} disabled={!run.canGo}
-        >Next</button
+        >{run.canGo ? 'Next' : t.kind === 'choice' ? 'Choose an answer' : 'Move the point'}</button
       >{/if}
   </div>
 </section>
@@ -119,35 +119,33 @@
     justify-content: space-between;
     gap: 12px;
   }
-  .dots {
-    display: flex;
-    gap: 5px;
-  }
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+  .bar {
+    flex: 1;
+    height: 4px;
+    border-radius: 999px;
     background: var(--line);
-    transition:
-      background 0.25s,
-      transform 0.25s;
+    overflow: hidden;
   }
-  .dot.past {
-    background: color-mix(in srgb, var(--c) 60%, var(--line));
-  }
-  .dot.now {
+  .fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
     background: var(--c);
-    transform: scale(1.35);
+    transition: width 0.35s cubic-bezier(0.22, 0.9, 0.3, 1);
+  }
+  .count {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
   }
   .skip {
     border: 0;
     background: none;
     color: var(--muted);
-    font-size: 0.78rem;
-    padding: 2px 4px;
+    font-size: 0.82rem;
+    padding: 2px 8px;
     cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    margin-left: auto;
   }
   .skip:hover {
     color: var(--fg);
@@ -159,8 +157,8 @@
     min-height: 15rem;
   }
   h2 {
-    margin: 0;
-    font-size: 1.15rem;
+    margin: 4px 0 0;
+    font-size: 1.3rem;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
@@ -176,6 +174,15 @@
     border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
     border-radius: 8px;
     background: color-mix(in srgb, var(--c) 10%, var(--glass));
+  }
+  .task {
+    transition:
+      border-color 0.3s,
+      background 0.3s;
+  }
+  .task.solved {
+    border-color: color-mix(in srgb, var(--ok) 55%, transparent);
+    background: color-mix(in srgb, var(--ok) 10%, var(--glass));
   }
   .ask {
     font-weight: 500;
@@ -211,10 +218,19 @@
   .fb.good {
     color: var(--ok);
   }
+  .fb.good::before {
+    content: '✓ ';
+    font-weight: 600;
+  }
   .nav {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
     gap: 10px;
+  }
+  /* Next says what is still needed, so it takes the room Skip leaves */
+  .nav .primary {
+    flex: 1 1 auto;
+    max-width: 14rem;
   }
   .nav button:disabled {
     opacity: 0.45;

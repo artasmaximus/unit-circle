@@ -213,10 +213,11 @@ class Radians {
 }
 export const radians = new Radians();
 
-// the guide marks a drag step done as soon as the point sits on its target
+// a drag step counts as done only while the point sits on its target, and goes back to undone when
+// it is moved off
 $effect.root(() => {
   $effect(() => {
-    if (radians.atTarget) radians.solved = true;
+    if (radians.step.task.kind === 'drag') radians.solved = radians.atTarget;
   });
 });
 

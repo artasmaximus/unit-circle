@@ -34,7 +34,7 @@
   let placed = false,
     settle = 0;
   $effect(() => {
-    void `${ui.mode}|${camera.vw}|${camera.vh}`;
+    void `${ui.mode}|${camera.vw}|${camera.vh}|${folded}`;
     clearTimeout(settle);
     if (camera.wide) {
       camera.inset = { left: w, bottom: 0 };
@@ -56,6 +56,10 @@
   });
   // on phones the blur starts under the header
   let headH = $state(0);
+  // the header stays put as the content scrolls under it, and gets a hairline once it has
+  let scrolled = $state(false);
+  // on phones the sheet can fold down to its header, to see the whole plane
+  let folded = $state(false);
 
   // blur layers from strongest to weakest; each reaches a little further out, so the blur thins
   // toward the edge
@@ -120,8 +124,18 @@
       ></div>{/each}
     <div class="tint"></div>
   </div>
-  <div class="content" bind:clientHeight={contentH}>
-    <header bind:clientHeight={headH}>
+  <div
+    class="content"
+    bind:clientHeight={contentH}
+    onscroll={(e) => (scrolled = e.currentTarget.scrollTop > 2)}
+  >
+    <header bind:clientHeight={headH} class:scrolled>
+      <button
+        class="fold"
+        aria-label={folded ? 'Show the panel' : 'Hide the panel'}
+        aria-expanded={!folded}
+        onclick={() => (folded = !folded)}><span></span></button
+      >
       <div class="title">
         <h1>
           {ui.topic === 'inverse'
@@ -145,7 +159,7 @@
     </header>
     <!-- the views share one grid cell, so the old one fades away under the new one as it rises
          in -->
-    <div class="stage">
+    <div class="stage" class:folded>
       {#if ui.topic === 'radians'}
         {#if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><RadiansGuide /></div>
         {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}>
@@ -232,8 +246,8 @@
   }
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .blur {
-      top: calc(12px + var(--head));
-      height: calc(100% - 12px - var(--head));
+      top: var(--head);
+      height: calc(100% - var(--head));
     }
   }
   .blur > div {
@@ -300,17 +314,50 @@
     align-content: start;
     gap: 22px;
     /* the bottom padding keeps the last line clear of the tab bar floating at the bottom left */
-    padding: max(28px, env(safe-area-inset-top, 0px)) 24px 96px
-      max(24px, env(safe-area-inset-left, 0px));
+    --pt: max(28px, env(safe-area-inset-top, 0px));
+    --pl: max(24px, env(safe-area-inset-left, 0px));
+    padding: 0 24px 96px var(--pl);
   }
   /* phones: the sheet is short, so everything tightens */
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .content {
       max-height: 44svh;
-      padding: 12px max(14px, env(safe-area-inset-right, 0px))
-        max(14px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
+      --pt: 12px;
+      --pl: max(14px, env(safe-area-inset-left, 0px));
+      padding: 0 max(14px, env(safe-area-inset-right, 0px))
+        max(14px, env(safe-area-inset-bottom, 0px)) var(--pl);
       gap: 12px;
       font-size: 0.93rem;
+    }
+    header {
+      margin-right: calc(-1 * max(14px, env(safe-area-inset-right, 0px)));
+      padding-right: max(14px, env(safe-area-inset-right, 0px));
+      padding-top: calc(var(--pt) + 14px);
+    }
+    header .fold {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 64px;
+      height: 22px;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+    }
+    .fold span {
+      display: block;
+      width: 36px;
+      height: 4px;
+      margin: 8px auto 0;
+      border-radius: 999px;
+      background: var(--line);
+      transition: background 0.2s;
+    }
+    .fold:hover span {
+      background: var(--muted);
     }
   }
   /* the title and the mode switch share a row, the switch right-aligned */
@@ -322,6 +369,30 @@
   }
   .stage {
     display: grid;
+  }
+  .stage.folded {
+    display: none;
+  }
+  /* the header sticks to the top of the scrolling content; it reaches out over the content's padding
+     so nothing shows above it, and a hairline fades in once content is under it */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 -24px 0 calc(-1 * var(--pl));
+    padding: var(--pt) 24px 12px var(--pl);
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  header.scrolled {
+    border-bottom-color: var(--line);
+  }
+  /* the grab handle that folds the sheet on phones */
+  .fold {
+    display: none;
   }
   .view {
     grid-area: 1 / 1;
@@ -339,7 +410,7 @@
   h1 {
     font-weight: 600;
     font-size: 1.6rem;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.025em;
     line-height: 1.15;
     margin: 0;
   }

@@ -132,9 +132,11 @@ class UnitGuide {
 }
 export const unitGuide = new UnitGuide();
 
+// a drag step counts as done only while the point sits on its target, and goes back to undone when
+// it is moved off
 $effect.root(() => {
   $effect(() => {
-    if (unitGuide.atTarget) unitGuide.solved = true;
+    if (unitGuide.step.task.kind === 'drag') unitGuide.solved = unitGuide.atTarget;
   });
 });
 
