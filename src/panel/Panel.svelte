@@ -106,15 +106,17 @@
 {/snippet}
 
 <aside class="panel" bind:clientWidth={w} bind:clientHeight={h}>
-  <!-- the blur hugs the content: it ends a little below the last element and fades out past the
-       panel edge -->
+  <!-- the blur hugs the content: it fades out past the panel's edge and below its last element
+       the same way, each layer a little further out, so neither edge is a hard line -->
   <div
     class="blur"
     aria-hidden="true"
     style:--content-h="{blurH.current}px"
     style:--head="{blurHead.current}px"
   >
-    {#each LAYERS as [b, a, z]}<div style="--b:{b}px;--a:{a}%;--z:{z}%"></div>{/each}
+    {#each LAYERS as [b, a, z]}<div
+        style="--b:{b}px;--a:{a}%;--z:{z}%;--ya:{(100 - a) / 50};--yz:{(100 - z) / 50}"
+      ></div>{/each}
     <div class="tint"></div>
   </div>
   <div class="content" bind:clientHeight={contentH}>
@@ -205,7 +207,7 @@
     pointer-events: none;
     --dir: to right;
     --side: 36px;
-    --below: 12px;
+    --below: 72px;
   }
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .panel {
@@ -239,12 +241,22 @@
   .blur > div:not(.tint) {
     -webkit-backdrop-filter: blur(var(--b));
     backdrop-filter: blur(var(--b));
+    /* the bottom fades with the same stagger as the side (--ya, --yz: how far up from the bottom of
+       the feather each layer is solid, and gone), and the two fades multiply into a soft corner */
     -webkit-mask-image:
       linear-gradient(var(--dir), #000 var(--a), transparent var(--z)),
-      linear-gradient(to bottom, #000 calc(100% - var(--below)), transparent);
+      linear-gradient(
+        to bottom,
+        #000 calc(100% - var(--below) * var(--ya)),
+        transparent calc(100% - var(--below) * var(--yz))
+      );
     mask-image:
       linear-gradient(var(--dir), #000 var(--a), transparent var(--z)),
-      linear-gradient(to bottom, #000 calc(100% - var(--below)), transparent);
+      linear-gradient(
+        to bottom,
+        #000 calc(100% - var(--below) * var(--ya)),
+        transparent calc(100% - var(--below) * var(--yz))
+      );
     -webkit-mask-composite: source-in;
     mask-composite: intersect;
   }
@@ -254,8 +266,16 @@
       color-mix(in srgb, var(--bg) 45%, transparent) 55%,
       transparent 100%
     );
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--below)), transparent);
-    mask-image: linear-gradient(to bottom, #000 calc(100% - var(--below)), transparent);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - var(--below)),
+      transparent calc(100% - var(--below) * 0.3)
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - var(--below)),
+      transparent calc(100% - var(--below) * 0.3)
+    );
   }
   @media not ((min-width: 700px) and (min-aspect-ratio: 1/1)) {
     .blur > div:not(.tint) {
