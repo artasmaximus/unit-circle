@@ -5,10 +5,9 @@
 import { inverse } from './state.svelte.ts';
 import { partnerAt, type InvFn } from './math.ts';
 import { FNS, answerOf, iqKey, makeChoices, makeQ, pickQ, type IQ } from './quiz.ts';
-import type { Rich } from '../../core/rich.ts';
+import { Session, type Adapter } from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 
-const KEY = 'ucq-inv';
 /** How many in a row the exam wants. */
 export const EXAM_STREAK = 10;
 /** What the exam wants among its run: each function, and a composition question. */
@@ -45,129 +44,39 @@ function reveal(q: IQ) {
   if (q.t === 3) inverse.setAngle(q.ang);
 }
 
-export class InvSession {
-  readonly strict: boolean;
-  streak = $state(0);
-  best = $state(0);
-  missed = $state<IQ[]>([]);
-  cur = $state<IQ | null>(null);
-  /**
-   * The answer choices, as angles in degrees: they are written in the learner's unit when drawn, so
-   * switching unit mid-question just rewrites them.
-   */
-  choices = $state<number[]>([]);
-  answered = $state(false);
-  picked = $state<number | null>(null);
-  hint = $state(false);
-  ok = $state(false);
-  note = $state<Rich | string>('');
-  /** What this run has answered correctly (the exam wants every need). */
-  seen = $state<Need[]>([]);
-  /** The exam is passed: enough in a row, with every need among them. */
-  get passed() {
-    return (
-      this.strict && this.streak >= EXAM_STREAK && EXAM_NEEDS.every((n) => this.seen.includes(n))
-    );
-  }
-
-  constructor(strict: boolean) {
-    this.strict = strict;
-    if (strict) return;
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) {
-        this.best = s.best | 0;
-        this.missed = Array.isArray(s.missed) ? s.missed : [];
-      }
-    } catch {}
-  }
-  #save() {
-    if (this.strict) return;
-    try {
-      localStorage.setItem(KEY, JSON.stringify({ best: this.best, missed: this.missed }));
-    } catch {}
-  }
-
-  /** The exam's next question: steered to what the run still lacks once it is running short. */
-  #next(): IQ {
-    if (!this.strict) return pickQ(this.missed, this.cur);
-    const lacking = EXAM_NEEDS.filter((n) => !this.seen.includes(n));
-    if (lacking.length && EXAM_STREAK - this.streak <= lacking.length) {
-      const n = lacking[0];
-      return n === 'compose' ? makeQ({ t: 2 }) : makeQ({ fn: n });
-    }
-    let q: IQ,
-      k = 0;
-    do q = makeQ();
-    while (this.cur && iqKey(q) === iqKey(this.cur) && k++ < 8);
-    return q;
-  }
-  start(q: IQ = this.#next()) {
-    this.cur = q;
-    this.answered = false;
-    this.hint = false;
-    this.picked = null;
-    this.note = '';
-    this.choices = q.t === 3 ? [] : makeChoices(q);
-    stage(q);
-  }
-  resume() {
-    if (this.cur && !this.answered) stage(this.cur);
-    else if (this.cur) reveal(this.cur);
-  }
-  useHint() {
-    if (this.cur && !this.answered && !this.strict) {
-      this.hint = true;
-      inverse.showBand = true;
-    }
-  }
-  answer(i: number) {
-    const q = this.cur;
-    if (!q || q.t === 3 || this.answered) return;
-    this.picked = i;
-    this.#finish(this.choices[i] === answerOf(q));
-  }
-  /** Type 3: is the control where the question asked? */
-  check() {
-    const q = this.cur;
-    if (!q || q.t !== 3 || this.answered) return;
-    this.#finish(Math.abs(inverse.angle - q.ang) < 1.2);
-  }
-  #finish(ok: boolean) {
-    const q = this.cur!;
-    this.answered = true;
-    this.ok = ok;
-    this.note = '';
-    const at = this.missed.findIndex((m) => iqKey(m) === iqKey(q));
-    if (ok) {
-      if (!this.hint) {
-        this.streak++;
-        this.best = Math.max(this.best, this.streak);
-        const add = needsOf(q).filter((n) => !this.seen.includes(n));
-        if (add.length) this.seen = [...this.seen, ...add];
-      }
-      if (at >= 0) this.missed.splice(at, 1);
-    } else {
-      this.streak = 0;
-      if (this.strict) this.seen = [];
-      else if (at < 0) this.missed.push(q);
-    }
-    this.#save();
-    reveal(q);
-    if (this.passed) progress.complete('inverse');
-  }
-  /** Begin the exam run afresh (leaving and coming back does not keep a half-finished run). */
-  reset() {
-    this.streak = 0;
-    this.seen = [];
-    this.cur = null;
-    this.answered = false;
-  }
-}
+const adapter: Adapter<IQ, number> = {
+  storageKey: 'ucq-inv',
+  keyOf: iqKey,
+  make: pickQ,
+  // the choices are angles in degrees, written in the learner's unit when drawn, so switching unit
+  // mid-question just rewrites them
+  choices: (q) => (q.t === 3 ? [] : makeChoices(q)),
+  isRight: (q, deg) => q.t !== 3 && deg === answerOf(q),
+  // type 3: is the control where the question asked?
+  check: (q) => q.t === 3 && Math.abs(inverse.angle - q.ang) < 1.2,
+  stage,
+  reveal,
+  onHint: () => (inverse.showBand = true),
+  exam: {
+    streak: EXAM_STREAK,
+    needs: EXAM_NEEDS,
+    needsOf: needsOf,
+    make: (need, cur) => {
+      if (need) return need === 'compose' ? makeQ({ t: 2 }) : makeQ({ fn: need as InvFn });
+      let q: IQ,
+        k = 0;
+      do q = makeQ();
+      while (cur && iqKey(q) === iqKey(cur) && k++ < 8);
+      return q;
+    },
+    onPass: () => progress.complete('inverse'),
+  },
+};
+export type InvSession = Session<IQ, number>;
 
 /** Practice, and the Guide's exam. */
-export const invQuiz = new InvSession(false);
-export const invExam = new InvSession(true);
+export const invQuiz: InvSession = new Session(adapter);
+export const invExam: InvSession = new Session(adapter, true);
 
 /** Put the plane back as the exploration leaves it. */
 export function explorePlane() {

@@ -7,6 +7,10 @@
   import { inverse } from './topics/inverse/state.svelte.ts';
   import { point } from './core/point.svelte.ts';
   import { quiz } from './topics/circle/quiz.svelte.ts';
+  import { invQuiz } from './topics/inverse/quiz.svelte.ts';
+  import { inverseGuideRun } from './topics/inverse/guide.svelte.ts';
+  import { unitGuide } from './topics/circle/guide.svelte.ts';
+  import { radians } from './topics/radians/state.svelte.ts';
   import { ui } from './core/app.svelte.ts';
   import { nudge } from './plane/handles.svelte.ts';
   import { fade } from 'svelte/transition';
@@ -29,7 +33,19 @@
   // flushSync() (dropped from production builds)
   if (import.meta.env.DEV)
     import('svelte').then(
-      ({ flushSync }) => ((window as any).__uc = { point, inverse, ui, camera, flushSync }),
+      ({ flushSync }) =>
+        ((window as any).__uc = {
+          point,
+          inverse,
+          ui,
+          camera,
+          flushSync,
+          quiz,
+          invQuiz,
+          radians,
+          unitGuide,
+          inverseGuideRun,
+        }),
     );
 
   // arrow keys go to whatever the topic offers to move: the point, or in inverse trig the value,

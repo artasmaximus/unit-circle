@@ -1,5 +1,5 @@
-/* The practice screens' shared styles (Radians uses them; Quiz and InverseQuiz still carry their
-   own copies). Everything is under .quiz. */
+/* The shared styles of the Practice screen (Practice.svelte), for Practice and every exam. Everything
+   is under .quiz. */
 .quiz {
   display: grid;
   gap: 16px;

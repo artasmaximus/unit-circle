@@ -1,107 +1,77 @@
-// The unit circle's Practice: the streak, the best run, missed questions, and the question being
-// answered. Question content itself is pure and lives in quiz.ts.
+// The unit circle's Practice and its Guide exam: a run of questions (see practice/session.svelte.ts)
+// and how each question sets up the plane. Question content itself is pure and lives in quiz.ts.
 import { angleTex } from '../../core/angles.ts';
 import { ui, withPen } from '../../core/app.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
-import type { Rich } from '../../core/rich.ts';
+import { SPECIAL, type Fn } from '../../core/trig.ts';
+import { Session, type Adapter } from '../../practice/session.svelte.ts';
 import { makeChoices, pickQ, qKey, trigTexAnswer, type Question } from './quiz.ts';
 
-type Saved = { best: number; missed: Question[] };
-function load(): Saved {
-  try {
-    const s = JSON.parse(localStorage.getItem('ucq') || 'null');
-    if (s) return { best: s.best | 0, missed: Array.isArray(s.missed) ? s.missed : [] };
-  } catch {}
-  return { best: 0, missed: [] };
-}
-class Quiz {
-  streak = $state(0);
-  best = $state(0);
-  missed = $state<Question[]>([]);
-  cur = $state<Question | null>(null);
-  choices = $state<string[]>([]);
-  answered = $state(false);
-  /** Choice the learner picked (type 1), for marking it wrong. */
-  picked = $state<number | null>(null);
-  found = $state<number[]>([]);
-  hint = $state(false);
-  ok = $state(false);
-  /** Short message in the action row (progress on type 2, "already found that one"). */
-  note = $state<Rich | string>('');
+/** How many in a row the exam wants, and the functions it wants among them. */
+export const EXAM_STREAK = 10;
+export const EXAM_FNS: Fn[] = ['sin', 'cos', 'tan'];
+const rnd = (n: number) => Math.floor(Math.random() * n);
 
-  constructor() {
-    const s = load();
-    this.best = s.best;
-    this.missed = s.missed;
-  }
-  #save() {
-    try {
-      localStorage.setItem('ucq', JSON.stringify({ best: this.best, missed: this.missed }));
-    } catch {}
-  }
-
-  start(q: Question = pickQ(this.missed, this.cur)) {
-    this.cur = q;
-    this.answered = false;
-    this.found = [];
-    this.hint = false;
-    this.picked = null;
-    this.note = '';
-    this.choices = q.t === 1 ? makeChoices(q) : [];
-    withPen(() => {
-      ui.highlight = [];
-      ui.revealed = false;
-    });
-  }
-  useHint() {
-    if (this.cur && !this.answered) this.hint = true;
-  }
-  answer(i: number) {
-    const q = this.cur;
-    if (!q || q.t !== 1 || this.answered) return;
-    this.picked = i;
-    this.#finish(this.choices[i] === trigTexAnswer(q));
-  }
-  /** Type 2: is the point on one of the solutions? */
-  check() {
-    const q = this.cur;
-    if (!q || q.t !== 2 || this.answered) return;
-    const d = point.deg,
-      hit = q.sols.find((s) => Math.min(Math.abs(d - s), 360 - Math.abs(d - s)) < 1.2);
-    if (hit === undefined) return this.#finish(false);
-    if (this.found.includes(hit)) {
-      this.note = 'You already found that one. Look for the other angle.';
-      return;
-    }
-    this.found.push(hit);
-    ui.highlight = [...this.found];
-    if (this.found.length === q.sols.length) this.#finish(true);
-    else this.note = ['Yes, ', { m: angleTex(hit, progress.unit) }, '. Now find the other angle.'];
-  }
-  #finish(ok: boolean) {
-    const q = this.cur!;
-    this.answered = true;
-    this.ok = ok;
-    this.note = '';
-    const at = this.missed.findIndex((m) => qKey(m) === qKey(q));
-    if (ok) {
-      if (!this.hint) {
-        this.streak++;
-        this.best = Math.max(this.best, this.streak);
+/**
+ * Practice hides the answer on the plane until the question is answered; the exam only moves the
+ * point to the answer.
+ */
+function adapter(strict: boolean): Adapter<Question, string> {
+  return {
+    storageKey: 'ucq',
+    keyOf: qKey,
+    make: pickQ,
+    choices: (q) => (q.t === 1 ? makeChoices(q) : []),
+    isRight: (q, c) => q.t === 1 && c === trigTexAnswer(q),
+    // type 2: is the point on one of the solutions?
+    check: (q, s) => {
+      if (q.t !== 2) return null;
+      const d = point.deg,
+        hit = q.sols.find((a) => Math.min(Math.abs(d - a), 360 - Math.abs(d - a)) < 1.2);
+      if (hit === undefined) return false;
+      if (s.found.includes(hit)) {
+        s.note = 'You already found that one. Look for the other angle.';
+        return null;
       }
-      if (at >= 0) this.missed.splice(at, 1);
-    } else {
-      this.streak = 0;
-      if (at < 0) this.missed.push(q);
-    }
-    this.#save();
-    if (q.t === 1) point.set(q.a, true);
-    else {
-      ui.highlight = [...q.sols];
-      point.set(q.sols.find((s) => !this.found.includes(s)) ?? q.sols[q.sols.length - 1], true);
-    }
-    withPen(() => (ui.revealed = true));
-  }
+      s.found.push(hit);
+      ui.highlight = [...s.found];
+      if (s.found.length === q.sols.length) return true;
+      s.note = ['Yes, ', { m: angleTex(hit, progress.unit) }, '. Now find the other angle.'];
+      return null;
+    },
+    stage: () => {
+      if (strict) return;
+      withPen(() => {
+        ui.highlight = [];
+        ui.revealed = false;
+      });
+    },
+    reveal: (q, _ok, s) => {
+      if (q.t === 1) point.set(q.a, true);
+      else {
+        ui.highlight = [...q.sols];
+        point.set(q.sols.find((a) => !s.found.includes(a)) ?? q.sols[q.sols.length - 1], true);
+      }
+      if (!strict) withPen(() => (ui.revealed = true));
+    },
+    // the exam: exact values of sin, cos and tan at the special angles, ten in a row
+    exam: {
+      streak: EXAM_STREAK,
+      needs: EXAM_FNS,
+      needsOf: (q) => [q.fn],
+      make: (need, cur) => {
+        let q: Question,
+          n = 0;
+        do q = { t: 1, fn: (need as Fn) ?? EXAM_FNS[rnd(3)], a: SPECIAL[rnd(SPECIAL.length)] };
+        while (cur && qKey(q) === qKey(cur) && n++ < 8);
+        return q;
+      },
+      onPass: () => progress.complete('circle'),
+    },
+  };
 }
-export const quiz = new Quiz();
+
+export type QuizSession = Session<Question, string>;
+export const quiz: QuizSession = new Session(adapter(false));
+export const quizExam: QuizSession = new Session(adapter(true), true);

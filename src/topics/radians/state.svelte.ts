@@ -5,6 +5,7 @@ import { RADIANS_GUIDE } from './guideSteps.ts';
 import type { Step } from '../../guide/guide.ts';
 import { type Feature } from './features.ts';
 import { R_TYPES, makeRQ, pickRQ, rChoices, rqKey, type RQ } from './quiz.ts';
+import { Session as PracticeSession, type Adapter } from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
@@ -19,125 +20,38 @@ const PRACTICE = new Set<Feature>(['ray', 'slices']);
 
 /** How many in a row the exam wants. */
 export const EXAM_STREAK = 10;
-const KEY = 'ucq-rad';
 
-/**
- * A run of Radians questions. Practice is forgiving (hints, a saved best and a missed list); the
- * exam is strict (no hints, ten in a row with every type seen).
- */
-export class Session {
-  readonly strict: boolean;
-  streak = $state(0);
-  best = $state(0);
-  missed = $state<RQ[]>([]);
-  cur = $state<RQ | null>(null);
-  /**
-   * For the two conversion types: the choices as numbers (degrees), written in the right unit when
-   * drawn.
-   */
-  choices = $state<number[]>([]);
-  answered = $state(false);
-  picked = $state<number | null>(null);
-  hint = $state(false);
-  ok = $state(false);
-  /** The question types answered correctly in this run (the exam wants every type). */
-  seen = $state<number[]>([]);
-  /** The exam is passed: enough in a row, every type among them. */
-  get passed() {
-    return this.strict && this.streak >= EXAM_STREAK && R_TYPES.every((t) => this.seen.includes(t));
-  }
-
-  constructor(strict: boolean) {
-    this.strict = strict;
-    if (!strict) {
-      try {
-        const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-        if (s) {
-          this.best = s.best | 0;
-          this.missed = Array.isArray(s.missed) ? s.missed : [];
-        }
-      } catch {}
-    }
-  }
-  #save() {
-    if (!this.strict) {
-      try {
-        localStorage.setItem(KEY, JSON.stringify({ best: this.best, missed: this.missed }));
-      } catch {}
-    }
-  }
-
-  /**
-   * The next type the exam still needs, so a run of ten cannot go without one (the last questions
-   * are steered to what is missing).
-   */
-  #needed(): RQ | null {
-    if (!this.strict) return null;
-    const left = EXAM_STREAK - this.streak,
-      lacking = R_TYPES.filter((t) => !this.seen.includes(t));
-    if (!lacking.length || left > lacking.length) return null;
-    const t = lacking[0],
-      q = makeRQ();
-    return { t, deg: q.deg };
-  }
-  start(q: RQ | null = null) {
-    const next = q ?? this.#needed() ?? (this.strict ? makeRQ() : pickRQ(this.missed, this.cur));
-    this.cur = next;
-    this.answered = false;
-    this.picked = null;
-    this.hint = false;
-    this.choices = next.t === 3 ? [] : rChoices(next as RQ & { t: 1 | 2 });
-    // a placing question starts with the point out of the way, so the angle is not already there
-    if (next.t === 3) point.set(next.deg > 180 ? 20 : 340, true);
-  }
-  useHint() {
-    if (this.cur && !this.answered && !this.strict) this.hint = true;
-  }
-  answer(i: number) {
-    const q = this.cur;
-    if (!q || q.t === 3 || this.answered) return;
-    this.picked = i;
-    this.#finish(this.choices[i] === q.deg);
-  }
-  /** Placing: is the point at the angle? */
-  check() {
-    const q = this.cur;
-    if (!q || q.t !== 3 || this.answered) return;
-    this.#finish(Math.abs(wrapPi(rad(point.deg) - rad(q.deg))) < rad(1.5));
-  }
-  #finish(ok: boolean) {
-    const q = this.cur!;
-    this.answered = true;
-    this.ok = ok;
-    const at = this.missed.findIndex((m) => rqKey(m) === rqKey(q));
-    if (ok) {
-      if (!this.hint) {
-        this.streak++;
-        this.best = Math.max(this.best, this.streak);
-        if (!this.seen.includes(q.t)) this.seen = [...this.seen, q.t];
-      }
-      if (at >= 0) this.missed.splice(at, 1);
-    } else {
-      this.streak = 0;
-      if (this.strict) this.seen = [];
-      if (!this.strict && at < 0) this.missed.push(q);
-    }
-    this.#save();
-    point.set(q.deg, true);
-    if (this.passed) progress.complete('radians');
-  }
-  /** Begin the exam run afresh (leaving and coming back does not keep a half-finished run). */
-  reset() {
-    this.streak = 0;
-    this.seen = [];
-    this.cur = null;
-    this.answered = false;
-  }
-}
+/** Practice and the exam: a run of Radians questions (see practice/session.svelte.ts). */
+const adapter: Adapter<RQ, number> = {
+  storageKey: 'ucq-rad',
+  keyOf: rqKey,
+  make: pickRQ,
+  // for the two conversion types, the choices are degrees, written in the right unit when drawn
+  choices: (q) => (q.t === 3 ? [] : rChoices(q as RQ & { t: 1 | 2 })),
+  isRight: (q, deg) => deg === q.deg,
+  // placing: is the point at the angle?
+  check: (q) => Math.abs(wrapPi(rad(point.deg) - rad(q.deg))) < rad(1.5),
+  // a placing question starts with the point out of the way, so the angle is not already there
+  stage: (q) => {
+    if (q.t === 3) point.set(q.deg > 180 ? 20 : 340, true);
+  },
+  reveal: (q) => point.set(q.deg, true),
+  exam: {
+    streak: EXAM_STREAK,
+    needs: R_TYPES.map(String),
+    needsOf: (q) => [String(q.t)],
+    make: (need) => {
+      const q = makeRQ();
+      return need ? { t: +need as RQ['t'], deg: q.deg } : q;
+    },
+    onPass: () => progress.complete('radians'),
+  },
+};
+export type Session = PracticeSession<RQ, number>;
 
 class Radians {
-  practice = new Session(false);
-  exam = new Session(true);
+  practice: Session = new PracticeSession(adapter);
+  exam: Session = new PracticeSession(adapter, true);
   /** Which Guide step the learner is on, and whether its task is done. */
   stepIndex = $state(0);
   /** How many times a step's animation has been replayed; keys its marks so they draw again. */
