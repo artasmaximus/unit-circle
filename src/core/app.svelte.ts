@@ -37,6 +37,8 @@ export type TopicDef = {
   layers: { component: Component<any>; props?: Record<string, unknown>; under?: boolean }[];
   /** Floating over the plane (the unit circle's chips); mounted always, shows itself. */
   overlay?: Component;
+  /** What switching mode, arriving and leaving mean for the topic (its state lives in its folder). */
+  hooks: TopicHooks;
   /** The angle readout in the plane's corner: absent, or the unit it insists on. */
   angleInput?: () => { unit?: Unit } | null;
   /** How the shared ring is written while this topic shows. */
@@ -58,10 +60,8 @@ export const ui = $state({
   topic: HOME,
   /** A learner who has not finished the unit circle's Guide starts in it. */
   mode: (progress.completed.circle ? 'practice' : 'guide') as Mode,
-  mirror: false,
   /** In Practice, answers stay hidden until the question is answered. */
   revealed: true,
-  slopeOpen: false,
   /** Snap points drawn larger: the angles found in Practice. */
   highlight: [] as number[],
 });
@@ -107,30 +107,34 @@ export function withPen(change: () => void, force = false) {
   }
 }
 
-/**
- * Topics other than the unit circle keep their state in their own modules, and register here what a
- * mode or topic switch means for them.
- */
+/** A topic's state lives in its own folder; these say what a mode or topic switch means for it. */
 export type TopicHooks = {
-  /** Switching mode inside the topic. */
+  /** Set the topic up for a mode: on arriving, and whenever the mode changes inside it. */
   mode(m: Mode): void;
-  /** Arriving at the topic, in the mode the app is in. */
-  enter(m: Mode): void;
+  /** Arriving at the topic, in the mode it opens in, before `mode` runs. */
+  enter?(m: Mode): void;
   /** Leaving the topic for `to`, before the switch plays. */
   leave?(to: Topic, m: Mode): void;
 };
-export const topicHooks: Partial<Record<Topic, TopicHooks>> = {};
+
+/** Set the topic the app opens on up for the mode it opens in. */
+export function startApp() {
+  topicDef(ui.topic).hooks.mode(ui.mode);
+}
 
 export function setTopic(t: Topic) {
   if (ui.topic === t) return;
-  topicHooks[ui.topic]?.leave?.(t, ui.mode);
+  topicDef(ui.topic).hooks.leave?.(t, ui.mode);
   withPen(() => {
     ui.topic = t;
-    ui.slopeOpen = false;
     ui.highlight = [];
-    // a topic without a Guide cannot be in Guide mode
-    if (ui.mode === 'guide' && !hasGuide(t)) ui.mode = 'explore';
-    topicHooks[t]?.enter(ui.mode);
+    // a topic with a Guide opens in it until the Guide is done; after that in whichever mode was
+    // last used, and a topic without a Guide cannot be in Guide mode
+    if (hasGuide(t) && !progress.completed[t]) ui.mode = 'guide';
+    else if (ui.mode === 'guide') ui.mode = 'explore';
+    const hooks = topicDef(t).hooks;
+    hooks.enter?.(ui.mode);
+    hooks.mode(ui.mode);
   }, true);
 }
 
@@ -138,6 +142,6 @@ export function setMode(m: Mode) {
   if (m === 'guide' && !hasGuide(ui.topic)) return;
   withPen(() => {
     ui.mode = m;
-    topicHooks[ui.topic]?.mode(m);
+    topicDef(ui.topic).hooks.mode(m);
   });
 }

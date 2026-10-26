@@ -1,5 +1,6 @@
 // Radians, as the shell sees it (see TopicDef in core/app.svelte.ts).
 import Ruler from '@lucide/svelte/icons/ruler';
+import { radiansHooks } from './state.svelte.ts';
 import type { TopicDef } from '../../core/app.svelte.ts';
 import RadiansGuide from './RadiansGuide.svelte';
 import RadiansLayer from './RadiansLayer.svelte';
@@ -11,6 +12,7 @@ export const radiansTopic: TopicDef = {
   id: 'radians',
   title: 'Radians',
   tab: { label: 'Radians', icon: Ruler },
+  hooks: radiansHooks,
   views: { guide: RadiansGuide, explore: RadiansPanel, practice: RadiansPractice },
   layers: [
     { component: RadiansLayer, props: { under: true }, under: true },

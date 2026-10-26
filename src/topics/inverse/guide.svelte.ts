@@ -8,7 +8,7 @@ import { explorePlane, invExam, invQuiz } from './quiz.svelte.ts';
 import type { Step } from '../../guide/guide.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
-import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
+import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { norm, rad, wrapPi } from '../../core/trig.ts';
 import type { InvFn } from './math.ts';
 
@@ -118,16 +118,12 @@ function apply(m: Mode) {
   if (!invQuiz.cur || invQuiz.answered) invQuiz.start();
   else invQuiz.resume();
 }
-topicHooks.inverse = {
+export const inverseHooks: TopicHooks = {
   mode: apply,
+  // arriving in the exploration, the control takes on the unit circle's angle and slides to where
+  // it lives here
   enter: (m) => {
-    // like the other topics: until its Guide is done the topic opens in it; after that, in
-    // whichever mode was last used
-    ui.mode = !progress.completed.inverse ? 'guide' : m === 'guide' ? 'explore' : m;
-    // arriving in the exploration, the control takes on the unit circle's angle and slides to
-    // where it lives here
-    if (ui.mode === 'explore') inverse.adopt(point.deg);
-    apply(ui.mode);
+    if (m === 'explore') inverse.adopt(point.deg);
   },
   // leaving the exploration for the unit circle, its point takes the control's angle and slides to it
   leave: (to, m) => {

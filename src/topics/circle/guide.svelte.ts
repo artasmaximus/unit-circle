@@ -7,7 +7,8 @@ import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { quiz, quizExam } from './quiz.svelte.ts';
 import { solver } from '../../solver/solver.svelte.ts';
-import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
+import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
+import { circleUi } from './ui.svelte.ts';
 import { norm, rad, wrapPi } from '../../core/trig.ts';
 import type { Feature } from './features.ts';
 
@@ -91,14 +92,8 @@ function apply(m: Mode) {
     solver.close();
   }
 }
-topicHooks.circle = {
+export const circleHooks: TopicHooks = {
   mode: apply,
-  enter: (m) => {
-    // like Radians: until its Guide is done the topic opens in it; after that, in whichever mode
-    // was last used
-    ui.mode = !progress.completed.circle ? 'guide' : m === 'guide' ? 'explore' : m;
-    apply(ui.mode);
-  },
+  // the slope chip's open working does not follow the learner to another topic
+  leave: () => (circleUi.slopeOpen = false),
 };
-// the app opens on the unit circle: a learner who has not finished its Guide starts there
-if (ui.topic === 'circle' && ui.mode === 'guide') apply('guide');

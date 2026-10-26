@@ -11,7 +11,7 @@
   import { inverseGuideRun } from './topics/inverse/guide.svelte.ts';
   import { unitGuide } from './topics/circle/guide.svelte.ts';
   import { radians } from './topics/radians/state.svelte.ts';
-  import { topics, ui } from './core/app.svelte.ts';
+  import { startApp, topics, ui } from './core/app.svelte.ts';
   import { nudge } from './plane/handles.svelte.ts';
   import Grid from './plane/Grid.svelte';
   import RingLayer from './plane/RingLayer.svelte';
@@ -20,7 +20,7 @@
   const lab =
     typeof location !== 'undefined' && new URLSearchParams(location.search).get('lab') === 'solver';
 
-  if (!lab && ui.mode === 'practice') quiz.start();
+  if (!lab) startApp();
 
   // dev only: handles for timing a frame from the browser console, e.g. set point.ang, then time
   // flushSync() (dropped from production builds)

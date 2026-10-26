@@ -8,7 +8,7 @@ import { R_TYPES, makeRQ, pickRQ, rChoices, rqKey, type RQ } from './quiz.ts';
 import { Session as PracticeSession, type Adapter } from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
-import { topicHooks, ui, type Mode } from '../../core/app.svelte.ts';
+import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { wrapPi, rad } from '../../core/trig.ts';
 
 const ALL = new Set<Feature>(['ray', 'pi', 'slices', 'readout']);
@@ -147,12 +147,4 @@ function apply(m: Mode) {
   else if (m === 'practice' && (!radians.practice.cur || radians.practice.answered))
     radians.practice.start();
 }
-topicHooks.radians = {
-  mode: apply,
-  enter: (m) => {
-    // a topic that has not been completed opens in its Guide; after that it opens in whichever mode
-    // was last used
-    ui.mode = !progress.completed.radians ? 'guide' : m === 'guide' ? 'explore' : m;
-    apply(ui.mode);
-  },
-};
+export const radiansHooks: TopicHooks = { mode: apply };

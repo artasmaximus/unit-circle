@@ -3,12 +3,12 @@
 <script lang="ts">
   import { scale } from 'svelte/transition';
   import { camera } from '../../core/camera.svelte.ts';
-  import { ui } from '../../core/app.svelte.ts';
+  import { circleUi } from './ui.svelte.ts';
   import { CHIP_FONT, type Chip, type Layout } from './layout.ts';
   import Tex from '../../ui/Tex.svelte';
   let { layout }: { layout: Layout } = $props();
   let slopeEl = $state<HTMLButtonElement>();
-  const close = () => (ui.slopeOpen = false);
+  const close = () => (circleUi.slopeOpen = false);
 
   const box = (c: Chip) => {
     const k = camera.k;
@@ -18,10 +18,10 @@
 
 <svelte:window
   onpointerdown={(e) => {
-    if (ui.slopeOpen && !slopeEl?.contains(e.target as Node)) close();
+    if (circleUi.slopeOpen && !slopeEl?.contains(e.target as Node)) close();
   }}
   onkeydown={(e) => {
-    if (e.key === 'Escape' && ui.slopeOpen) close();
+    if (e.key === 'Escape' && circleUi.slopeOpen) close();
   }}
 />
 
@@ -47,9 +47,9 @@
       type="button"
       class="chip slope"
       style={box(layout.slope)}
-      aria-expanded={ui.slopeOpen}
+      aria-expanded={circleUi.slopeOpen}
       aria-label="Slope: click to show the calculation"
-      onclick={() => (ui.slopeOpen = !ui.slopeOpen)}
+      onclick={() => (circleUi.slopeOpen = !circleUi.slopeOpen)}
       onblur={close}
       transition:scale={{ start: 0.6, duration: 200 }}
     >

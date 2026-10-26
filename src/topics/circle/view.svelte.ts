@@ -8,6 +8,7 @@ import { progress } from '../../core/progress.svelte.ts';
 import { preview } from '../../plane/pointHandle.svelte.ts';
 import { buildLayout } from './layout.ts';
 import { quiz } from './quiz.svelte.ts';
+import { circleUi } from './ui.svelte.ts';
 
 class CircleView {
   #memo = { b: -1 };
@@ -18,10 +19,10 @@ class CircleView {
       dotR: point.dotR,
       tail: point.tail,
       revealed: revealed(),
-      mirror: ui.mirror,
+      mirror: circleUi.mirror,
       mirrorOnly: ui.mode === 'practice' && quiz.cur ? quiz.cur.fn : null,
       showCoords: revealed() || (ui.mode === 'practice' && quiz.hint),
-      slopeOpen: ui.slopeOpen,
+      slopeOpen: circleUi.slopeOpen,
       k: camera.k,
       boost: camera.textBoost,
       labelBoost: camera.labelBoost,

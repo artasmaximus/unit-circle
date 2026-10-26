@@ -421,15 +421,17 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
     );
   }
 
-  // ---- the radius, labelled 1 on the side away from the triangle
+  // ---- the radius, labelled 1 on the side away from the triangle (the triangle is on the x-axis
+  // side of the radius, which is the side s·c points to; the label takes the other)
   if (f.has('hyp')) {
+    const away = s * c > 0 ? -1 : s * c < 0 ? 1 : -1;
     add(
       Label(
         'ug:hyp',
         {
           tex: '1',
           size: 11,
-          at: [px / 2 - s * 12 * sw, py / 2 - c * 12 * sw],
+          at: [px / 2 + away * s * 12 * sw, py / 2 + away * c * 12 * sw],
           color: 'var(--fg)',
           back: true,
           z: 9,
