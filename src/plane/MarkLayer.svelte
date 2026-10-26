@@ -9,8 +9,10 @@
   import { DEFAULTS, drawCurve, popCurve, verbFor, type Mark } from './marks.ts';
   import { reduce } from '../core/transition.ts';
   import SvgTex from '../ui/SvgTex.svelte';
+  import { recordMarks } from '../dev/motion.ts';
 
-  let { marks }: { marks: Mark[] } = $props();
+  /** `name` says which layer this is, for the dev motion log. */
+  let { marks, name = '' }: { marks: Mark[]; name?: string } = $props();
 
   class Entry {
     mark = $state.raw<Mark>(undefined as unknown as Mark);
@@ -105,6 +107,9 @@
     untrack(() => {
       const seen = new Set<string>();
       let added = false;
+      const log = import.meta.env.DEV
+        ? { a: [] as string[], r: [] as string[], c: [] as string[] }
+        : null;
       for (const m of list) {
         seen.add(m.key);
         let e = live.get(m.key);
@@ -113,10 +118,19 @@
           live.set(m.key, e);
           added = true;
           e.update(m);
-        } else if (!e.leaving) e.update(m);
+          log?.a.push(m.key);
+        } else if (!e.leaving) {
+          if (log && !same(e.mark, m)) log.c.push(m.key);
+          e.update(m);
+        }
         e.show();
       }
-      for (const [k, e] of live) if (!seen.has(k)) e.hide();
+      for (const [k, e] of live)
+        if (!seen.has(k)) {
+          if (log && !e.leaving) log.r.push(k);
+          e.hide();
+        }
+      if (log) recordMarks(name, log.a, log.r, log.c);
       if (added) order();
     });
   });

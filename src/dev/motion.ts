@@ -1,0 +1,50 @@
+// Dev-only motion log: what each mark layer did while the app moved from one state to another. The
+// mark layer reports every frame in which marks entered, left or changed; `begin` / `end` bracket a
+// switch, and `end` says, per layer, how many marks entered, left and changed, which kinds of mark
+// those were (a key's first part), and how long the layer kept moving. The browser console reads
+// it as `__motion`; nothing here runs in a production build.
+type Frame = { layer: string; t: number; added: string[]; removed: string[]; changed: string[] };
+
+let frames: Frame[] = [];
+let t0 = 0;
+let on = false;
+
+export function recordMarks(layer: string, added: string[], removed: string[], changed: string[]) {
+  if (!on || !(added.length || removed.length || changed.length)) return;
+  frames.push({ layer, t: performance.now() - t0, added, removed, changed });
+}
+
+const kind = (key: string) => key.split(':').slice(0, 2).join(':');
+const kinds = (keys: Set<string>) => [...new Set([...keys].map(kind))].sort();
+
+export const motion = {
+  begin() {
+    frames = [];
+    t0 = performance.now();
+    on = true;
+  },
+  /** Per layer: marks that entered, left and changed, their kinds, and the span the layer moved over. */
+  end() {
+    on = false;
+    const out: Record<
+      string,
+      { in: number; out: number; changed: number; kinds: string[]; spanMs: number }
+    > = {};
+    for (const layer of new Set(frames.map((f) => f.layer))) {
+      const fs = frames.filter((f) => f.layer === layer);
+      const a = new Set(fs.flatMap((f) => f.added)),
+        r = new Set(fs.flatMap((f) => f.removed)),
+        c = new Set(fs.flatMap((f) => f.changed));
+      out[layer] = {
+        in: a.size,
+        out: r.size,
+        changed: c.size,
+        kinds: kinds(new Set([...a, ...r, ...c])),
+        spanMs: Math.round(Math.max(...fs.map((f) => f.t)) - Math.min(...fs.map((f) => f.t))),
+      };
+    }
+    return out;
+  },
+};
+
+if (import.meta.env.DEV && typeof window !== 'undefined') (window as any).__motion = motion;

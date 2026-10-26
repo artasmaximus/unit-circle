@@ -40,4 +40,4 @@
   );
 </script>
 
-<MarkLayer {marks} />
+<MarkLayer {marks} name="inverse" />

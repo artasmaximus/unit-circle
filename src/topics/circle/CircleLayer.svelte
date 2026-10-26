@@ -29,4 +29,4 @@
   );
 </script>
 
-<MarkLayer {marks} />
+<MarkLayer {marks} name="circle" />

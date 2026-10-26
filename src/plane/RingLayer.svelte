@@ -28,4 +28,4 @@
   );
 </script>
 
-<MarkLayer {marks} />
+<MarkLayer {marks} name="ring" />
