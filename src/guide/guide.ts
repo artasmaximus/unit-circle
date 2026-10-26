@@ -10,7 +10,16 @@ import type { Rich } from '../core/rich.ts';
 export type Task =
   | { kind: 'read' }
   | { kind: 'choice'; prompt: Rich; choices: string[]; answer: number; right: Rich; wrong: Rich }
-  | { kind: 'drag'; prompt: Rich; deg: number; tol: number; right: Rich; also?: number[] }
+  | {
+      kind: 'drag';
+      prompt: Rich;
+      deg: number;
+      tol: number;
+      right: Rich;
+      also?: number[];
+      /** How to drag, when it is not the point round the circle (a value along an axis). */
+      how?: Rich;
+    }
   | { kind: 'exam' };
 
 export type Step<F extends string = string> = {

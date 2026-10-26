@@ -91,7 +91,7 @@
         <div class="task">
           <p class="ask"><Rich parts={t.prompt} /></p>
           {#if run.solved}<p class="fb good"><Rich parts={t.right} /></p>{:else}<p class="fb">
-              Drag the point round the edge of the circle.
+              <Rich parts={t.how ?? ['Drag the point round the edge of the circle.']} />
             </p>{/if}
         </div>
       {:else if t.kind === 'exam'}

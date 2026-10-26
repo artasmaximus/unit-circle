@@ -16,6 +16,7 @@
   import Reciprocals from '../topics/circle/Reciprocals.svelte';
   import InversePanel from '../topics/inverse/InversePanel.svelte';
   import InverseQuiz from '../topics/inverse/InverseQuiz.svelte';
+  import InverseGuide from '../topics/inverse/InverseGuide.svelte';
   import RadiansGuide from '../topics/radians/RadiansGuide.svelte';
   import UnitGuide from '../topics/circle/UnitGuide.svelte';
   import RadiansPanel from '../topics/radians/RadiansPanel.svelte';
@@ -152,7 +153,8 @@
           </div>
         {:else}<div class="view" in:fly={IN} out:fly={OUT}><RadiansPanel /></div>{/if}
       {:else if ui.topic === 'inverse'}
-        {#if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}>
+        {#if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><InverseGuide /></div>
+        {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}>
             <InverseQuiz />
           </div>
         {:else}<div class="view" in:fly={IN} out:fly={OUT}>

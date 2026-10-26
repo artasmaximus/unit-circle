@@ -5,7 +5,7 @@
 import type { Unit } from './angles.ts';
 
 const KEY = 'ucp';
-export type GuideTopic = 'radians' | 'circle';
+export type GuideTopic = 'radians' | 'circle' | 'inverse';
 type Saved = {
   radians: boolean;
   unit: Unit;

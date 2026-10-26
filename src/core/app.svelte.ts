@@ -13,7 +13,7 @@ export type Topic = 'circle' | 'inverse' | 'radians';
  */
 export type Mode = 'guide' | 'explore' | 'practice';
 /** The topics that have a Guide. */
-export const guideTopics: ReadonlySet<Topic> = new Set<Topic>(['radians', 'circle']);
+export const guideTopics: ReadonlySet<Topic> = new Set<Topic>(['radians', 'circle', 'inverse']);
 export const ui = $state({
   /** The concept on the plane, picked in the tab bar. */
   topic: 'circle' as Topic,

@@ -1,15 +1,24 @@
-<!-- The Inverse trig quiz: the same shape as the unit circle quiz (streak, a prompt, choices,
+<!-- A run of Inverse trig questions. Practice (hints, best, missed list) and the Guide's exam (no
+     hints, ten in a row with every function and a composition) are the same screen on two
+     sessions. The same shape as the unit circle quiz (streak, a prompt, choices,
      hint, why), with its own questions. -->
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { invQuiz as quiz } from './quiz.svelte.ts';
+  import { EXAM_NEEDS, EXAM_STREAK, invQuiz, type InvSession, type Need } from './quiz.svelte.ts';
   import { angleTex } from '../../core/angles.ts';
   import { progress } from '../../core/progress.svelte.ts';
   import { NOUN, answerOf, domainTex, explain, hintMsg, hintTip, qTex, task } from './quiz.ts';
   import Tex from '../../ui/Tex.svelte';
   import Rich from '../../ui/Rich.svelte';
 
-  let { trailing }: { trailing?: Snippet } = $props();
+  let { session = invQuiz, trailing }: { session?: InvSession; trailing?: Snippet } = $props();
+  const quiz = $derived(session);
+  const NEED_NAMES: Record<Need, string> = {
+    asin: 'arcsin',
+    acos: 'arccos',
+    atan: 'arctan',
+    compose: 'arcsin(sin θ)',
+  };
   let showMissed = $state(false);
   const q = $derived(quiz.cur);
   const unit = $derived(progress.unit);
@@ -30,17 +39,28 @@
 />
 
 {#if q}
-  <section class="quiz" aria-label="Inverse trig practice">
+  <section class="quiz" aria-label={quiz.strict ? 'Inverse trig exam' : 'Inverse trig practice'}>
     <div class="hud">
-      <span class="pill" style="--c:var(--ok)">Streak <b>{quiz.streak}</b></span>
-      <span class="pill" style="--c:var(--slope)">Best <b>{quiz.best}</b></span>
-      <button
-        class="pill"
-        style="--c:var(--bad)"
-        disabled={!quiz.missed.length}
-        aria-expanded={showMissed}
-        onclick={() => (showMissed = !showMissed)}>Missed <b>{quiz.missed.length}</b></button
-      >
+      {#if quiz.strict}
+        <span class="pill" style="--c:var(--slope)"
+          >In a row <b>{quiz.streak} of {EXAM_STREAK}</b></span
+        >
+        {#each EXAM_NEEDS as n}<span
+            class="pill seen"
+            class:got={quiz.seen.includes(n)}
+            style="--c:var(--ok)">{quiz.seen.includes(n) ? '✓' : '·'} {NEED_NAMES[n]}</span
+          >{/each}
+      {:else}
+        <span class="pill" style="--c:var(--ok)">Streak <b>{quiz.streak}</b></span>
+        <span class="pill" style="--c:var(--slope)">Best <b>{quiz.best}</b></span>
+        <button
+          class="pill"
+          style="--c:var(--bad)"
+          disabled={!quiz.missed.length}
+          aria-expanded={showMissed}
+          onclick={() => (showMissed = !showMissed)}>Missed <b>{quiz.missed.length}</b></button
+        >
+      {/if}
       {@render trailing?.()}
     </div>
     {#if showMissed && quiz.missed.length}
@@ -80,17 +100,22 @@
     <div class="actions">
       {#if !quiz.answered}
         {#if q.t === 3}<button class="primary" onclick={() => quiz.check()}>Check</button>{/if}
-        {#if quiz.hint}<p class="hint"><Rich parts={hintMsg(q, unit)} /></p>
-        {:else}<button data-tip={hintTip(q)} onclick={() => quiz.useHint()}>Hint</button>{/if}
+        {#if !quiz.strict}
+          {#if quiz.hint}<p class="hint"><Rich parts={hintMsg(q, unit)} /></p>
+          {:else}<button data-tip={hintTip(q)} onclick={() => quiz.useHint()}>Hint</button>{/if}
+        {/if}
       {:else}
         <span class="verdict" class:ok={quiz.ok} class:bad={!quiz.ok}
           >{quiz.ok
             ? quiz.hint
               ? 'Correct, with a hint (streak unchanged)'
               : 'Correct'
-            : 'Not quite'}</span
+            : quiz.strict
+              ? 'Not quite. The count starts again.'
+              : 'Not quite'}</span
         >
-        <button class="primary next" onclick={() => quiz.start()}>Next</button>
+        {#if !quiz.passed}<button class="primary next" onclick={() => quiz.start()}>Next</button
+          >{/if}
       {/if}
     </div>
     {#if quiz.answered}<div class="explain">

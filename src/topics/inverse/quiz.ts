@@ -72,9 +72,10 @@ export const NOUN = { asin: 'y-value', acos: 'x-value', atan: 'slope m' } as con
 const AXIS = { asin: 'along the y-axis', acos: 'along the x-axis', atan: '' } as const;
 const valuesOf = (fn: InvFn) => SPECIAL_VALUES[fn].map(([v]) => v);
 
-export function makeQ(): IQ {
-  const fn = pick(FNS),
-    x = Math.random();
+/** A random question; `want` pins its function or its type (the Guide's exam steers with it). */
+export function makeQ(want: { fn?: InvFn; t?: 1 | 2 | 3 } = {}): IQ {
+  const fn = want.fn ?? pick(FNS),
+    x = want.t === 1 ? 0 : want.t === 2 ? 0.5 : want.t === 3 ? 0.9 : Math.random();
   if (x < 0.45) return { t: 1, fn, v: pick(valuesOf(fn)) };
   if (x < 0.8) {
     const dom = pick(DOMAINS);
