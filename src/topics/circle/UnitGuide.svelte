@@ -90,8 +90,8 @@
     {/if}
     {#if done}
       <p class="fb">
-        The unit circle is complete. Explore keeps the whole figure, and Practice asks for both
-        angles that share a value too.
+        Unit circle complete. Explore shows the full figure, and Practice also asks you to find both
+        angles that share a value.
       </p>
       <div class="after">
         <button class="primary" onclick={() => setMode('explore')}>Explore</button><button

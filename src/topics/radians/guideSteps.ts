@@ -24,7 +24,7 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
         m('\\pi'),
         ' (about 3.14), and a full turn is ',
         m('2\\pi'),
-        '. Nobody picks 360 for a reason either: it is a number we agreed on, and this is another one.',
+        '. 360 is also just a choice. The next step shows where π comes from.',
       ],
     ],
     features: ['ray', 'degrees', 'half'],
@@ -37,12 +37,12 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
       [
         "Take the circle's radius, which here is exactly ",
         m('1'),
-        ', and lay it along the edge like a bendy ruler. Three lengths fit along the top half, with a little left over.',
+        ', and bend it along the edge of the circle. Three lengths fit along the top half, with a little left over.',
       ],
       [
         'That little bit makes it ',
         m('3.14\\ldots'),
-        ' lengths in all. It is the circumference formula in disguise: the whole way round is ',
+        ' lengths in all. This matches the circumference formula: the whole way round is ',
         m('2\\pi r'),
         ', so half of it is ',
         m('\\pi\\times1'),
@@ -195,7 +195,7 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
   },
   {
     id: 'check',
-    title: 'Show what you know',
+    title: 'Final check',
     say: [
       [
         'Last step: correctly answer ten questions in a row with no hints. Getting one wrong resets your streak.',

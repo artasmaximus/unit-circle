@@ -16,21 +16,21 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
   return [
     {
       id: 'shadows',
-      title: 'Every point casts two shadows',
+      title: 'The point and its shadows',
       say: [
         [
           'This circle has radius ',
           m('1'),
-          ' and its middle at the origin. The point sits on its edge, an angle ',
+          ' and is centered at the origin. The point sits on its edge, at an angle ',
           m('\\theta'),
-          ' round from the right.',
+          ' measured counterclockwise from the positive x-axis.',
         ],
         [
-          "Shine a light straight down and the point casts a shadow on the x-axis; shine one from the side and it casts one on the y-axis. Those two shadows are just the point's coordinates, ",
+          "Drop a line from the point straight down to the x-axis, and another straight across to the y-axis. The two lengths they mark off are the point's coordinates, ",
           m('x'),
           ' and ',
           m('y'),
-          '.',
+          '. We call them its shadows.',
         ],
       ],
       features: ['ray', 'angle', 'shadows'],
@@ -45,12 +45,12 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
     },
     {
       id: 'names',
-      title: 'Name the shadows',
+      title: 'cos and sin',
       say: [
         [
-          'These two shadows are the whole idea of trigonometry. The x-shadow is called ',
+          'The x-shadow is called ',
           m('\\cos\\theta'),
-          ' and the y-shadow ',
+          ', and the y-shadow is called ',
           m('\\sin\\theta'),
           '.',
         ],
@@ -84,7 +84,7 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
     },
     {
       id: 'triangle',
-      title: 'It is a right triangle',
+      title: 'The right triangle',
       say: [
         [
           'Drop a line from the point to the x-axis and you get a right triangle. Its flat side is ',
@@ -196,7 +196,7 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
     },
     {
       id: 'sixty',
-      title: 'Stand it on its end',
+      title: '60° is the 30° triangle on its side',
       say: [
         [
           'At ',
@@ -204,9 +204,7 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
           ' it is the same triangle, stood on its other end: the legs swap. Now the flat side is the short one.',
         ],
         [m(`\\cos ${at(60)}=\\tfrac{1}{2},\\quad \\sin ${at(60)}=\\tfrac{\\sqrt{3}}{2}`)],
-        [
-          'These three triangles hold every exact value you will need. The rest of the circle reuses them.',
-        ],
+        ['Every exact value on the circle comes from these three triangles.'],
       ],
       features: ['ray', 'angle', 'shadows', 'names', 'triangle', 'hyp', 'exact'],
       task: {
@@ -228,7 +226,7 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
     },
     {
       id: 'mirror',
-      title: 'Mirror it round the circle',
+      title: 'The other three quarters',
       say: [
         [
           'Flip the triangle across an axis and it lands in another quarter of the circle, the same size. Only the directions of its legs change.',
@@ -369,7 +367,7 @@ export function unitCircleGuide(u: Unit): Step<Feature>[] {
     },
     {
       id: 'check',
-      title: 'Show what you know',
+      title: 'Final check',
       say: [
         [
           'Last step: correctly answer ten questions in a row with no hints, with at least one each of sin, cos and tan. Getting one wrong resets your streak.',

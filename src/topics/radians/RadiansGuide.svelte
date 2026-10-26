@@ -17,8 +17,8 @@
     {#if !done || radians.exam.passed}<RadiansQuiz session={radians.exam} />{/if}
     {#if done}
       <p class="fb good">
-        Radians is complete. The ° | rad switch in the corner is unlocked, so every angle in the app
-        can be shown in radians.
+        Radians complete. The ° | rad switch in the corner is now unlocked, so you can show every
+        angle in radians.
       </p>
       <div class="after">
         <button class="primary" onclick={() => setMode('explore')}>Explore</button><button
