@@ -30,6 +30,10 @@ Code is grouped by topic, with shared pieces beside the topics:
   (`scene.ts`), Guide steps, panel components and plane layer. The unit circle also has
   `layout.ts`, which places its labels and floating chips.
 - `src/solver/`: the equation solver and its test bench (`?lab=solver`).
+- Navigation: topics name a `group` (a course or unit, registered in `src/topics/index.ts`), an
+  `order` and optional `requires` (prerequisites, locked with `strict`); `core/nav.ts` groups,
+  searches and reads/writes the address (`?topic=…&mode=…`, kept in step by `core/route.svelte.ts`),
+  and `ui/TopicMenu.svelte` is the switcher (tab bar button, phone title, or `/`).
 - `src/panel/`: the floating panel that hosts each topic's views. `src/ui/`: small shared components.
 - Tests (`*.test.ts`) sit next to the code they cover.
 

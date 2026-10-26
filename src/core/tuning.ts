@@ -158,3 +158,9 @@ export const panel = {
   /** The blur glides to a new content height over this long (ms). */
   blurGlideMs: 380,
 };
+
+/** Moving between topics (TabBar.svelte, TopicMenu.svelte). */
+export const nav = {
+  /** Up to this many topics the bar lists them all; past it the bar folds into the switcher. */
+  barMax: 5,
+};

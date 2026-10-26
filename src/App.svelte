@@ -3,6 +3,9 @@
   import Panel from './panel/Panel.svelte';
   import SolverLab from './solver/SolverLab.svelte';
   import TabBar from './ui/TabBar.svelte';
+  import TopicMenu from './ui/TopicMenu.svelte';
+  import { topicMenu } from './ui/topicMenu.svelte.ts';
+  import { followAddress } from './core/route.svelte.ts';
   import { camera } from './core/camera.svelte.ts';
   import { inverse } from './topics/inverse/state.svelte.ts';
   import { point } from './core/point.svelte.ts';
@@ -20,7 +23,10 @@
   const lab =
     typeof location !== 'undefined' && new URLSearchParams(location.search).get('lab') === 'solver';
 
-  if (!lab) startApp();
+  if (!lab) {
+    startApp();
+    followAddress();
+  }
 
   // dev only: handles for timing a frame from the browser console, e.g. set point.ang, then time
   // flushSync() (dropped from production builds)
@@ -45,6 +51,12 @@
   // the ray's angle or the probe (see each topic's handles)
   const onkeydown = (e: KeyboardEvent) => {
     if (e.defaultPrevented || (e.target as HTMLElement).tagName === 'INPUT') return;
+    // "/" jumps to the topic switcher's search, as in most docs sites
+    if (e.key === '/' && !lab) {
+      e.preventDefault();
+      topicMenu.open = true;
+      return;
+    }
     const dir =
       e.key === 'ArrowLeft' || e.key === 'ArrowDown'
         ? -1
@@ -81,4 +93,4 @@
     {#each topics as t}{#if t.overlay}<t.overlay />{/if}{/each}
   {/snippet}
 </Plane>
-{#if lab}<SolverLab />{:else}<Panel />{#if camera.wide}<TabBar />{/if}{/if}
+{#if lab}<SolverLab />{:else}<Panel />{#if camera.wide}<TabBar />{/if}<TopicMenu />{/if}
