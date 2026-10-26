@@ -9,22 +9,14 @@
   import { panel as panelT } from '../core/tuning.ts';
   import { camera } from '../core/camera.svelte.ts';
   import { pen, setMode, ui } from '../core/app.svelte.ts';
-  import Quiz from '../topics/circle/Quiz.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import AngleInput from '../ui/AngleInput.svelte';
   import { progress } from '../core/progress.svelte.ts';
-  import Reciprocals from '../topics/circle/Reciprocals.svelte';
-  import InversePanel from '../topics/inverse/InversePanel.svelte';
-  import InverseQuiz from '../topics/inverse/InverseQuiz.svelte';
-  import InverseGuide from '../topics/inverse/InverseGuide.svelte';
-  import RadiansGuide from '../topics/radians/RadiansGuide.svelte';
-  import UnitGuide from '../topics/circle/UnitGuide.svelte';
-  import RadiansPanel from '../topics/radians/RadiansPanel.svelte';
-  import RadiansQuiz from '../topics/radians/RadiansQuiz.svelte';
-  import { radians } from '../topics/radians/state.svelte.ts';
-  import { guideTopics } from '../core/app.svelte.ts';
-  import { inverse } from '../topics/inverse/state.svelte.ts';
+  import { hasGuide, topicDef } from '../core/app.svelte.ts';
 
+  const topic = $derived(topicDef(ui.topic));
+  const angleInput = $derived(topic.angleInput?.());
+  const View = $derived(topic.views[ui.mode] ?? topic.views.explore);
   let w = $state(0),
     h = $state(0);
   // The plane is its own layer under the UI: the panel never resizes it as its content changes (a
@@ -86,30 +78,6 @@
   });
 </script>
 
-{#snippet otherToggle()}
-  <button
-    class="switch"
-    role="switch"
-    aria-checked={inverse.showOther}
-    onclick={() => (inverse.showOther = !inverse.showOther)}
-    data-tip="Shows the other angle that has the same value. It is outside the range, which is why the inverse never gives it."
-  >
-    Other angle<span class="track"><span class="knob"></span></span>
-  </button>
-{/snippet}
-
-{#snippet mirror()}
-  <button
-    class="switch"
-    role="switch"
-    aria-checked={ui.mirror}
-    onclick={() => (ui.mirror = !ui.mirror)}
-    data-tip="Shows the other angles that have the same reference angle. In Practice it also shows the second angle with the same sin, cos or tan."
-  >
-    Mirror Point<span class="track"><span class="knob"></span></span>
-  </button>
-{/snippet}
-
 <aside class="panel" bind:clientWidth={w} bind:clientHeight={h}>
   <!-- the blur hugs the content: it fades out past the panel's edge and below its last element
        the same way, each layer a little further out, so neither edge is a hard line -->
@@ -137,20 +105,14 @@
         onclick={() => (folded = !folded)}><span></span></button
       >
       <div class="title">
-        <h1>
-          {ui.topic === 'inverse'
-            ? 'Inverse Trig'
-            : ui.topic === 'radians'
-              ? 'Radians'
-              : 'Unit Circle'}
-        </h1>
+        <h1>{topic.title}</h1>
         <Segmented
           label="Mode"
           value={ui.mode}
           onchange={setMode}
           progress={pen.current}
           options={[
-            ...(guideTopics.has(ui.topic) ? [{ value: 'guide' as const, label: 'Guide' }] : []),
+            ...(hasGuide(ui.topic) ? [{ value: 'guide' as const, label: 'Guide' }] : []),
             { value: 'explore' as const, label: 'Explore' },
             { value: 'practice' as const, label: 'Practice' },
           ]}
@@ -160,27 +122,9 @@
     <!-- the views share one grid cell, so the old one fades away under the new one as it rises
          in -->
     <div class="stage" class:folded>
-      {#if ui.topic === 'radians'}
-        {#if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><RadiansGuide /></div>
-        {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}>
-            <RadiansQuiz session={radians.practice} />
-          </div>
-        {:else}<div class="view" in:fly={IN} out:fly={OUT}><RadiansPanel /></div>{/if}
-      {:else if ui.topic === 'inverse'}
-        {#if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><InverseGuide /></div>
-        {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}>
-            <InverseQuiz />
-          </div>
-        {:else}<div class="view" in:fly={IN} out:fly={OUT}>
-            <InversePanel trailing={otherToggle} />
-          </div>{/if}
-      {:else if ui.mode === 'guide'}<div class="view" in:fly={IN} out:fly={OUT}><UnitGuide /></div>
-      {:else if ui.mode === 'practice'}<div class="view" in:fly={IN} out:fly={OUT}>
-          <Quiz trailing={mirror} />
-        </div>
-      {:else}<div class="view" in:fly={IN} out:fly={OUT}>
-          <Reciprocals trailing={mirror} />
-        </div>{/if}
+      {#key `${ui.topic}|${ui.mode}`}
+        <div class="view" in:fly={IN} out:fly={OUT}><View /></div>
+      {/key}
     </div>
   </div>
 </aside>
@@ -204,9 +148,7 @@
         },
       ]}
     />
-    {#if ui.topic === 'circle' || (ui.topic === 'radians' && !radians.asking)}<AngleInput
-        unit={ui.topic === 'radians' ? 'rad' : undefined}
-      />{/if}
+    {#if angleInput}<AngleInput unit={angleInput.unit} />{/if}
   </div>
   {#if camera.moved}<button class="reset" onclick={camera.reset}>Reset view</button>{/if}
 </div>
@@ -414,18 +356,6 @@
     line-height: 1.15;
     margin: 0;
   }
-  .switch {
-    margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--fg);
-    font-size: 0.85rem;
-    cursor: pointer;
-  }
   /* the angle readout and reset button, floating in the plane's top-right corner */
   .corner :global([data-tip]::after) {
     left: auto;
@@ -452,38 +382,8 @@
     background: color-mix(in srgb, var(--panel) 70%, transparent);
     border-color: transparent;
   }
-  .content .switch::after {
+  .content :global(.switch)::after {
     left: auto;
     right: 0;
-  }
-  .track {
-    position: relative;
-    width: 32px;
-    height: 18px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted) 35%, transparent);
-    transition: background 0.18s;
-  }
-  .knob {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--fg);
-    transition: transform 0.18s cubic-bezier(0.22, 0.9, 0.3, 1);
-  }
-  .switch[aria-checked='true'] .track {
-    background: var(--cos);
-  }
-  .switch[aria-checked='true'] .knob {
-    transform: translateX(14px);
-    background: var(--on-accent);
-  }
-  .switch:focus-visible {
-    outline: 2px solid var(--cos);
-    outline-offset: 4px;
-    border-radius: 6px;
   }
 </style>

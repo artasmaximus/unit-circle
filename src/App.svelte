@@ -11,17 +11,10 @@
   import { inverseGuideRun } from './topics/inverse/guide.svelte.ts';
   import { unitGuide } from './topics/circle/guide.svelte.ts';
   import { radians } from './topics/radians/state.svelte.ts';
-  import { ui } from './core/app.svelte.ts';
+  import { topics, ui } from './core/app.svelte.ts';
   import { nudge } from './plane/handles.svelte.ts';
-  import { fade } from 'svelte/transition';
   import Grid from './plane/Grid.svelte';
   import RingLayer from './plane/RingLayer.svelte';
-  import CircleLayer from './topics/circle/CircleLayer.svelte';
-  import Chips from './topics/circle/Chips.svelte';
-  import UnitGuideLayer from './topics/circle/UnitGuideLayer.svelte';
-  import { circleView } from './topics/circle/view.svelte.ts';
-  import InverseLayer from './topics/inverse/InverseLayer.svelte';
-  import RadiansLayer from './topics/radians/RadiansLayer.svelte';
 
   // ?lab=solver opens the equation solver's test bench in place of the panel
   const lab =
@@ -74,22 +67,18 @@
 <Plane>
   {#snippet layers()}
     <Grid />
-    <!-- every topic's layer is always mounted: when a topic is left its marks play their own
+    <!-- every topic's layers are always mounted: when a topic is left its marks play their own
          exits, and the next topic's marks enter -->
-    <RadiansLayer under />
+    {#each topics as t}{#each t.layers.filter((l) => l.under) as l}<l.component
+          {...l.props}
+        />{/each}{/each}
     <RingLayer />
-    <InverseLayer />
-    <RadiansLayer />
-    <CircleLayer />
-    <UnitGuideLayer />
+    {#each topics as t}{#each t.layers.filter((l) => !l.under) as l}<l.component
+          {...l.props}
+        />{/each}{/each}
   {/snippet}
   {#snippet overlay()}
-    {#if ui.topic === 'circle' && ui.mode !== 'guide'}<div
-        in:fade={{ duration: 200 }}
-        out:fade={{ duration: 160 }}
-      >
-        <Chips layout={circleView.layout} />
-      </div>{/if}
+    {#each topics as t}{#if t.overlay}<t.overlay />{/if}{/each}
   {/snippet}
 </Plane>
 {#if lab}<SolverLab />{:else}<Panel />{#if camera.wide}<TabBar />{/if}{/if}

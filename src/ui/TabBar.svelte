@@ -1,24 +1,19 @@
-<!-- The concepts, as a small bar floating at the bottom left (desktop and landscape tablets;
-     phones don't show it yet). It is the same segmented control as the mode switch (icon over a
-     tiny label), and its thumb glides on the same pen motion a topic switch plays. -->
+<!-- The topics, as a small bar floating at the bottom left (desktop and landscape tablets; phones
+     don't show it yet). It is the same segmented control as the mode switch (icon over a tiny
+     label), and its thumb glides on the same pen motion a topic switch plays. The tabs come from
+     the topic registry (core/app.svelte.ts). -->
 <script lang="ts">
-  import CircleDot from '@lucide/svelte/icons/circle-dot';
-  import ArrowLeftRight from '@lucide/svelte/icons/arrow-left-right';
-  import Ruler from '@lucide/svelte/icons/ruler';
-  import { pen, setTopic, ui } from '../core/app.svelte.ts';
+  import { pen, setTopic, topics, ui } from '../core/app.svelte.ts';
   import { progress } from '../core/progress.svelte.ts';
   import Segmented from './Segmented.svelte';
 
-  const TABS = [
-    { value: 'circle', label: 'Unit circle', icon: CircleDot },
-    { value: 'inverse', label: 'Inverse trig', icon: ArrowLeftRight },
-    { value: 'radians', label: 'Radians', icon: Ruler },
-  ] as const;
   // a topic shows a check once its Guide's exam has been passed
   const tabs = $derived(
-    TABS.map((t) => ({
-      ...t,
-      done: !!(progress.completed as Record<string, boolean | undefined>)[t.value],
+    topics.map((t) => ({
+      value: t.id,
+      label: t.tab.label,
+      icon: t.tab.icon,
+      done: !!progress.completed[t.id],
     })),
   );
 </script>

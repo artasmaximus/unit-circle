@@ -2,18 +2,14 @@
      never leaves. -->
 <script lang="ts">
   import { camera } from '../core/camera.svelte.ts';
-  import { inverse } from '../topics/inverse/state.svelte.ts';
   import { ringScene } from './ringScene.ts';
   import { progress } from '../core/progress.svelte.ts';
-  import { radians } from '../topics/radians/state.svelte.ts';
-  import { penClock, penFrom, revealed, ui } from '../core/app.svelte.ts';
+  import { penClock, penFrom, revealed, topicDef, ui } from '../core/app.svelte.ts';
   import { aim, preview } from './pointHandle.svelte.ts';
   import MarkLayer from './MarkLayer.svelte';
 
-  /** The inverse topic writes the label for the angles it marks, so the ring leaves those out. */
-  const taken = (a: number) =>
-    ui.topic === 'inverse' &&
-    inverse.marked.some((m) => Math.abs(m - a) < 1e-4 || Math.abs(Math.abs(m - a) - 360) < 1e-4);
+  /** How the showing topic wants the ring written (its unit, its labels, the angles it marks). */
+  const ring = $derived(topicDef(ui.topic).ring?.());
   const marks = $derived(
     ringScene({
       t: penClock.current,
@@ -23,11 +19,11 @@
       aim: aim.deg,
       preview: preview.deg,
       decimals: camera.thetaDecimals,
-      taken,
+      taken: ring?.taken ?? (() => false),
       sw: camera.stroke,
       lb: camera.labelBoost,
-      unit: ui.topic === 'radians' ? radians.ringUnit : progress.unit,
-      labels: ui.topic === 'radians' ? radians.ringLabels : true,
+      unit: ring?.unit ?? progress.unit,
+      labels: ring?.labels ?? true,
     }),
   );
 </script>

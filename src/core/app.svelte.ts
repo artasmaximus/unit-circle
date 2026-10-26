@@ -1,22 +1,61 @@
 // Which topic and mode the app is in, what may show, and the one motion that plays when any of
 // that changes. Each topic keeps its own state in its own folder and registers hooks here for what
 // arriving, leaving or switching mode means for it.
+import type { Component } from 'svelte';
 import { Tween } from 'svelte/motion';
+import type { Unit } from './angles.ts';
 import { progress } from './progress.svelte.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
 
-export type Topic = 'circle' | 'inverse' | 'radians';
+/** A topic's id: the key of its entry in the registry below. */
+export type Topic = string;
 /**
  * How a topic is being used: Guide is the guided path (only some topics have one), Explore is free
  * play, Practice is questions.
  */
 export type Mode = 'guide' | 'explore' | 'practice';
-/** The topics that have a Guide. */
-export const guideTopics: ReadonlySet<Topic> = new Set<Topic>(['radians', 'circle', 'inverse']);
+
+/**
+ * Everything the shell needs to know about a topic. Topics describe themselves with one of these
+ * (each topic's topic.ts) and are registered once at startup (topics/index.ts); the panel, the tab
+ * bar, the plane and the ring read the registry, so none of them names a topic.
+ */
+export type TopicDef = {
+  id: Topic;
+  /** The heading over the panel. */
+  title: string;
+  /** Its entry in the tab bar. */
+  tab: { label: string; icon: Component<{ size?: number }> };
+  /** The panel for each mode; a topic without a `guide` has no Guide. */
+  views: { guide?: Component; explore: Component; practice: Component };
+  /**
+   * What it draws on the plane. Every topic's layers stay mounted, so when a topic is left its
+   * marks play their exits; a layer asks for no marks while its topic is not showing. `under`
+   * layers sit beneath the ring's dots.
+   */
+  layers: { component: Component<any>; props?: Record<string, unknown>; under?: boolean }[];
+  /** Floating over the plane (the unit circle's chips); mounted always, shows itself. */
+  overlay?: Component;
+  /** The angle readout in the plane's corner: absent, or the unit it insists on. */
+  angleInput?: () => { unit?: Unit } | null;
+  /** How the shared ring is written while this topic shows. */
+  ring?: () => { unit?: Unit; labels?: boolean; taken?: (deg: number) => boolean };
+};
+const registry: TopicDef[] = [];
+export function registerTopics(...defs: TopicDef[]) {
+  registry.push(...defs);
+}
+/** Every topic, in tab bar order. */
+export const topics: readonly TopicDef[] = registry;
+export const topicDef = (id: Topic): TopicDef => registry.find((t) => t.id === id) ?? registry[0];
+/** Whether a topic has a Guide. */
+export const hasGuide = (id: Topic) => !!topicDef(id).views.guide;
+/** The topic the app opens on. */
+export const HOME: Topic = 'circle';
 export const ui = $state({
   /** The concept on the plane, picked in the tab bar. */
-  topic: 'circle' as Topic,
+  topic: HOME,
   /** A learner who has not finished the unit circle's Guide starts in it. */
   mode: (progress.completed.circle ? 'practice' : 'guide') as Mode,
   mirror: false,
@@ -90,13 +129,13 @@ export function setTopic(t: Topic) {
     ui.slopeOpen = false;
     ui.highlight = [];
     // a topic without a Guide cannot be in Guide mode
-    if (ui.mode === 'guide' && !guideTopics.has(t)) ui.mode = 'explore';
+    if (ui.mode === 'guide' && !hasGuide(t)) ui.mode = 'explore';
     topicHooks[t]?.enter(ui.mode);
   }, true);
 }
 
 export function setMode(m: Mode) {
-  if (m === 'guide' && !guideTopics.has(ui.topic)) return;
+  if (m === 'guide' && !hasGuide(ui.topic)) return;
   withPen(() => {
     ui.mode = m;
     topicHooks[ui.topic]?.mode(m);
