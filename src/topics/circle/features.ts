@@ -11,9 +11,9 @@ export const FEATURES = [
   'equal', // tick marks on the two legs when they are equal (45°)
   'equilateral', // the triangle mirrored below the axis, making the equilateral one at 30°
   'mirror', // the point's reflections in the other quadrants
-  'quads', // each quadrant tinted with the signs of (cos, sin)
+  'quads', // the right half tinted in cos's color and the top half in sin's: where each is positive
   'ref', // the reference angle back to the nearest x-axis
-  'slope', // the ray carried on as a line, and its slope tan θ on the line x = 1
+  'slope', // the legs named run and rise, and tan θ = rise ÷ run beside the ray
   'coords', // the point's coordinates written beside it
 ] as const;
 export type Feature = (typeof FEATURES)[number];

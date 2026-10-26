@@ -1,7 +1,7 @@
 // What the Unit circle Guide puts on the plane, composed from figures (see figures/figure.ts). It
 // is a simpler picture than Explore's, built up one feature at a time: the point's shadows on the
-// axes, their names, the right triangle, the special triangles, its mirror images, the signs by
-// quadrant, the reference angle and the slope. Explore's scene (scene.ts) steps aside while
+// axes, their names, the right triangle, the special triangles, its mirror images, where each value
+// is positive, the reference angle and the slope. Explore's scene (scene.ts) steps aside while
 // the Guide is on, and this one asks for nothing otherwise.
 import { S } from '../../core/camera.svelte.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
@@ -66,26 +66,12 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
     named = f.has('names'),
     tri = f.has('triangle');
 
-  // ---- the quadrant the point is in, lit (its signs are written under the point's label, below)
+  // ---- where each value is positive: the right half (cos > 0) tinted in cos's color, the top half
+  // (sin > 0) in sin's. A quadrant's signs are which tints cover it; quadrant III has neither.
   if (f.has('quads')) {
-    const k = Math.floor((((i.deg % 360) + 360) % 360) / 90) % 4,
-      a0 = (k * Math.PI) / 2;
-    add(
-      Sector(
-        'ug:quad:lit',
-        {
-          from: a0,
-          to: a0 + Math.PI / 2,
-          r: S,
-          fill: 'var(--fg)',
-          opacity: 0.06,
-          z: 1,
-          enter: 'fade',
-          dur: 300,
-        },
-        ctx,
-      ),
-    );
+    const tint = { r: S, opacity: 0.1, z: 1, enter: 'fade', dur: 400 } as const;
+    add(Sector('ug:quads:cos', { from: -Math.PI / 2, to: Math.PI / 2, fill: COS, ...tint }, ctx));
+    add(Sector('ug:quads:sin', { from: 0, to: Math.PI, fill: SIN, ...tint, delay: 150 }, ctx));
   }
 
   // ---- the point's mirror images in the other quadrants, each with its own faint triangle
@@ -323,8 +309,10 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
   // ---- the shadows' names: the x label past the cos leg's brace, on the side away from the point;
   // the y label past the sin leg's braces once there is a triangle, before that by the y-axis
   if (shadows) {
-    const xName = named ? '\\cos\\theta' : 'x',
-      yName = named ? '\\sin\\theta' : 'y',
+    // with the slope on, the legs are also named for it: the run across and the rise up
+    const slope = f.has('slope'),
+      xName = (slope ? '\\text{run}=' : '') + (named ? '\\cos\\theta' : 'x'),
+      yName = (slope ? '\\text{rise}=' : '') + (named ? '\\sin\\theta' : 'y'),
       below = s >= 0 ? 1 : -1,
       xReach = reach.base ? reach.base + 4 * sw : 8 * sw;
     add(
@@ -388,93 +376,26 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
     );
   }
 
-  // ---- the slope: the ray carried on through the origin, and where it meets the line x = 1 is
-  // tan θ
+  // ---- the slope: how steep the ray is, rise over run, written beside it on the side away from the
+  // triangle (the legs are named rise and run below)
   if (f.has('slope')) {
-    const L = 2.2 * S;
-    add(
-      Segment(
-        'ug:slope:line',
-        {
-          from: [-L * c, L * s],
-          to: [L * c, -L * s],
-          color: TAN,
-          ...DASHED,
-          z: 3,
-          enter: 'draw',
-          dur: 500,
-        },
-        ctx,
-      ),
-    );
-    add(
-      Segment(
-        'ug:slope:x1',
-        {
-          from: [S, -L],
-          to: [S, L],
-          color: 'var(--muted)',
-          width: 1,
-          opacity: 0.6,
-          z: 3,
-          enter: 'draw',
-          dur: 500,
-        },
-        ctx,
-      ),
-    );
-    add(
-      Label(
-        'ug:slope:x1:label',
-        {
-          tex: 'x=1',
-          size: 9,
-          at: [S + 6 * sw, L * 0.9],
-          anchor: [0, 1],
-          color: 'var(--muted)',
-          back: true,
-          z: 9,
-          enter: 'fade',
-          delay: 300,
-        },
-        ctx,
-      ),
-    );
-    const t = s / c,
-      onLine = Math.abs(c) > 0.03 && Math.abs(t) < 2.1;
-    if (onLine) {
-      add(
-        Segment(
-          'ug:tan',
-          {
-            from: [S, 0],
-            to: [S, -S * t],
-            color: TAN,
-            width: 3.5,
-            round: true,
-            z: 6,
-            enter: 'draw',
-            delay: 300,
-            dur: 400,
-          },
-          ctx,
-        ),
-      );
-      add(Point('ug:tan:dot', { at: [S, -S * t], r: 4.5, fill: TAN, z: 7, delay: 500 }, ctx));
-    }
+    const tex =
+      Math.abs(c) < 0.02
+        ? '\\tan\\theta\\ \\text{is undefined}'
+        : `\\tan\\theta=\\dfrac{\\text{rise}}{\\text{run}}=${val('tan')}`;
     add(
       Label(
         'ug:tan:label',
         {
-          tex: `\\tan\\theta=${val('tan')}`,
+          tex,
           size: 10,
-          at: [S + 8 * sw, onLine ? (-S * t) / 2 : -S * 0.5],
-          anchor: [0, 0.5],
+          at: [px * 0.55 - s * 16 * sw, py * 0.55 - c * 16 * sw],
+          anchor: [c >= 0 ? 1 : 0, 0.5],
           color: TAN,
           back: true,
           z: 9,
           enter: 'fade',
-          delay: 500,
+          delay: 300,
         },
         ctx,
       ),
@@ -519,14 +440,13 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
       ),
     );
   }
-  // ---- the point's coordinates beside it, inside the circle; with the quadrants on, their signs
-  // go just past them (further from the point)
+  // ---- the point's coordinates beside it, inside the circle
   const anchor: [number, number] = [c >= 0 ? 1 : 0, s >= 0 ? 0 : 1],
     away = s >= 0 ? 1 : -1,
     cx = px - Math.sign(c || 1) * 10 * sw;
-  let cy = py + away * 10 * sw;
+  const cy = py + away * 10 * sw;
   if (f.has('coords')) {
-    const { rect } = add(
+    add(
       Label(
         'ug:coords',
         {
@@ -543,30 +463,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
         ctx,
       ),
     );
-    if (rect) cy += away * (rect.h + 5 * sw);
   }
-  if (f.has('quads')) {
-    const r = (i.deg * Math.PI) / 180,
-      sign = (v: number) => (Math.abs(v) < 1e-9 ? '0' : v > 0 ? '+' : '-');
-    add(
-      Label(
-        'ug:signs',
-        {
-          tex: `(${sign(Math.cos(r))},\\,${sign(Math.sin(r))})`,
-          size: 10,
-          at: [cx, cy],
-          anchor,
-          color: 'var(--fg)',
-          back: true,
-          z: 9,
-          enter: 'fade',
-          delay: 250,
-        },
-        ctx,
-      ),
-    );
-  }
-
   // ---- the point and its radius
   add(
     Segment(
