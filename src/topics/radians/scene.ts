@@ -8,7 +8,6 @@ import { piFraction, piTex } from '../../core/angles.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { polar, type Ctx } from '../../figures/figure.ts';
 import { Arc } from '../../figures/arc.ts';
-import { ArcRuler } from '../../figures/arcRuler.ts';
 import { Label } from '../../figures/label.ts';
 import { Point } from '../../figures/point.ts';
 import { Trail } from '../../figures/trail.ts';
@@ -25,6 +24,8 @@ export type RadiansInput = {
   ang: number;
   /** The arc (radians) of the colored tail chasing the point. */
   tail: number;
+  /** The replay count of the guide's animation: a new count draws it again. */
+  plays: number;
   /** Where the point is headed, in radians: the slices follow this, not the spring. */
   target: number;
   sw: number;
@@ -85,37 +86,90 @@ export function radiansScene(i: RadiansInput): Mark[] {
     );
   }
 
-  // ---- the radius laid along the top half of the edge: three lengths fit, and a little more is
-  // left to reach the end of the half turn
-  if (f.has('beads')) {
-    add(
-      ArcRuler(
-        'rad:bead',
-        { r: S, step: 1, count: 3, upTo: a, color: COLOR, labelAt: 0.84, delay: 680, every: 380 },
-        ctx,
-      ),
-    );
+  // ---- the radius laid along the top half of the edge, end to end: three lengths fit, and a little
+  // more (the dashed piece) is left to reach the end of the half turn
+  if (f.has('stack')) {
+    for (let k = 1; k <= 4; k++) {
+      const from = k - 1,
+        to = Math.min(k, Math.PI),
+        last = k === 4,
+        delay = 500 + 650 * (k - 1);
+      add(
+        Arc(
+          `rad:stack:${k}:${i.plays}`,
+          {
+            from,
+            to,
+            r: S,
+            color: COLOR,
+            width: 5,
+            opacity: last ? 0.75 : k % 2 ? 1 : 0.55,
+            dash: last ? [1.2, 1.6] : undefined,
+            z: 4,
+            delay,
+            dur: 560,
+            exitDur: 160,
+          },
+          ctx,
+        ),
+      );
+      add(
+        Label(
+          `rad:stack:label:${k}:${i.plays}`,
+          {
+            tex: last ? '0.14\\ldots' : String(k),
+            size: last ? 9.5 : 11.5,
+            at: last ? polar((from + to) / 2, S * 0.9) : polar(to - (k === 3 ? 0.08 : 0), S * 0.86),
+            color: COLOR,
+            back: true,
+            z: 9,
+            enter: 'fade',
+            delay: delay + 380,
+            exitDur: 120,
+          },
+          ctx,
+        ),
+      );
+      add(
+        Point(
+          `rad:stack:dot:${k}:${i.plays}`,
+          {
+            at: polar(to, S),
+            r: 4,
+            fill: COLOR,
+            stroke: 'var(--panel)',
+            width: 1.5,
+            z: 6,
+            delay: delay + 480,
+            exitDur: 120,
+          },
+          ctx,
+        ),
+      );
+    }
   }
-  // ---- the half turn itself, drawn over the top half of the circle and named π
+  // ---- the half turn itself, drawn over the top half of the circle and named π (where the stacked
+  // radii are on, they already cover it, so only the name is added)
   if (f.has('half')) {
-    const beads = f.has('beads');
-    add(
-      Arc(
-        'rad:half',
-        {
-          from: 0,
-          to: Math.PI,
-          r: S,
-          color: 'url(#rad-half)',
-          width: 4,
-          round: true,
-          z: 1,
-          delay: beads ? 1600 : 200,
-          dur: 700,
-        },
-        ctx,
-      ),
-    );
+    const beads = f.has('stack');
+    if (!beads)
+      add(
+        Arc(
+          'rad:half',
+          {
+            from: 0,
+            to: Math.PI,
+            r: S,
+            color: 'url(#rad-half)',
+            width: 4,
+            round: true,
+            z: 1,
+            delay: 200,
+            dur: 700,
+          },
+          ctx,
+        ),
+      );
     add(
       Label(
         'rad:half:label',
@@ -127,7 +181,7 @@ export function radiansScene(i: RadiansInput): Mark[] {
           back: true,
           z: 9,
           enter: 'fade',
-          delay: beads ? 2100 : 600,
+          delay: beads ? 3800 : 600,
         },
         ctx,
       ),

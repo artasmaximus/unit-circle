@@ -17,6 +17,8 @@
     next(): void;
     back(): void;
     choose(i: number): void;
+    /** Plays the current step's animation again (steps that have `replay`). */
+    replay?(): void;
   };
 </script>
 
@@ -67,7 +69,12 @@
   {#key s.id}
     <div class="step" in:fly={{ y: 10, duration: 260, delay: 120, easing: cubicOut }}>
       {#if i === 0}{@render intro?.()}{/if}
-      <h2>{s.title}</h2>
+      <div class="heading">
+        <h2>{s.title}</h2>
+        {#if s.replay && run.replay}<button class="replay" onclick={() => run.replay?.()}
+            >↻ Replay</button
+          >{/if}
+      </div>
       {#each s.say as para}<p><Rich parts={para} /></p>{/each}
 
       {#if t.kind === 'choice'}
@@ -210,6 +217,21 @@
   }
   .opts button:disabled {
     cursor: default;
+  }
+  .heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .replay {
+    padding: 4px 10px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    background: none;
+  }
+  .replay:hover {
+    color: var(--fg);
   }
   .fb {
     color: var(--muted);

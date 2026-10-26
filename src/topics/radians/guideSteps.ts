@@ -1,6 +1,6 @@
 // The Radians guide. The drawing's features (see scene.ts) come on one at a time, and each
 // step asks for a little something before going on. It starts from the one fact to accept (a half
-// turn is π radians), then explains why, then builds every familiar angle from pieces of π/6, π/4,
+// turn is π radians), then explains why, then builds every familiar angle from wedges of π/6, π/4,
 // π/3 and π/2.
 import type { Step } from '../../guide/guide.ts';
 import type { Feature } from './features.ts';
@@ -50,7 +50,8 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
       ],
       ['An angle in radians counts those radius-lengths along the edge.'],
     ],
-    features: ['ray', 'degrees', 'radius', 'beads', 'half'],
+    features: ['ray', 'degrees', 'radius', 'stack', 'half'],
+    replay: true,
     task: { kind: 'read' },
   },
   {
@@ -69,53 +70,53 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
   },
   {
     id: 'pieces',
-    title: 'Pieces of π',
+    title: 'Fractions of π',
     say: [
       [
-        'The angles you already know are all built from a few pieces of a half turn: ',
+        'The angles you already know are all built from a few fractions of a half turn: ',
         m('\\pi/2'),
-        ' (a quarter turn), ',
+        ' (a half of it, so a quarter turn), ',
         m('\\pi/3'),
-        ', ',
+        ' (a third), ',
         m('\\pi/4'),
-        ' and ',
+        ' (a fourth) and ',
         m('\\pi/6'),
-        '.',
+        ' (a sixth).',
       ],
       [
-        'The shading shows the angle as whole pieces of one size. At ',
+        'The shading marks the angle off in equal wedges. At ',
         m('\\pi/3'),
-        ' it is one piece, because three of them make a half turn.',
+        ' it is one wedge, because three of them make a half turn.',
       ],
     ],
     features: ['ray', 'pi', 'slices', 'readout'],
     task: {
       kind: 'drag',
-      prompt: ['Put the point at ', m('\\pi/3'), ' (one piece).'],
+      prompt: ['Put the point at ', m('\\pi/3'), ' (a third of a half turn).'],
       deg: 60,
       tol: 3,
-      right: ['That is one piece of ', m('\\pi/3'), ', which is ', m('60^\\circ'), '.'],
+      right: ['That is one wedge of ', m('\\pi/3'), ', which is ', m('60^\\circ'), '.'],
     },
   },
   {
     id: 'more-pieces',
-    title: 'Count the pieces',
+    title: 'Count the wedges',
     say: [
       [
-        'More pieces, bigger angle. ',
+        'More wedges, bigger angle. ',
         m('2\\pi/3'),
-        ' is two pieces of ',
+        ' is two wedges of ',
         m('\\pi/3'),
-        '. The top number counts the pieces; the bottom number says how many make a half turn.',
+        '. The top number counts the wedges; the bottom number says how many make a half turn.',
       ],
     ],
     features: ['ray', 'pi', 'slices', 'readout'],
     task: {
       kind: 'drag',
-      prompt: ['Put the point at ', m('2\\pi/3'), ' (two pieces).'],
+      prompt: ['Put the point at ', m('2\\pi/3'), ' (two wedges of ', m('\\pi/3'), ').'],
       deg: 120,
       tol: 3,
-      right: ['Two pieces of ', m('\\pi/3'), ' make ', m('120^\\circ'), '.'],
+      right: ['Two wedges of ', m('\\pi/3'), ' make ', m('120^\\circ'), '.'],
     },
   },
   {
@@ -125,11 +126,11 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
       [
         'The same idea works for any size. ',
         m('3\\pi/4'),
-        ' is three pieces of ',
+        ' is three wedges of ',
         m('\\pi/4'),
         ', and ',
         m('5\\pi/6'),
-        ' is five pieces of ',
+        ' is five wedges of ',
         m('\\pi/6'),
         '.',
       ],
@@ -137,10 +138,10 @@ export const RADIANS_GUIDE: Step<Feature>[] = [
     features: ['ray', 'pi', 'slices', 'readout'],
     task: {
       kind: 'drag',
-      prompt: ['Put the point at ', m('3\\pi/4'), ' (three pieces of ', m('\\pi/4'), ').'],
+      prompt: ['Put the point at ', m('3\\pi/4'), ' (three wedges of ', m('\\pi/4'), ').'],
       deg: 135,
       tol: 3,
-      right: ['Three pieces of ', m('\\pi/4'), ' make ', m('135^\\circ'), '.'],
+      right: ['Three wedges of ', m('\\pi/4'), ' make ', m('135^\\circ'), '.'],
     },
   },
   {

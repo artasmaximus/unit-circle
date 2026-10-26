@@ -23,6 +23,7 @@
       features: radians.features,
       ang: point.ang,
       tail: point.tail,
+      plays: radians.plays,
       target: point.target,
       sw: camera.stroke,
       lb: camera.labelBoost,

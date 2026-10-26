@@ -3,7 +3,7 @@
 export const FEATURES = [
   'ray', // the point's radius line
   'radius', // the radius shown as a ruler
-  'beads', // radius-lengths laid along the top half of the edge
+  'stack', // the radius laid end to end along the top half of the edge, three times and a bit
   'half', // that half turn, marked as π
   'slices', // the angle shaded as whole pieces of its unit fraction of π (2π/3 is two of π/3)
   'readout', // the shading's name written on it (left off where it would give an answer away)

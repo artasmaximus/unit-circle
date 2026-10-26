@@ -41,7 +41,7 @@
       />
     </div>
     <p class="note">
-      A half turn is <Tex latex={'\\pi'} /> radians, so every angle you know is a few pieces of <Tex
+      A half turn is <Tex latex={'\\pi'} /> radians, so every angle you know is a few wedges of <Tex
         latex={'\\pi/6'}
       />, <Tex latex={'\\pi/4'} />, <Tex latex={'\\pi/3'} /> or <Tex latex={'\\pi/2'} />. Here the
       angle is <Tex latex={angleTex(deg, 'rad', dd)} />.

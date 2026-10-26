@@ -140,6 +140,11 @@ class Radians {
   exam = new Session(true);
   /** Which Guide step the learner is on, and whether its task is done. */
   stepIndex = $state(0);
+  /** How many times a step's animation has been replayed; keys its marks so they draw again. */
+  plays = $state(0);
+  replay() {
+    this.plays++;
+  }
   solved = $state(false);
   /** A choice task: the choice picked last, to show how it went. */
   chosen = $state<number | null>(null);

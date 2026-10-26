@@ -32,5 +32,7 @@ export type Step<F extends string = string> = {
    * appears and out as it goes.
    */
   features: F[];
+  /** The step plays an animation, and offers a button to play it again. */
+  replay?: boolean;
   task: Task;
 };
