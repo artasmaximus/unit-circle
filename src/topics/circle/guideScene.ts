@@ -1,7 +1,7 @@
 // What the Unit circle Guide puts on the plane, composed from figures (see figures/figure.ts). It
 // is a simpler picture than Explore's, built up one feature at a time: the point's shadows on the
 // axes, their names, the right triangle, the special triangles, its mirror images, the signs by
-// quadrant, the reference angle and the slope. Explore's drawing (drawing.ts) steps aside while
+// quadrant, the reference angle and the slope. Explore's scene (scene.ts) steps aside while
 // the Guide is on, and this one asks for nothing otherwise.
 import { S } from '../../core/camera.svelte.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
@@ -38,7 +38,7 @@ const COS = 'var(--cos)',
 /** The faint dashed line the Guide uses for drop lines and helper lines. */
 const DASHED: Look = { width: 1.5, dash: true, round: true, opacity: 0.7 };
 
-export function unitGuideMarks(i: UnitGuideInput): Mark[] {
+export function unitGuideScene(i: UnitGuideInput): Mark[] {
   if (!i.active || !i.features.size) return [];
   const f = i.features,
     ctx: Ctx = { sw: i.sw, lb: i.lb },

@@ -3,7 +3,7 @@
 <script lang="ts">
   import { camera } from '../core/camera.svelte.ts';
   import { inverse } from '../topics/inverse/state.svelte.ts';
-  import { ringMarks } from './ringMarks.ts';
+  import { ringScene } from './ringScene.ts';
   import { progress } from '../core/progress.svelte.ts';
   import { radians } from '../topics/radians/state.svelte.ts';
   import { aim, penClock, penFrom, revealed, ui } from '../core/state.svelte.ts';
@@ -14,7 +14,7 @@
     ui.topic === 'inverse' &&
     inverse.marked.some((m) => Math.abs(m - a) < 1e-4 || Math.abs(Math.abs(m - a) - 360) < 1e-4);
   const marks = $derived(
-    ringMarks({
+    ringScene({
       t: penClock.current,
       wasRevealed: penFrom.revealed,
       revealed: revealed(),

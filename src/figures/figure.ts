@@ -17,7 +17,9 @@ export type Ctx = {
   lb: number;
 };
 
-/** What a figure gives back: its marks, plus any measurements a scene needs to place the next one. */
+/**
+ * What a figure gives back: its marks, plus any measurements a scene needs to place the next one.
+ */
 export type Drawn<Extra = {}> = { marks: Mark[] } & Extra;
 
 /** How a stroke looks. Widths are in stroke units (scaled by `ctx.sw`). */
@@ -42,7 +44,10 @@ export type Timing = {
   exitDur?: number;
   /** How hard a `draw` eases out (1 is linear). */
   power?: number;
-  /** How a `pop` runs: progress to size (it may overshoot), and the progress below which it is still fading in. */
+  /**
+   * How a `pop` runs: progress to size (it may overshoot), and the progress below which it is still
+   * fading in.
+   */
   curve?: (p: number) => number;
   fadeBy?: number;
 };

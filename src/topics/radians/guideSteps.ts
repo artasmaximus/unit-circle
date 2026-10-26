@@ -1,4 +1,4 @@
-// The Radians guide. The drawing's features (see drawing.ts) come on one at a time, and each
+// The Radians guide. The drawing's features (see scene.ts) come on one at a time, and each
 // step asks for a little something before going on. It starts from the one fact to accept (a half
 // turn is π radians), then explains why, then builds every familiar angle from pieces of π/6, π/4,
 // π/3 and π/2.

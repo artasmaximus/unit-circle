@@ -8,7 +8,7 @@
   import { aim, point, quiz, revealed, ui } from '../core/state.svelte.ts';
   import { inverse } from '../topics/inverse/state.svelte.ts';
   import { snapValue } from '../topics/inverse/math.ts';
-  import { buildScene } from '../topics/circle/scene.ts';
+  import { buildLayout } from '../topics/circle/layout.ts';
   import { angleTex } from '../core/angles.ts';
   import { progress } from '../core/progress.svelte.ts';
   import { SPECIAL, colorOf, norm, rad, snapDeg } from '../core/trig.ts';
@@ -23,8 +23,8 @@
   /** How close (px) to the circle a press must be to grab the point. */
   const BAND = input.grabBand;
   const memo = { b: -1 };
-  const scene = $derived(
-    buildScene({
+  const layout = $derived(
+    buildLayout({
       ang: point.ang,
       hit: point.hit,
       dotR: point.dotR,
@@ -256,7 +256,7 @@
     <RingLayer />
     <InverseLayer />
     <RadiansLayer />
-    <CircleLayer {scene} ghost={ghostDraw} />
+    <CircleLayer {layout} ghost={ghostDraw} />
     <UnitGuideLayer />
   </g>
 </svg>
@@ -264,7 +264,7 @@
     in:fade={{ duration: 200 }}
     out:fade={{ duration: 160 }}
   >
-    <Chips {scene} />
+    <Chips {layout} />
   </div>{/if}
 
 <style>

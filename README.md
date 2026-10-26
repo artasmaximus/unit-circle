@@ -18,9 +18,17 @@ Code is grouped by topic, with shared pieces beside the topics:
   bundled MathJax, progress saved in the browser, tuning numbers, and app state (`state.svelte.ts`).
 - `src/plane/`: the full-viewport drawing: `Plane.svelte`, the keyed mark model (`marks.ts`) and
   `MarkLayer.svelte` that animates marks in and out, plus the grid and the ring every topic shares.
+- `src/figures/`: reusable, topic-free pieces of a drawing (a labelled arc, a brace, a right
+  triangle, a number line). Each takes a key, its own options and the zoom, and returns marks.
+
 - `src/guide/`: the Guide engine: the step format (`guide.ts`) and the step-by-step panel (`Guide.svelte`).
-- `src/topics/<topic>/`: one folder per topic (`circle`, `inverse`, `radians`): its state, quiz, drawing,
-  Guide steps, panel components and plane layer.
+- `src/topics/<topic>/`: one folder per topic (`circle`, `inverse`, `radians`): its state, quiz, scene
+  (`scene.ts`), Guide steps, panel components and plane layer. The unit circle also has
+  `layout.ts`, which places its labels and floating chips.
 - `src/solver/`: the equation solver and its test bench (`?lab=solver`).
 - `src/panel/`: the floating panel that hosts each topic's views. `src/ui/`: small shared components.
 - Tests (`*.test.ts`) sit next to the code they cover.
+
+The drawing is layered **mark → figure → scene**: a mark is one animated shape, a figure is a
+self-contained piece built from marks, and each topic's `scene.ts` composes figures from that
+topic's state (its Guide steps turn on which parts show).

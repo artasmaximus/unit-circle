@@ -22,7 +22,7 @@ const range = (lo: number, hi: number) => {
   return out;
 };
 
-export function gridMarks(g: GridInput): Mark[] {
+export function gridScene(g: GridInput): Mark[] {
   const { view: v, boost } = g,
     cols = range(v.x, v.x + v.w),
     rows = range(v.y, v.y + v.h);

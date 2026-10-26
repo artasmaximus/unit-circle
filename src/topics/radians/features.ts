@@ -1,4 +1,4 @@
-// The parts of the Radians drawing that a Guide can turn on one at a time (see drawing.ts for
+// The parts of the Radians drawing that a Guide can turn on one at a time (see scene.ts for
 // what each one draws).
 export const FEATURES = [
   'ray', // the point's radius line

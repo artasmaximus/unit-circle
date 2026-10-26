@@ -122,7 +122,7 @@ export const camera = {
   decimalsAtZoom: [2, 5, 10],
 };
 
-/** The point's tag and the floating chips (topics/circle/scene.ts). */
+/** The point's tag and the floating chips (topics/circle/layout.ts). */
 export const tag = {
   /**
    * The coordinates are centered in a nominal box of this size (px) that sits this far (px) out

@@ -1,10 +1,10 @@
 <!-- The Radians topic's layer of the plane. It stays mounted on every topic so its marks can
      play their exits when the topic is left; it just asks for no marks then (see
-     drawing.ts). -->
+     scene.ts). -->
 <script lang="ts">
   import { camera } from '../../core/camera.svelte.ts';
   import { radians } from './state.svelte.ts';
-  import { radiansMarks } from './drawing.ts';
+  import { radiansScene } from './scene.ts';
   import { point, ui } from '../../core/state.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
 
@@ -13,7 +13,7 @@
    */
   let { under = false }: { under?: boolean } = $props();
   const marks = $derived(
-    radiansMarks({
+    radiansScene({
       active: ui.topic === 'radians',
       features: radians.features,
       ang: point.ang,

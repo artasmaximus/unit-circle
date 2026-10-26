@@ -30,7 +30,7 @@ export type RadiansInput = {
 
 const COLOR = 'var(--rad)';
 
-export function radiansMarks(i: RadiansInput): Mark[] {
+export function radiansScene(i: RadiansInput): Mark[] {
   if (!i.active) return [];
   const f = i.features,
     ctx: Ctx = { sw: i.sw, lb: i.lb },

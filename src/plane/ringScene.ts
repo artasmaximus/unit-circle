@@ -43,7 +43,7 @@ const PULSE = input.pulseShare,
   STEP = (1 - PULSE) / (SPECIAL.length - 1);
 const local = (t: number, i: number) => Math.min(1, Math.max(0, (t - i * STEP) / PULSE));
 
-export function ringMarks(i: RingInput): Mark[] {
+export function ringScene(i: RingInput): Mark[] {
   const out: Mark[] = [
     {
       kind: 'path',

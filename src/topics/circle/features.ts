@@ -1,5 +1,5 @@
 // The parts of the Unit circle Guide's drawing that its steps turn on one at a time (see
-// guideDrawing.ts for what each one draws).
+// guideScene.ts for what each one draws).
 export const FEATURES = [
   'ray', // the point and its radius
   'angle', // the θ arc, labelled

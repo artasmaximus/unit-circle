@@ -58,7 +58,7 @@ const at = (deg: number, r = S): Pt => polar(rad(deg), r);
 /** Whether two angles are different points on the circle (at ±1 the two crossings meet). */
 const apart = (a: number, b: number) => Math.abs(((a - b + 540) % 360) - 180) > 1;
 
-export function inverseMarks(i: InvInput): Mark[] {
+export function inverseScene(i: InvInput): Mark[] {
   if (!i.active) return [];
   const { fn } = i,
     c = COLORS[fn],

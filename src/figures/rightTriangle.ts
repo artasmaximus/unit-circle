@@ -23,10 +23,16 @@ export type RightTriangleProps = {
   apex: Pt;
   /** The soft fill inside it. */
   fill?: { color: string; opacity: number; z?: number } & Timing;
-  /** The small square at the right angle, `size` stroke units, left off when a leg is shorter than `minLeg` (world units). */
+  /**
+   * The small square at the right angle, `size` stroke units, left off when a leg is shorter than
+   * `minLeg` (world units).
+   */
   rightAngle?: Look & Timing & { size: number; minLeg: number };
   sides?: Partial<Record<SideName, Side>>;
-  /** A tick across the middle of each leg, saying the legs are equal. The upright's tick follows the base's by 100 ms. */
+  /**
+   * A tick across the middle of each leg, saying the legs are equal. The upright's tick follows the
+   * base's by 100 ms.
+   */
   equal?: Look & Timing & { size: number };
 };
 
@@ -42,7 +48,10 @@ const outward = (a: Pt, b: Pt, other: Pt): Pt => {
     [ox, oy] = sub(other, a);
   return n[0] * ox + n[1] * oy > 0 ? [-n[0], -n[1]] : n;
 };
-/** A unit normal of a→b, turned so its larger component is positive (ticks always draw the same way). */
+/**
+ * A unit normal of a→b, turned so its larger component is positive (ticks always draw the same
+ * way).
+ */
 const across = (a: Pt, b: Pt): Pt => {
   const [ux, uy] = unit(sub(b, a)),
     n: Pt = [-uy, ux];
@@ -55,7 +64,9 @@ const across = (a: Pt, b: Pt): Pt => {
       : n;
 };
 
-/** `reach` is how far each side's brace goes out from it (0 for none), for placing labels past it. */
+/**
+ * `reach` is how far each side's brace goes out from it (0 for none), for placing labels past it.
+ */
 export function RightTriangle(
   key: string,
   p: RightTriangleProps,

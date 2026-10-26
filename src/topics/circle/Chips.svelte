@@ -1,12 +1,12 @@
 <!-- Labels floating over the plane: the point's θ and coordinates, and the slope on the radius,
-     which unfolds its working when clicked. Positions come from the scene, in world units. -->
+     which unfolds its working when clicked. Positions come from the layout, in world units. -->
 <script lang="ts">
   import { scale } from 'svelte/transition';
   import { camera } from '../../core/camera.svelte.ts';
   import { ui } from '../../core/state.svelte.ts';
-  import { CHIP_FONT, type Chip, type Scene } from './scene.ts';
+  import { CHIP_FONT, type Chip, type Layout } from './layout.ts';
   import Tex from '../../ui/Tex.svelte';
-  let { scene }: { scene: Scene } = $props();
+  let { layout }: { layout: Layout } = $props();
   let slopeEl = $state<HTMLButtonElement>();
   const close = () => (ui.slopeOpen = false);
 
@@ -26,8 +26,8 @@
 />
 
 <div class="layer">
-  {#if scene.tag}
-    {@const t = scene.tag}
+  {#if layout.tag}
+    {@const t = layout.tag}
     <!-- no card: a soft blur behind the values keeps them readable over the grid and lines -->
     <div class="tag" style={box(t)}>
       {#if t.values}
@@ -39,21 +39,21 @@
       {/if}
     </div>
   {/if}
-  {#if scene.slope}
+  {#if layout.slope}
     <!-- amber tan θ = value; hovering badges it as the slope, and a click unfolds the working
          inside the box -->
     <button
       bind:this={slopeEl}
       type="button"
       class="chip slope"
-      style={box(scene.slope)}
+      style={box(layout.slope)}
       aria-expanded={ui.slopeOpen}
       aria-label="Slope: click to show the calculation"
       onclick={() => (ui.slopeOpen = !ui.slopeOpen)}
       onblur={close}
       transition:scale={{ start: 0.6, duration: 200 }}
     >
-      <span class="badge">slope</span><Tex latex={scene.slope.latex} />
+      <span class="badge">slope</span><Tex latex={layout.slope.latex} />
     </button>
   {/if}
 </div>
