@@ -16,32 +16,21 @@ export type Need = InvFn | 'compose';
 export const EXAM_NEEDS: Need[] = [...FNS, 'compose'];
 const needsOf = (q: IQ): Need[] => (q.t === 2 ? [q.fn, 'compose'] : [q.fn]);
 
-/** Lay the plane out for a question: the function, the value, what is given, the answer held back. */
+/**
+ * Move the plane to a question: the function, and where the control or the free point starts. What
+ * shows meanwhile (the answer held back, the free point, what is given) is the stage's to say.
+ */
 function stage(q: IQ) {
   ui.highlight = [];
   inverse.switchTo(q.fn);
-  // an evaluate question hands you the circle to probe: you pick angles and read each one's value,
-  // but nothing marks the answer. The other two keep the plane still or hold the answer back.
-  inverse.showOther = false;
-  inverse.showBand = false;
-  inverse.shown = q.t === 1;
-  inverse.locked = false;
   // a composition question hands you a free point to work with: move it by the ring or either axis
   // and read what it shows
   if (q.t === 2) inverse.startProbe(q.theta);
-  else inverse.stopProbe();
-  inverse.given = q.t === 2 ? q.theta : null;
-  inverse.domain = q.t === 2 ? q.dom : null;
   if (q.t === 2) inverse.setValue(partnerAt(q.fn, q.theta)!);
   else inverse.setValue(0);
 }
-/** Show the answer, and keep the control still while it shows. */
+/** Move the control to the answer. */
 function reveal(q: IQ) {
-  inverse.shown = true;
-  inverse.showOther = true;
-  inverse.showBand = true;
-  inverse.locked = true;
-  inverse.stopProbe();
   if (q.t === 1) inverse.setValue(q.v);
   if (q.t === 3) inverse.setAngle(q.ang);
   // the ring marks the answer's angle larger (in Practice)
@@ -62,7 +51,6 @@ const adapter: Adapter<IQ, number> = {
   check: (q) => q.t === 3 && Math.abs(inverse.angle - q.ang) < 1.2,
   stage,
   reveal,
-  onHint: () => (inverse.showBand = true),
   exam: {
     streak: EXAM_STREAK,
     needs: EXAM_NEEDS,
@@ -83,13 +71,3 @@ export type InvSession = Session<IQ, number>;
 /** Practice, and the Guide's exam. */
 export const invQuiz: InvSession = new Session(adapter);
 export const invExam: InvSession = new Session(adapter, true);
-
-/** Put the plane back as the exploration leaves it. */
-export function explorePlane() {
-  inverse.shown = true;
-  inverse.showBand = true;
-  inverse.locked = false;
-  inverse.given = null;
-  inverse.domain = null;
-  inverse.stopProbe();
-}

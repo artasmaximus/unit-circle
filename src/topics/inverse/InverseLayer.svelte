@@ -4,6 +4,7 @@
 <script lang="ts">
   import { camera } from '../../core/camera.svelte.ts';
   import { inverse } from './state.svelte.ts';
+  import { stage } from './stage.svelte.ts';
   import { inverseScene } from './scene.ts';
   import { progress } from '../../core/progress.svelte.ts';
   import { ui } from '../../core/app.svelte.ts';
@@ -22,14 +23,14 @@
       value: inverse.value,
       pole: inverse.pole,
       target: inverse.target,
-      shown: inverse.shown,
-      showOther: inverse.showOther,
-      showBand: inverse.showBand,
-      given: inverse.given,
-      domain: inverse.domain,
+      shown: stage.now.shown,
+      showOther: stage.now.other,
+      showBand: stage.now.band,
+      given: stage.now.given,
+      domain: stage.now.domain,
       ghost: inverse.ghost,
       dragging: inverse.dragging,
-      probe: inverse.probe === null ? null : inverse.probeAngle,
+      probe: stage.now.probing ? inverse.probeAngle : null,
       tail: inverse.tail,
       probeTail: inverse.probeTail,
       sw: camera.stroke,

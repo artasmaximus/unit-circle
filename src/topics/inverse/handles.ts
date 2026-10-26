@@ -8,6 +8,7 @@ import type { Aim, Handle } from '../../plane/handles.svelte.ts';
 import { angleOf } from '../../plane/pointHandle.svelte.ts';
 import { snapValue } from './math.ts';
 import { inverse } from './state.svelte.ts';
+import { stage } from './stage.svelte.ts';
 
 const snapOf = (a: Aim) => ({ value: a.valueRange, angle: a.angleRange });
 const step = (big: boolean, small: number, large: number) => (big ? large : small);
@@ -15,7 +16,7 @@ const step = (big: boolean, small: number, large: number) => (big ? large : smal
 /** The probe's angle for a pointer at `[x, y]`, moved by the ring or by one axis. */
 function probeAngle(by: 'ring' | 'y' | 'x', [x, y]: [number, number], a: Aim) {
   if (by === 'ring') return snapDeg(a.grain(angleOf([x, y])), a.angleRange);
-  const cur = ((inverse.probe ?? 0) * Math.PI) / 180,
+  const cur = (inverse.probeTo * Math.PI) / 180,
     v = snapValue('asin', Math.max(-1, Math.min(1, by === 'y' ? -y / S : x / S)), a.valueRange);
   // a value sits at two angles; keep to the side the probe is already on
   if (by === 'y') {
@@ -35,7 +36,7 @@ function probeHandles(): Handle[] {
   return [
     {
       ...grip('ring'),
-      nudge: (dir, big) => inverse.moveProbe(inverse.probe! + dir * step(big, 1, 15)),
+      nudge: (dir, big) => inverse.moveProbe(inverse.probeTo + dir * step(big, 1, 15)),
     },
     grip('y'),
     grip('x'),
@@ -64,7 +65,7 @@ function controlHandle(): Handle {
 
 /** The handles Inverse trig offers right now. */
 export function inverseHandles(): Handle[] {
-  if (inverse.probe !== null) return probeHandles();
-  if (inverse.locked) return [];
+  if (stage.now.probing) return probeHandles();
+  if (stage.now.locked) return [];
   return [controlHandle()];
 }

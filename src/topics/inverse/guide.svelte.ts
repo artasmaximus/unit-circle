@@ -4,45 +4,19 @@
 // switch knows what each mode means here.
 import { inverseGuide } from './guideSteps.ts';
 import { inverse } from './state.svelte.ts';
-import { explorePlane, invExam, invQuiz } from './quiz.svelte.ts';
+import { invExam, invQuiz } from './quiz.svelte.ts';
 import type { Step } from '../../guide/guide.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { norm, rad, wrapPi } from '../../core/trig.ts';
-import type { InvFn } from './math.ts';
+import { SETUP, type Setup } from './guideSetup.ts';
 
-/**
- * How a step lays out the plane. `probe` puts the free point at an angle (and leaves the control
- * out); otherwise the control shows for `fn`, starting at `angle`. A drag step is checked against
- * whichever of the two it moves.
- */
-type Setup = { fn: InvFn; band: boolean; probe?: number; given?: number; angle?: number };
-const SETUP: Record<string, Setup> = {
-  'two-angles': { fn: 'asin', band: false, probe: 30 },
-  ranges: { fn: 'asin', band: true, angle: 30 },
-  arcsin: { fn: 'asin', band: true, angle: 30 },
-  arccos: { fn: 'acos', band: true, angle: 60 },
-  arctan: { fn: 'atan', band: true, angle: 0 },
-  trap: { fn: 'asin', band: true, probe: 150, given: 150 },
-};
-
+/** Move the plane to a step: the function, and where the control or the free point starts. */
 function stage(s: Setup) {
   inverse.switchTo(s.fn);
-  inverse.showBand = s.band;
-  inverse.showOther = false;
-  inverse.domain = null;
-  inverse.given = s.given ?? null;
-  if (s.probe !== undefined) {
-    inverse.shown = false;
-    inverse.locked = true;
-    inverse.startProbe(s.probe);
-  } else {
-    inverse.stopProbe();
-    inverse.shown = true;
-    inverse.locked = false;
-    inverse.setAngle(s.angle ?? 0);
-  }
+  if (s.probe !== undefined) inverse.startProbe(s.probe);
+  else inverse.setAngle(s.angle ?? 0);
 }
 
 /** How far (degrees) `a` is from `b` round the circle. */
@@ -67,7 +41,7 @@ class InverseGuide {
   atTarget = $derived.by(() => {
     const t = this.step.task;
     if (t.kind !== 'drag' || ui.mode !== 'guide' || ui.topic !== 'inverse') return false;
-    const now = inverse.probe !== null ? norm(inverse.probe) : inverse.target;
+    const now = SETUP[this.step.id]?.probe !== undefined ? norm(inverse.probeTo) : inverse.target;
     return [t.deg, ...(t.also ?? [])].some((d) => apart(now, d) < t.tol);
   });
 
@@ -113,7 +87,7 @@ function apply(m: Mode) {
     return inverseGuideRun.goTo(
       Math.min(progress.step.inverse ?? 0, inverseGuideRun.steps.length - 1),
     );
-  if (m !== 'practice') return explorePlane();
+  if (m !== 'practice') return;
   if (!invQuiz.cur || invQuiz.answered) invQuiz.start();
   else invQuiz.resume();
 }

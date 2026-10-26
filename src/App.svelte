@@ -14,6 +14,7 @@
   import { inverseGuideRun } from './topics/inverse/guide.svelte.ts';
   import { unitGuide } from './topics/circle/guide.svelte.ts';
   import { radians } from './topics/radians/state.svelte.ts';
+  import { stage as inverseStage } from './topics/inverse/stage.svelte.ts';
   import { startApp, topics, ui } from './core/app.svelte.ts';
   import { nudge } from './plane/handles.svelte.ts';
   import Grid from './plane/Grid.svelte';
@@ -44,6 +45,7 @@
           radians,
           unitGuide,
           inverseGuideRun,
+          inverseStage,
         }),
     );
 

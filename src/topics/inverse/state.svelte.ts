@@ -57,63 +57,30 @@ class Inverse {
    * pointer is not where a press grabs.
    */
   ghost = $state<number | null>(null);
-  /**
-   * Whether the answer (the ray, its arc and the point on the circle) is drawn. A quiz holds it
-   * back until the question is answered.
-   */
-  shown = $state(true);
-  /**
-   * An angle the question starts from (a composition like arcsin(sin 210°)): drawn as its own point
-   * on the circle.
-   */
-  given = $state<number | null>(null);
   /** A press is holding the control (the preview is hidden meanwhile). */
   dragging = $state(false);
-  /**
-   * Whether the shaded principal range is drawn (a quiz holds it back until the hint or the
-   * answer).
-   */
-  showBand = $state(true);
   /**
    * A free point on the circle for a quiz that asks you to work something out (arcsin(sin θ)): you
    * can move it by the ring, the y-axis or the x-axis, and read its angle, y-value and x-value.
    * While it is there, the function's own control stays out of the way.
    */
-  probe = $state<number | null>(null);
+  probeTo = $state(0);
   #probe = new Swing(0, false);
   probeAngle = $derived(deg(this.#probe.ang));
   probeTail = $derived(this.#probe.tail);
   /** Put the probe at an angle straight away. */
   startProbe(a: number) {
-    this.probe = a;
+    this.probeTo = a;
     this.#probe.place(rad(a));
-  }
-  stopProbe() {
-    this.probe = null;
   }
   /** Slide the probe to an angle, going the short way round. */
   moveProbe(a: number) {
-    if (this.probe === null) return;
-    const to = this.probe + ((((a - this.probe) % 360) + 540) % 360) - 180;
-    this.probe = to;
+    const to = this.probeTo + ((((a - this.probeTo) % 360) + 540) % 360) - 180;
+    this.probeTo = to;
     this.#probe.aim(rad(to));
   }
-  /** The control cannot be moved (a quiz that sets the value itself). */
-  locked = $state(false);
-  /** The stretch of angles a composition question draws θ from, marked on the ring. */
-  domain = $state<{ lo: number; hi: number } | null>(null);
-  /** Whether the other angle (the other crossing) is drawn along with the answer. */
+  /** The learner's Other angle switch: it counts only while exploring (see stage.svelte.ts). */
   showOther = $state(false);
-  /** Angles (degrees) whose ring label the drawing writes itself, so the ring leaves them out. */
-  marked = $derived.by(() => {
-    const out: number[] = [];
-    if (this.shown && this.showOther) out.push(this.other);
-    if (this.given !== null) out.push(this.given);
-    // the preview is drawn only where it would change something, so it only claims labels then
-    if (this.ghost !== null && !this.dragging && Math.abs(this.ghost - this.target) > 1e-3)
-      out.push(this.ghost, otherAngle(this.fn, this.ghost));
-    return out.map((a) => norm(a));
-  });
   name = $derived(INV_NAME[this.fn]);
   partner = $derived(PARTNER[this.fn]);
 
