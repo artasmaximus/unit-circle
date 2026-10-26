@@ -1,7 +1,7 @@
 // An arc of a circle between two angles, with an optional label just outside its middle. It draws
 // an angle (θ from the x-axis, a reference angle back to the axis) as well as any curved edge.
 import type { Ctx, Drawn, Look, Pt, Timing } from './figure.ts';
-import { dashOf, polar } from './figure.ts';
+import { dashOf, polar, timing } from './figure.ts';
 import { Label } from './label.ts';
 
 export type ArcProps = Look &
@@ -36,9 +36,8 @@ export function Arc(key: string, p: ArcProps, ctx: Ctx): Drawn {
       dash: dashOf(p.dash, ctx.sw),
       round: p.round,
       opacity: p.opacity,
+      ...timing(p),
       enter: p.enter ?? 'draw',
-      delay: p.delay,
-      dur: p.dur,
     },
   ];
   if (p.label) {

@@ -1,6 +1,7 @@
 // A curly brace beside a segment, saying "this whole length". It sits on the side the normal
 // points to, and its tip points that way too.
 import type { Ctx, Drawn, Look, Pt, Timing } from './figure.ts';
+import { timing } from './figure.ts';
 
 export type BraceProps = Look &
   Timing & {
@@ -63,9 +64,8 @@ export function Brace(key: string, p: BraceProps, ctx: Ctx): Drawn<{ reach: numb
         join: true,
         symmetric: true,
         opacity: p.opacity,
+        ...timing(p),
         enter: p.enter ?? 'draw',
-        delay: p.delay,
-        dur: p.dur,
       },
     ],
     reach: b.m + b.d,

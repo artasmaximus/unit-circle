@@ -1,7 +1,7 @@
 // A shape through a list of points: closed and optionally filled (a triangle), or open (a
 // right-angle mark).
 import type { Ctx, Drawn, Look, Pt, Timing } from './figure.ts';
-import { dashOf } from './figure.ts';
+import { dashOf, timing } from './figure.ts';
 
 export type PolygonProps = Look &
   Timing & {
@@ -28,9 +28,7 @@ export function Polygon(key: string, p: PolygonProps, ctx: Ctx): Drawn {
         round: p.round,
         fill: p.fill,
         opacity: p.opacity,
-        enter: p.enter,
-        delay: p.delay,
-        dur: p.dur,
+        ...timing(p),
       },
     ],
   };

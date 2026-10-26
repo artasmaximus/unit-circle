@@ -13,6 +13,7 @@ import { Brace } from '../../figures/brace.ts';
 import { Label } from '../../figures/label.ts';
 import { Point } from '../../figures/point.ts';
 import { Polygon } from '../../figures/polygon.ts';
+import { RightTriangle } from '../../figures/rightTriangle.ts';
 import { Sector } from '../../figures/sector.ts';
 import { Segment } from '../../figures/segment.ts';
 import type { Feature } from './features.ts';
@@ -136,95 +137,14 @@ export function unitGuideMarks(i: UnitGuideInput): Mark[] {
     });
   }
 
-  // ---- the right triangle under the ray: a soft fill and the right-angle mark
-  if (tri) {
-    add(
-      Polygon(
-        'ug:tri',
-        {
-          points: [
-            [0, 0],
-            [px, 0],
-            [px, py],
-          ],
-          noStroke: true,
-          fill: 'var(--fg)',
-          opacity: 0.07,
-          z: 2,
-          enter: 'fade',
-          dur: 300,
-        },
-        ctx,
-      ),
-    );
-    if (Math.abs(c) > 0.12 && Math.abs(s) > 0.12) {
-      const q = 9 * sw,
-        dx = -Math.sign(c) * q,
-        dy = Math.sign(py) * q;
-      add(
-        Polygon(
-          'ug:tri:right',
-          {
-            points: [
-              [px + dx, 0],
-              [px + dx, dy],
-              [px, dy],
-            ],
-            open: true,
-            color: 'var(--muted)',
-            z: 4,
-            enter: 'fade',
-            delay: 200,
-          },
-          ctx,
-        ),
-      );
-    }
-  }
-  // ---- the triangle mirrored below the axis: together they make one triangle, equilateral at 30°
-  if (f.has('equilateral') && tri) {
-    add(
-      Polygon(
-        'ug:eq',
-        {
-          points: [
-            [0, 0],
-            [px, -py],
-            [px, py],
-          ],
-          color: 'var(--muted)',
-          ...DASHED,
-          fill: 'none',
-          z: 2,
-          enter: 'draw',
-          dur: 600,
-        },
-        ctx,
-      ),
-    );
-    add(
-      Point(
-        'ug:eq:dot',
-        {
-          at: [px, -py],
-          r: 4.5,
-          fill: 'var(--bg)',
-          stroke: 'var(--muted)',
-          width: 1.5,
-          z: 7,
-          delay: 450,
-        },
-        ctx,
-      ),
-    );
-  }
-
   // ---- the shadows: drop lines to each axis, and the shadow itself along the axis, named x and y
-  // (then cos θ and sin θ, in their colors)
-  if (f.has('shadows')) {
-    const cc = named ? COS : 'var(--fg)',
-      sc = named ? SIN : 'var(--fg)',
-      shadow: Look = { width: 3.5, round: true, z: 5 };
+  // (then cos θ and sin θ, in their colors). Once there is a triangle, the drop line to the x-axis
+  // becomes its upright side.
+  const shadows = f.has('shadows'),
+    cc = named ? COS : 'var(--fg)',
+    sc = named ? SIN : 'var(--fg)',
+    shadow: Look = { width: 3.5, round: true, z: 5 };
+  if (shadows) {
     add(
       Segment(
         'ug:drop:y',
@@ -262,17 +182,7 @@ export function unitGuideMarks(i: UnitGuideInput): Mark[] {
         ctx,
       ),
     );
-    // once there is a triangle, its upright side is the sin leg, drawn solid; before that it is a
-    // drop line
-    if (tri)
-      add(
-        Segment(
-          'ug:leg:sin',
-          { from: [px, 0], to: [px, py], color: sc, ...shadow, enter: 'draw', dur: 400 },
-          ctx,
-        ),
-      );
-    else
+    if (!tri)
       add(
         Segment(
           'ug:drop:x',
@@ -288,92 +198,135 @@ export function unitGuideMarks(i: UnitGuideInput): Mark[] {
           ctx,
         ),
       );
-    if (f.has('equal') && tri && Math.abs(ref - 45) < 0.5) {
-      const t = 6 * sw,
-        tick: Look = { color: 'var(--fg)', width: 2, z: 6 };
-      add(
-        Segment(
-          'ug:tick:x',
-          { from: [px / 2, -t], to: [px / 2, t], ...tick, enter: 'draw', delay: 200 },
-          ctx,
-        ),
-      );
-      add(
-        Segment(
-          'ug:tick:y',
-          { from: [px - t, py / 2], to: [px + t, py / 2], ...tick, enter: 'draw', delay: 300 },
-          ctx,
-        ),
-      );
-    }
-    const xName = named ? '\\cos\\theta' : 'x',
-      yName = named ? '\\sin\\theta' : 'y';
-    // once there is a triangle, a brace on the outer side of the sin leg says which length its
-    // label is; with the mirrored triangle, a second brace further out takes in the whole upright
-    // side of the big one
-    const side = Math.sign(c || 1),
-      braceLook = { width: 1, z: 5, dur: 450 } as const;
-    let reach = 0;
-    if (tri) {
-      reach = add(
-        Brace(
-          'ug:brace:sin',
-          { from: [px, 0], to: [px, py], side: [side, 0], color: sc, opacity: 0.8, ...braceLook },
-          ctx,
-        ),
-      ).reach;
-      if (f.has('equilateral')) {
-        const off = reach + 4 * sw,
-          e = add(
-            Brace(
-              'ug:brace:eq',
-              {
-                from: [px + side * off, -py],
-                to: [px + side * off, py],
-                side: [side, 0],
-                color: 'var(--ok)',
-                ...braceLook,
-                delay: 400,
-              },
-              ctx,
-            ),
-          );
-        if (e.marks.length) {
-          reach = off + e.reach;
-          const eq = Math.abs(ref - 30) < 0.5;
-          add(
-            Label(
-              'ug:eq:label',
-              {
-                tex: eq ? '\\text{whole side}=1' : '\\text{whole side}=2\\sin\\theta',
-                size: 10,
-                at: [px + side * (reach + 5 * sw), 0],
-                anchor: [c >= 0 ? 0 : 1, 0.5],
-                color: 'var(--ok)',
-                back: true,
-                z: 9,
-                enter: 'fade',
-                delay: 600,
-              },
-              ctx,
-            ),
-          );
-        }
+  }
+
+  // ---- the right triangle under the ray: a soft fill and the right-angle mark; with the shadows
+  // on, its upright side is the sin leg, and a brace on the outer side of each leg says which
+  // length its label is
+  const braceLook = { width: 1, z: 5, dur: 450 } as const;
+  let reach = { base: 0, upright: 0 };
+  if (tri) {
+    reach = add(
+      RightTriangle(
+        'ug:tri',
+        {
+          start: [0, 0],
+          corner: [px, 0],
+          apex: [px, py],
+          fill: { color: 'var(--fg)', opacity: 0.07, z: 2, enter: 'fade', dur: 300 },
+          rightAngle: {
+            size: 9,
+            minLeg: S * 0.12,
+            color: 'var(--muted)',
+            z: 4,
+            enter: 'fade',
+            delay: 200,
+          },
+          sides: shadows
+            ? {
+                upright: {
+                  line: { color: sc, ...shadow, enter: 'draw', dur: 400 },
+                  brace: { color: sc, opacity: 0.8, ...braceLook },
+                },
+                base: { brace: { color: cc, opacity: 0.8, ...braceLook } },
+              }
+            : undefined,
+          equal:
+            shadows && f.has('equal') && Math.abs(ref - 45) < 0.5
+              ? { size: 6, color: 'var(--fg)', width: 2, z: 6, enter: 'draw', delay: 200 }
+              : undefined,
+        },
+        ctx,
+      ),
+    ).reach;
+  }
+
+  // ---- the triangle mirrored below the axis: together they make one triangle, equilateral at 30°.
+  // A second brace, past the sin leg's, takes in the whole upright side of the big one.
+  const side = Math.sign(c || 1);
+  let yReach = reach.upright;
+  if (f.has('equilateral') && tri) {
+    add(
+      Polygon(
+        'ug:eq',
+        {
+          points: [
+            [0, 0],
+            [px, -py],
+            [px, py],
+          ],
+          color: 'var(--muted)',
+          ...DASHED,
+          fill: 'none',
+          z: 2,
+          enter: 'draw',
+          dur: 600,
+        },
+        ctx,
+      ),
+    );
+    add(
+      Point(
+        'ug:eq:dot',
+        {
+          at: [px, -py],
+          r: 4.5,
+          fill: 'var(--bg)',
+          stroke: 'var(--muted)',
+          width: 1.5,
+          z: 7,
+          delay: 450,
+        },
+        ctx,
+      ),
+    );
+    if (shadows) {
+      const off = reach.upright + 4 * sw,
+        e = add(
+          Brace(
+            'ug:brace:eq',
+            {
+              from: [px + side * off, -py],
+              to: [px + side * off, py],
+              side: [side, 0],
+              color: 'var(--ok)',
+              ...braceLook,
+              delay: 400,
+            },
+            ctx,
+          ),
+        );
+      if (e.marks.length) {
+        yReach = off + e.reach;
+        const eq = Math.abs(ref - 30) < 0.5;
+        add(
+          Label(
+            'ug:eq:label',
+            {
+              tex: eq ? '\\text{whole side}=1' : '\\text{whole side}=2\\sin\\theta',
+              size: 10,
+              at: [px + side * (yReach + 5 * sw), 0],
+              anchor: [c >= 0 ? 0 : 1, 0.5],
+              color: 'var(--ok)',
+              back: true,
+              z: 9,
+              enter: 'fade',
+              delay: 600,
+            },
+            ctx,
+          ),
+        );
       }
     }
-    // the cos leg gets its brace on the side away from the point, and its label past it
-    const below = s >= 0 ? 1 : -1;
-    let xReach = 8 * sw;
-    if (tri) {
-      const b = add(
-        Brace(
-          'ug:brace:cos',
-          { from: [0, 0], to: [px, 0], side: [0, below], color: cc, opacity: 0.8, ...braceLook },
-          ctx,
-        ),
-      );
-      if (b.marks.length) xReach = b.reach + 4 * sw;
-    }
+  }
+
+  // ---- the shadows' names: the x label past the cos leg's brace, on the side away from the point;
+  // the y label past the sin leg's braces once there is a triangle, before that by the y-axis
+  if (shadows) {
+    const xName = named ? '\\cos\\theta' : 'x',
+      yName = named ? '\\sin\\theta' : 'y',
+      below = s >= 0 ? 1 : -1,
+      xReach = reach.base ? reach.base + 4 * sw : 8 * sw;
     add(
       Label(
         'ug:shadow:x:label',
@@ -391,9 +344,7 @@ export function unitGuideMarks(i: UnitGuideInput): Mark[] {
         ctx,
       ),
     );
-    // the y label sits past the sin leg's braces once there is a triangle; before that by the
-    // y-axis, on the side away from the point
-    const yx = tri ? px + side * (reach + 5 * sw) : -side * 8 * sw,
+    const yx = tri ? px + side * (yReach + 5 * sw) : -side * 8 * sw,
       yax = tri ? (c >= 0 ? 0 : 1) : c >= 0 ? 1 : 0;
     add(
       Label(

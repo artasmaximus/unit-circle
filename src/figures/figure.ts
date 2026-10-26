@@ -31,8 +31,23 @@ export type Look = {
   z?: number;
 };
 
-/** When and how a figure's main mark arrives (milliseconds). */
-export type Timing = { enter?: Verb; delay?: number; dur?: number };
+/** When and how a figure's marks arrive and leave (milliseconds). */
+export type Timing = {
+  enter?: Verb;
+  delay?: number;
+  dur?: number;
+  exitDelay?: number;
+  exitDur?: number;
+};
+
+/** A figure's timing, copied onto a mark. */
+export const timing = (p: Timing) => ({
+  enter: p.enter,
+  delay: p.delay,
+  dur: p.dur,
+  exitDelay: p.exitDelay,
+  exitDur: p.exitDur,
+});
 
 /** A look's dash in world units, or none. */
 export const dashOf = (dash: Look['dash'], sw: number): [number, number] | undefined =>

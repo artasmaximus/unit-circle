@@ -1,6 +1,6 @@
 // A straight line between two points.
 import type { Ctx, Drawn, Look, Pt, Timing } from './figure.ts';
-import { dashOf } from './figure.ts';
+import { dashOf, timing } from './figure.ts';
 
 export type SegmentProps = Look & Timing & { from: Pt; to: Pt };
 
@@ -20,9 +20,7 @@ export function Segment(key: string, p: SegmentProps, ctx: Ctx): Drawn {
         dash: dashOf(p.dash, ctx.sw),
         round: p.round,
         opacity: p.opacity,
-        enter: p.enter,
-        delay: p.delay,
-        dur: p.dur,
+        ...timing(p),
       },
     ],
   };

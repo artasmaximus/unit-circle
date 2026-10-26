@@ -1,5 +1,6 @@
 // A dot at a point, optionally ringed.
 import type { Ctx, Drawn, Pt, Timing } from './figure.ts';
+import { timing } from './figure.ts';
 
 export type PointProps = Timing & {
   at: Pt;
@@ -25,9 +26,8 @@ export function Point(key: string, p: PointProps, ctx: Ctx): Drawn {
         fill: p.fill,
         stroke: p.stroke,
         width: p.width === undefined ? undefined : p.width * ctx.sw,
+        ...timing(p),
         enter: p.enter ?? 'pop',
-        delay: p.delay,
-        dur: p.dur,
       },
     ],
   };

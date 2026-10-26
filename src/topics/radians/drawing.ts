@@ -1,13 +1,18 @@
-// What the Radians topic puts on the plane, as keyed marks (see plane/marks.ts). The big idea is
-// that an angle in radians is a length: lay the circle's radius along its edge and count. The
-// drawing is built from features that a Guide turns on one at a time (a feature is a group of
+// What the Radians topic puts on the plane, composed from figures (see figures/figure.ts). The big
+// idea is that an angle in radians is a length: lay the circle's radius along its edge and count.
+// The drawing is built from features that a Guide turns on one at a time (a feature is a group of
 // marks: its marks enter when it comes on and leave when it goes off), and that Explore turns on
 // all together.
 import { S } from '../../core/camera.svelte.ts';
-import type { Mark } from '../../plane/marks.ts';
-import type { Label } from '../../plane/marks.ts';
-import { texRect } from '../../core/tex.svelte.ts';
 import { piFraction, piTex } from '../../core/angles.ts';
+import type { Mark } from '../../plane/marks.ts';
+import { polar, type Ctx } from '../../figures/figure.ts';
+import { Arc } from '../../figures/arc.ts';
+import { ArcRuler } from '../../figures/arcRuler.ts';
+import { Label } from '../../figures/label.ts';
+import { Point } from '../../figures/point.ts';
+import { Segment } from '../../figures/segment.ts';
+import { Wedges } from '../../figures/wedges.ts';
 
 export { FEATURES, type Feature } from './features.ts';
 import type { Feature } from './features.ts';
@@ -24,218 +29,175 @@ export type RadiansInput = {
 };
 
 const COLOR = 'var(--rad)';
-const at = (a: number, r = S): [number, number] => [r * Math.cos(a), -r * Math.sin(a)];
-const arcPath = (a0: number, a1: number, r = S) => {
-  const [x0, y0] = at(a0, r),
-    [x1, y1] = at(a1, r);
-  return `M ${x0} ${y0} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 0 ${x1} ${y1}`;
-};
 
 export function radiansMarks(i: RadiansInput): Mark[] {
   if (!i.active) return [];
-  const { sw, lb, features: f } = i,
+  const f = i.features,
+    ctx: Ctx = { sw: i.sw, lb: i.lb },
     out: Mark[] = [];
-  // the point's angle, kept inside one turn; an angle of exactly a full turn reads as a full turn
-  // rather than zero
+  const add = (d: { marks: Mark[] }) => out.push(...d.marks);
   const a = i.ang,
-    P = at(a);
-  const lab = (
-    latex: string,
-    size: number,
-    x: number,
-    y: number,
-    color: string,
-    ax = 0.5,
-    ay = 0.5,
-  ): Label | null => {
-    const rect = texRect(latex, size * lb, x, y, ax, ay);
-    return rect && { latex, size: size * lb, rect, color };
-  };
-  const label = (m: Omit<Extract<Mark, { kind: 'label' }>, 'kind' | 'label'>, l: Label | null) => {
-    if (l) out.push({ kind: 'label', label: l, ...m });
-  };
+    P = polar(a, S);
 
   // ---- the radius as a ruler, along the x-axis from the middle to where the angle starts
   if (f.has('radius')) {
-    out.push({
-      kind: 'line',
-      key: 'rad:radius',
-      z: 4,
-      x1: 0,
-      y1: 0,
-      x2: S,
-      y2: 0,
-      color: COLOR,
-      width: 3.5 * sw,
-      round: true,
-      enter: 'draw',
-      dur: 600,
-    });
-    out.push({
-      kind: 'dot',
-      key: 'rad:radius:end',
-      z: 5,
-      x: S,
-      y: 0,
-      r: 4 * sw,
-      fill: COLOR,
-      stroke: 'var(--panel)',
-      width: 1.5 * sw,
-      enter: 'pop',
-      delay: 450,
-    });
-    label(
-      { key: 'rad:radius:label', z: 9, back: lb, enter: 'fade', delay: 500 },
-      lab('\\text{radius}=1', 10, S / 2, 14 * sw, COLOR),
+    add(
+      Segment(
+        'rad:radius',
+        {
+          from: [0, 0],
+          to: [S, 0],
+          color: COLOR,
+          width: 3.5,
+          round: true,
+          z: 4,
+          enter: 'draw',
+          dur: 600,
+        },
+        ctx,
+      ),
+    );
+    add(
+      Point(
+        'rad:radius:end',
+        { at: [S, 0], r: 4, fill: COLOR, stroke: 'var(--panel)', width: 1.5, z: 5, delay: 450 },
+        ctx,
+      ),
+    );
+    add(
+      Label(
+        'rad:radius:label',
+        {
+          tex: '\\text{radius}=1',
+          size: 10,
+          at: [S / 2, 14 * i.sw],
+          color: COLOR,
+          back: true,
+          z: 9,
+          enter: 'fade',
+          delay: 500,
+        },
+        ctx,
+      ),
     );
   }
 
   // ---- the radius laid along the top half of the edge: three lengths fit, and a little more is
   // left to reach the end of the half turn
   if (f.has('beads')) {
-    for (let k = 1; k <= 3; k++) {
-      const [x, y] = at(k),
-        reached = a >= k - 1e-9;
-      out.push({
-        kind: 'dot',
-        key: `rad:bead:${k}`,
-        z: 6,
-        x,
-        y,
-        r: 4.2 * sw,
-        fill: reached ? COLOR : 'var(--bg)',
-        stroke: COLOR,
-        width: 1.75 * sw,
-        enter: 'pop',
-        delay: 300 + 380 * k,
-        dur: 320,
-        exitDelay: 40 * (3 - k),
-        exitDur: 160,
-      });
-      const [lx, ly] = at(k, S * 0.84);
-      label(
-        {
-          key: `rad:bead:label:${k}`,
-          z: 8,
-          enter: 'fade',
-          delay: 360 + 380 * k,
-          exitDur: 120,
-          opacity: reached ? 1 : 0.7,
-        },
-        lab(String(k), 10, lx, ly, COLOR),
-      );
-    }
+    add(
+      ArcRuler(
+        'rad:bead',
+        { r: S, step: 1, count: 3, upTo: a, color: COLOR, labelAt: 0.84, delay: 680, every: 380 },
+        ctx,
+      ),
+    );
   }
   // ---- the half turn itself, drawn over the top half of the circle and named π
   if (f.has('half')) {
-    out.push({
-      kind: 'path',
-      key: 'rad:half',
-      z: 1,
-      d: arcPath(0, Math.PI),
-      color: 'url(#rad-half)',
-      width: 4 * sw,
-      round: true,
-      enter: 'draw',
-      delay: f.has('beads') ? 1600 : 200,
-      dur: 700,
-    });
-    const [tx, ty] = at(Math.PI / 2, S * 1.1);
-    label(
-      { key: 'rad:half:label', z: 9, back: lb, enter: 'fade', delay: f.has('beads') ? 2100 : 600 },
-      lab(
-        f.has('beads') ? '\\pi\\approx 3.14\\text{ radii}' : '\\pi\\text{ radians}',
-        11,
-        tx,
-        ty,
-        COLOR,
+    const beads = f.has('beads');
+    add(
+      Arc(
+        'rad:half',
+        {
+          from: 0,
+          to: Math.PI,
+          r: S,
+          color: 'url(#rad-half)',
+          width: 4,
+          round: true,
+          z: 1,
+          delay: beads ? 1600 : 200,
+          dur: 700,
+        },
+        ctx,
+      ),
+    );
+    add(
+      Label(
+        'rad:half:label',
+        {
+          tex: beads ? '\\pi\\approx 3.14\\text{ radii}' : '\\pi\\text{ radians}',
+          size: 11,
+          at: polar(Math.PI / 2, S * 1.1),
+          color: COLOR,
+          back: true,
+          z: 9,
+          enter: 'fade',
+          delay: beads ? 2100 : 600,
+        },
+        ctx,
       ),
     );
   }
 
   // ---- the angle shaded as slices. Where the angle is whole pieces of one unit fraction of π
-  // (2π/3 is two pieces of π/3) each piece is its own slice, and moving to another such angle
-  // slides, shrinks, adds or removes slices; anywhere else it is a single slice that follows the
-  // point. Slices go by slot, so they carry over from one angle to the next.
+  // (2π/3 is two pieces of π/3) each piece is its own slice; anywhere else it is a single slice
+  // that follows the point.
   if (f.has('slices') && i.target > 0.004) {
     const T = i.target,
       fr = piFraction((T * 180) / Math.PI),
       whole = fr && fr[0] <= 12 ? fr : null;
     const [n, d] = whole ?? [1, 0],
-      step = whole ? Math.PI / d : T;
-    for (let j = 0; j < n; j++) {
-      out.push({
-        kind: 'slice',
-        key: `rad:piece:${j}`,
-        z: 2,
-        a0: j * step,
-        a1: (j + 1) * step,
-        r: S,
-        gap: 1.3 * sw,
-        edge0: j === 0 ? 2.6 * sw : undefined,
-        edge1: j === n - 1 ? 2.6 * sw : undefined,
-        rim: 2.6 * sw,
-        fill: COLOR,
-        opacity: 0.34,
-        enter: 'fade',
-        dur: 200,
-        exitDur: 200,
-      });
-      // each of several pieces is named, small and dark, so it reads as a piece of that size
-      if (whole && n > 1 && f.has('readout')) {
-        const [mx, my] = at((j + 0.5) * step, S * 0.8);
-        label(
-          { key: `rad:piece:label:${j}`, z: 9, enter: 'fade', delay: 220, dur: 200, exitDur: 120 },
-          lab(piTex(1, d), 9, mx, my, 'var(--bg)'),
-        );
-      }
-    }
-    if (whole && f.has('readout')) {
-      const [mx, my] = at(T / 2, S * 0.5);
-      label(
+      readout = !!whole && f.has('readout');
+    add(
+      Wedges(
+        'rad:piece',
         {
-          key: 'rad:slice:label',
-          z: 9,
-          back: lb,
-          enter: 'fade',
-          delay: 120,
-          dur: 200,
-          exitDur: 120,
+          n,
+          step: whole ? Math.PI / d : T,
+          r: S,
+          fill: COLOR,
+          opacity: 0.34,
+          gap: 1.3,
+          edge: 2.6,
+          // each of several pieces is named, small and dark, so it reads as a piece of that size
+          labels:
+            readout && n > 1
+              ? { tex: piTex(1, d), size: 9, at: 0.8, color: 'var(--bg)' }
+              : undefined,
         },
-        lab(piTex(n, d), 11, mx, my, COLOR),
+        ctx,
+      ),
+    );
+    if (readout) {
+      add(
+        Label(
+          'rad:slice:label',
+          {
+            tex: piTex(n, d),
+            size: 11,
+            at: polar(T / 2, S * 0.5),
+            color: COLOR,
+            back: true,
+            z: 9,
+            enter: 'fade',
+            delay: 120,
+            dur: 200,
+            exitDur: 120,
+          },
+          ctx,
+        ),
       );
     }
   }
 
   // ---- the point and its radius line
   if (f.size) {
-    out.push({
-      kind: 'line',
-      key: 'rad:ray',
-      z: 6,
-      x1: 0,
-      y1: 0,
-      x2: P[0],
-      y2: P[1],
-      color: 'var(--fg)',
-      width: 1.75 * sw,
-      round: true,
-      enter: 'draw',
-      dur: 450,
-    });
-    out.push({
-      kind: 'dot',
-      key: 'rad:point',
-      z: 10,
-      x: P[0],
-      y: P[1],
-      r: 7 * sw,
-      fill: 'var(--fg)',
-      stroke: 'var(--panel)',
-      width: 2 * sw,
-      enter: 'pop',
-      delay: 150,
-    });
+    add(
+      Segment(
+        'rad:ray',
+        { from: [0, 0], to: P, width: 1.75, round: true, z: 6, enter: 'draw', dur: 450 },
+        ctx,
+      ),
+    );
+    add(
+      Point(
+        'rad:point',
+        { at: P, r: 7, fill: 'var(--fg)', stroke: 'var(--panel)', width: 2, z: 10, delay: 150 },
+        ctx,
+      ),
+    );
   }
   return out;
 }

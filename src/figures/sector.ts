@@ -1,6 +1,6 @@
 // A filled slice of a circle between two angles, from its center out to radius `r`.
 import type { Ctx, Drawn, Pt, Timing } from './figure.ts';
-import { polar } from './figure.ts';
+import { polar, timing } from './figure.ts';
 
 export type SectorProps = Timing & {
   /** Angles in radians, counterclockwise. */
@@ -29,9 +29,7 @@ export function Sector(key: string, p: SectorProps, _ctx: Ctx): Drawn {
         width: 0,
         fill: p.fill,
         opacity: p.opacity,
-        enter: p.enter,
-        delay: p.delay,
-        dur: p.dur,
+        ...timing(p),
       },
     ],
   };

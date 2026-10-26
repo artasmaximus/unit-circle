@@ -2,6 +2,7 @@
 import { texRect, type Rect } from '../core/tex.svelte.ts';
 import type { Label as LabelData, LabelMark } from '../plane/marks.ts';
 import type { Ctx, Drawn, Pt, Timing } from './figure.ts';
+import { timing } from './figure.ts';
 
 export type LabelProps = Timing & {
   tex: string;
@@ -13,6 +14,7 @@ export type LabelProps = Timing & {
   anchor?: Pt;
   /** A soft panel behind it, so it reads over lines and the grid. */
   back?: boolean;
+  opacity?: number;
   z?: number;
 };
 
@@ -34,9 +36,8 @@ export function Label(key: string, p: LabelProps, ctx: Ctx): Drawn<{ rect: Rect 
     label,
     z: p.z,
     back: p.back ? ctx.lb : undefined,
-    enter: p.enter,
-    delay: p.delay,
-    dur: p.dur,
+    opacity: p.opacity,
+    ...timing(p),
   };
   return { marks: [mark], rect: label.rect };
 }
