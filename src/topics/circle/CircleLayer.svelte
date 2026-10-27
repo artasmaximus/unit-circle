@@ -5,6 +5,7 @@
   import { camera } from '../../core/camera.svelte.ts';
   import { circleScene } from './scene.ts';
   import { circleView } from './view.svelte.ts';
+  import { stage } from './stage.svelte.ts';
   import { pen, penClock, penFrom, ui } from '../../core/app.svelte.ts';
   import { point } from '../../core/point.svelte.ts';
   import { useHandles } from '../../plane/handles.svelte.ts';
@@ -15,7 +16,7 @@
   useHandles(() => (ui.topic === 'circle' ? [pointHandle] : []));
   const marks = $derived(
     circleScene({
-      active: ui.topic === 'circle' && ui.mode !== 'guide',
+      active: ui.topic === 'circle' && !stage.now.guide,
       layout: circleView.layout,
       t: penClock.current,
       pen: pen.current,

@@ -11,13 +11,6 @@ import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { wrapPi, rad } from '../../core/trig.ts';
 
-const ALL = new Set<Feature>(['ray', 'pi', 'slices', 'readout']);
-/**
- * Practice keeps the shaded pieces but none of their names or the ring's labels, so no question can
- * be read off the ring.
- */
-const PRACTICE = new Set<Feature>(['ray', 'slices']);
-
 /** How many in a row the exam wants. */
 export const EXAM_STREAK = 10;
 
@@ -72,28 +65,6 @@ class Radians {
   step = $derived(this.steps[Math.min(this.stepIndex, this.steps.length - 1)]);
   /** Whether the exam step's task is satisfied. */
   examPassed = $derived(this.exam.passed);
-  /** The features of the drawing that are on right now, which depend on the mode. */
-  features = $derived.by<ReadonlySet<Feature>>(() =>
-    ui.mode === 'guide' ? new Set(this.step.features) : ui.mode === 'practice' ? PRACTICE : ALL,
-  );
-  /**
-   * The unit the ring's labels use: the Guide brings in π labels at its own pace, and Explore shows
-   * them.
-   */
-  ringUnit = $derived<'deg' | 'rad'>(this.features.has('pi') ? 'rad' : 'deg');
-  /**
-   * Whether a question is being asked, in Practice or in the Guide's exam: nothing on the plane may
-   * then give the answer away.
-   */
-  asking = $derived(
-    ui.mode === 'practice' || (ui.mode === 'guide' && this.step.task.kind === 'exam'),
-  );
-  /**
-   * Whether the ring's labels show at all: not while asking, where they would give the answers
-   * away.
-   */
-  ringLabels = $derived(!this.asking);
-
   /** Whether the step's task lets the learner go on. */
   canGo = $derived.by(() => {
     const t = this.step.task;

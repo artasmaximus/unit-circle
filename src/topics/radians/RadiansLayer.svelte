@@ -4,6 +4,7 @@
 <script lang="ts">
   import { camera } from '../../core/camera.svelte.ts';
   import { radians } from './state.svelte.ts';
+  import { stage } from './stage.svelte.ts';
   import { radiansScene } from './scene.ts';
   import { point } from '../../core/point.svelte.ts';
   import { ui } from '../../core/app.svelte.ts';
@@ -20,7 +21,7 @@
   const marks = $derived(
     radiansScene({
       active: ui.topic === 'radians',
-      features: radians.features,
+      features: stage.now.features,
       ang: point.ang,
       tail: point.tail,
       plays: radians.plays,

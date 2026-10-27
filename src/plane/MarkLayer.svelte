@@ -10,7 +10,7 @@
   import { DEFAULTS, drawCurve, popCurve, verbFor, type Mark } from './marks.ts';
   import { reduce } from '../core/transition.ts';
   import SvgTex from '../ui/SvgTex.svelte';
-  import { recordLead, recordMarks } from '../dev/motion.ts';
+  import { recordLead, recordMarks, registerLayer } from '../dev/motion.ts';
   import { switchJustBegan } from '../core/app.svelte.ts';
 
   /** `name` says which layer this is, for the dev motion log. */
@@ -142,6 +142,22 @@
       if (added) order();
     });
   });
+
+  // dev only: lets the switch check (dev/matrix.ts) look at what this layer has on the plane
+  $effect(() => {
+    if (!import.meta.env.DEV || !name) return;
+    return registerLayer(name, () => ({
+      live: Object.fromEntries(
+        [...live].filter(([, e]) => !e.leaving).map(([k, e]) => [k, look(e.mark)]),
+      ),
+      leaving: [...live.values()].filter((e) => e.leaving).length,
+    }));
+  });
+  /** A mark's appearance as text, numbers rounded, so two frames can be compared. */
+  const look = (m: Mark) =>
+    JSON.stringify(m, (_, v) =>
+      typeof v === 'function' ? 'fn' : typeof v === 'number' ? Math.round(v * 100) / 100 : v,
+    );
 
   const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   /**

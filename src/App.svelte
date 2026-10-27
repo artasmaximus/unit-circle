@@ -31,6 +31,7 @@
 
   // dev only: handles for timing a frame from the browser console, e.g. set point.ang, then time
   // flushSync() (dropped from production builds)
+  if (import.meta.env.DEV) import('./dev/matrix.ts');
   if (import.meta.env.DEV)
     import('svelte').then(
       ({ flushSync }) =>

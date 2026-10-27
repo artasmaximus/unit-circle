@@ -1,13 +1,12 @@
 // The unit circle's view of the plane for the current frame: its layout (where everything sits,
 // see layout.ts), and where the Practice hint's coordinates go. The layer draws from it, and the
 // floating chips read its layout.
-import { revealed, ui } from '../../core/app.svelte.ts';
 import { camera } from '../../core/camera.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { preview } from '../../plane/pointHandle.svelte.ts';
 import { buildLayout } from './layout.ts';
-import { quiz } from './quiz.svelte.ts';
+import { stage } from './stage.svelte.ts';
 import { circleUi } from './ui.svelte.ts';
 
 class CircleView {
@@ -18,10 +17,10 @@ class CircleView {
       hit: point.hit,
       dotR: point.dotR,
       tail: point.tail,
-      revealed: revealed(),
+      revealed: stage.now.revealed,
       mirror: circleUi.mirror,
-      mirrorOnly: ui.mode === 'practice' && quiz.cur ? quiz.cur.fn : null,
-      showCoords: revealed() || (ui.mode === 'practice' && quiz.hint),
+      mirrorOnly: stage.now.mirrorOnly,
+      showCoords: stage.now.coords,
       slopeOpen: circleUi.slopeOpen,
       k: camera.k,
       boost: camera.textBoost,
@@ -37,6 +36,6 @@ class CircleView {
    * Where a press would put the point, when Practice's hint is showing coordinates and the answer
    * is still hidden: the hint then works at the spot being aimed at too.
    */
-  hintAt = $derived(ui.mode === 'practice' && quiz.hint && !revealed() ? preview.deg : null);
+  hintAt = $derived(stage.now.hinting ? preview.deg : null);
 }
 export const circleView = new CircleView();

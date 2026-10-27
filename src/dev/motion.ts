@@ -20,10 +20,31 @@ export function recordLead(layer: string) {
   if (on) led[layer] = (led[layer] ?? 0) + 1;
 }
 
+/** What a layer has on the plane now: its live marks (key → how each looks) and how many are leaving. */
+export type LayerNow = { live: Record<string, string>; leaving: number };
+const probes = new Map<string, () => LayerNow>();
+/** A mark layer offers a look at itself, for the switch check (dev/matrix.ts). */
+export function registerLayer(name: string, probe: () => LayerNow) {
+  probes.set(name, probe);
+  return () => void probes.delete(name);
+}
+const plane = () => Object.fromEntries([...probes].map(([n, p]) => [n, p()]));
+
 const kind = (key: string) => key.split(':').slice(0, 2).join(':');
 const kinds = (keys: Set<string>) => [...new Set([...keys].map(kind))].sort();
 
 export const motion = {
+  /** Every layer's marks right now. */
+  plane,
+  /** How many frames each mark was seen changing in, per layer, since `begin`. */
+  changes(): Record<string, Record<string, number>> {
+    const out: Record<string, Record<string, number>> = {};
+    for (const f of frames) {
+      const o = (out[f.layer] ??= {});
+      for (const k of f.changed) o[k] = (o[k] ?? 0) + 1;
+    }
+    return out;
+  },
   begin() {
     frames = [];
     for (const k of Object.keys(led)) delete led[k];
