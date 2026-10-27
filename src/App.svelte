@@ -19,6 +19,7 @@
   import { nudge } from './plane/handles.svelte.ts';
   import Grid from './plane/Grid.svelte';
   import RingLayer from './plane/RingLayer.svelte';
+  import MissLayer from './plane/MissLayer.svelte';
 
   // ?lab=solver opens the equation solver's test bench in place of the panel
   const lab =
@@ -88,6 +89,7 @@
           {...l.props}
         />{/each}{/each}
     <RingLayer />
+    <MissLayer />
     {#each topics as t}{#each t.layers.filter((l) => !l.under) as l}<l.component
           {...l.props}
         />{/each}{/each}

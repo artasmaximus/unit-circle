@@ -4,7 +4,7 @@ import { angleTex } from '../../core/angles.ts';
 import { ui } from '../../core/app.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
-import { SPECIAL, type Fn } from '../../core/trig.ts';
+import { SPECIAL, rad, wrapPi, type Fn } from '../../core/trig.ts';
 import { Session, type Adapter } from '../../practice/session.svelte.ts';
 import { makeChoices, pickQ, qKey, skillOf, trigTexAnswer, type Question } from './quiz.ts';
 
@@ -45,7 +45,14 @@ function adapter(strict: boolean): Adapter<Question, string> {
       if (!strict) ui.highlight = [];
     },
     // the point goes to the answer, and the ring marks it larger (both angles, for type 2)
-    reveal: (q, _ok, s) => {
+    reveal: (q, ok, s) => {
+      // a missed placing question: remember where the point was left before it moves
+      if (q.t === 2 && !ok && !s.miss) {
+        const left = point.deg,
+          gap = (a: number) => Math.abs(wrapPi(rad(left) - rad(a))),
+          todo = q.sols.filter((a) => !s.found.includes(a));
+        s.miss = { from: left, to: todo.sort((a, b) => gap(a) - gap(b))[0] ?? q.sols[0] };
+      }
       if (q.t === 1) {
         point.set(q.a, true);
         if (!strict) ui.highlight = [q.a];

@@ -56,7 +56,11 @@ export type TopicDef = {
    * The run of questions in play in the current mode, if any (Practice, or the Guide's exam
    * step). While one of its questions is open the plane hides its answers: see `revealed`.
    */
-  session?: () => { cur: unknown; answered: boolean } | null;
+  session?: () => {
+    cur: unknown;
+    answered: boolean;
+    miss: { from: number; to: number } | null;
+  } | null;
   /** The angle readout in the plane's corner: absent, or the unit it insists on. */
   angleInput?: () => { unit?: Unit } | null;
   /** How the shared ring is written while this topic shows. */

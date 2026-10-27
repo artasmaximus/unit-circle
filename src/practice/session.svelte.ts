@@ -93,6 +93,11 @@ export class Session<Q, C> {
   note = $state<Rich | string>('');
   /** For a question with several answers to place: the ones found so far. */
   found = $state<number[]>([]);
+  /**
+   * For a placing question missed twice: where the point was left and where it should have been
+   * (degrees). Set by the adapter's `reveal`, and the plane draws the gap until the next question.
+   */
+  miss = $state<{ from: number; to: number } | null>(null);
   /** The kinds of question answered right in this run (the exam wants them all). */
   seen = $state<string[]>([]);
   readonly #a: Adapter<Q, C>;
@@ -205,6 +210,7 @@ export class Session<Q, C> {
     this.hint = false;
     this.picked = null;
     this.note = '';
+    this.miss = null;
     this.found = [];
     this.choices = this.#a.choices(q);
     this.#a.stage?.(q, this);
