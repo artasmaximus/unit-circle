@@ -1,12 +1,11 @@
-// A number line along one of the plane's axes, from −r to r, with a dot and a small label at each
+// A number line along one of the plane's axes, from −r to r, with a short tick and a small label at each
 // marked value. The labels sit just left of a vertical line and just below a horizontal one.
 //
-// Part keys: `${key}` for the line, `${key}:tick:${k}` for dot k and `${key}:tick:label:${k}` for
+// Part keys: `${key}` for the line, `${key}:tick:${k}` for tick k and `${key}:tick:label:${k}` for
 // its label.
 import type { Verb } from '../plane/marks.ts';
 import type { Ctx, Drawn, Pt } from './figure.ts';
 import { Label } from './label.ts';
-import { Point } from './point.ts';
 import { Segment } from './segment.ts';
 import { DUR, STAGGER, after } from '../core/tuning.ts';
 
@@ -22,6 +21,9 @@ export type NumberLineProps = {
   /** How long the ticks take to leave (ms), when not the default. */
   tickExitDur?: number;
 };
+
+/** Half the length of a tick, in stroke units. */
+const TICK = 4.5;
 
 export function NumberLine(key: string, p: NumberLineProps, ctx: Ctx): Drawn {
   const y = p.axis === 'y',
@@ -46,13 +48,14 @@ export function NumberLine(key: string, p: NumberLineProps, ctx: Ctx): Drawn {
   p.values.forEach(([v, tex], k) => {
     const [x, yy] = end(v);
     marks.push(
-      ...Point(
+      ...Segment(
         `${key}:tick:${k}`,
         {
-          at: [x, yy],
-          r: 2.2,
-          fill: p.color,
-          opacity: 0.8,
+          from: y ? [-TICK * ctx.sw, yy] : [x, -TICK * ctx.sw],
+          to: y ? [TICK * ctx.sw, yy] : [x, TICK * ctx.sw],
+          color: p.color,
+          width: 2,
+          opacity: 0.9,
           z: 3,
           delay: after(1) + STAGGER.ticks * k,
           dur: DUR.quick,
