@@ -14,6 +14,7 @@ import { AngleArc } from '../../figures/angleArc.ts';
 import { Arc } from '../../figures/arc.ts';
 import { Label } from '../../figures/label.ts';
 import { NumberLine } from '../../figures/numberLine.ts';
+import { Tick } from '../../figures/tick.ts';
 import { Point } from '../../figures/point.ts';
 import { Trail } from '../../figures/trail.ts';
 import { Sector } from '../../figures/sector.ts';
@@ -309,9 +310,9 @@ export function inverseScene(i: InvInput): Mark[] {
   }
   if (handle) {
     add(
-      Point(
+      Tick(
         `${fn}:handle`,
-        { at: handle, r: 5, fill: c, stroke: 'var(--panel)', width: 2, z: 7, delay: after(2) },
+        { at: handle, axis: fn === 'asin' ? 'y' : 'x', color: c, z: 7, delay: after(2) },
         ctx,
       ),
     );
@@ -322,8 +323,8 @@ export function inverseScene(i: InvInput): Mark[] {
           tex: `${fn === 'asin' ? 'y' : 'x'}=${valueTex(fn, i.value)}`,
           size: 11,
           at: [
-            handle[0] + (fn === 'asin' ? 10 * sw : 0),
-            handle[1] + (fn === 'asin' ? 0 : -12 * sw),
+            handle[0] + (fn === 'asin' ? 14 * sw : 0),
+            handle[1] + (fn === 'asin' ? 0 : -16 * sw),
           ],
           anchor: fn === 'asin' ? [0, 0.5] : [0.5, 1],
           color: c,
@@ -473,9 +474,9 @@ export function inverseScene(i: InvInput): Mark[] {
         ctx,
       ),
     );
-    const knob = { r: 5, stroke: 'var(--panel)', width: 2, z: 7, delay: after(2) };
-    add(Point('probe:Hy', { at: Hy, fill: red, ...knob }, ctx));
-    add(Point('probe:Hx', { at: Hx, fill: blue, ...knob }, ctx));
+    const knob = { z: 7, delay: after(2) };
+    add(Tick('probe:Hy', { at: Hy, axis: 'y', color: red, ...knob }, ctx));
+    add(Tick('probe:Hx', { at: Hx, axis: 'x', color: blue, ...knob }, ctx));
     add(
       Point(
         'probe:P',
@@ -489,7 +490,7 @@ export function inverseScene(i: InvInput): Mark[] {
         'probe:vy',
         {
           tex: `y=${valueTex('asin', ys)}`,
-          at: [Hy[0] + 10 * sw, Hy[1]],
+          at: [Hy[0] + 14 * sw, Hy[1]],
           anchor: [0, 0.5],
           color: red,
           ...reading,
@@ -502,7 +503,7 @@ export function inverseScene(i: InvInput): Mark[] {
         'probe:vx',
         {
           tex: `x=${valueTex('asin', xs)}`,
-          at: [Hx[0], Hx[1] + 12 * sw],
+          at: [Hx[0], Hx[1] + 16 * sw],
           anchor: [0.5, 0],
           color: blue,
           ...reading,
@@ -546,9 +547,15 @@ export function inverseScene(i: InvInput): Mark[] {
     if (fn !== 'atan') {
       const v = fn === 'asin' ? Math.sin(rad(i.ghost)) : Math.cos(rad(i.ghost));
       add(
-        Point(
+        Tick(
           'ghost:handle',
-          { at: fn === 'asin' ? [0, -v * S] : [v * S, 0], r: 5, fill: grey, opacity: 0.45, ...g },
+          {
+            at: fn === 'asin' ? [0, -v * S] : [v * S, 0],
+            axis: fn === 'asin' ? 'y' : 'x',
+            color: grey,
+            opacity: 0.45,
+            ...g,
+          },
           ctx,
         ),
       );
