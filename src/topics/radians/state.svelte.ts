@@ -31,8 +31,7 @@ const adapter: Adapter<RQ, number> = {
     if (q.t === 3) point.set(q.deg > 180 ? 20 : 340, true);
   },
   // the point goes to the angle, and the ring marks it larger (in Practice)
-  reveal: (q, ok, s) => {
-    if (q.t === 3 && !ok && !s.miss) s.miss = { from: point.deg, to: q.deg };
+  reveal: (q) => {
     point.set(q.deg, true);
     if (ui.mode === 'practice') ui.highlight = [q.deg];
   },

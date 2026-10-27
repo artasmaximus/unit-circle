@@ -30,8 +30,7 @@ function stage(q: IQ) {
   else inverse.setValue(0);
 }
 /** Move the control to the answer. */
-function reveal(q: IQ, ok: boolean, s: InvSession) {
-  if (q.t === 3 && !ok && !s.miss) s.miss = { from: wrap360(inverse.angle), to: wrap360(q.ang) };
+function reveal(q: IQ) {
   if (q.t === 1) inverse.setValue(q.v);
   if (q.t === 3) inverse.setAngle(q.ang);
   // the ring marks the answer's angle larger (in Practice)
