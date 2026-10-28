@@ -69,6 +69,132 @@ export type Adapter<Q, C> = {
   };
 };
 
+/** What differs between a Practice set and the exam; the Session holds the state both share. */
+type Mode<Q, C> = {
+  /** Hints and a second try after a wrong answer (Practice only). */
+  forgiving: boolean;
+  /** Bring back the saved best, missed list and skills. */
+  restore(s: Session<Q, C>): void;
+  /** The set is complete: the next step is its summary. */
+  setFull(s: Session<Q, C>): boolean;
+  /** The exam is passed: enough in a row, every kind of question among them. */
+  passed(s: Session<Q, C>): boolean;
+  next(s: Session<Q, C>): Q;
+  /** A question is being asked. */
+  asking(s: Session<Q, C>): void;
+  /** A question has been answered and the streak updated: the rest of what the answer changes. */
+  answered(s: Session<Q, C>, q: Q, ok: boolean, retried: boolean): void;
+  /** Queue questions to come back soon, the first due now. */
+  requeue(rs: Result<Q>[]): void;
+};
+
+/**
+ * A Practice set: a tally per skill that steers the next question, a missed list that brings
+ * questions back, a saved best.
+ */
+class PracticeRun<Q, C> implements Mode<Q, C> {
+  readonly forgiving = true;
+  readonly #a: Adapter<Q, C>;
+  /** Missed questions on their way back, and how many questions have been asked. */
+  #later: Later<Q>[] = [];
+  #asked = 0;
+
+  constructor(a: Adapter<Q, C>) {
+    this.#a = a;
+  }
+  restore(s: Session<Q, C>) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(this.#a.storageKey) || 'null');
+      if (saved) {
+        s.best = saved.best | 0;
+        s.missed = Array.isArray(saved.missed) ? saved.missed : [];
+        s.skills = parseSkills(saved.skills);
+      }
+    } catch {}
+  }
+  setFull(s: Session<Q, C>) {
+    return s.round.length >= SET_SIZE;
+  }
+  passed() {
+    return false;
+  }
+  /**
+   * A missed one whose turn has come, now and then a saved one, otherwise the one that practises
+   * the weakest skill among a few new ones.
+   */
+  next(s: Session<Q, C>): Q {
+    const a = this.#a;
+    const due = takeDue(this.#later, this.#asked);
+    if (due) return due;
+    const cur = s.cur,
+      others = s.missed.filter((m) => !cur || a.keyOf(m) !== a.keyOf(cur));
+    if (others.length && Math.random() < MISSED_CHANCE)
+      return others[Math.floor(Math.random() * others.length)];
+    const cands = Array.from({ length: CANDIDATES }, () => a.make(cur));
+    return pickByNeed(cands, a.skillOf, s.skills);
+  }
+  asking(s: Session<Q, C>) {
+    if (this.setFull(s)) s.round = [];
+    s.summary = false;
+    this.#asked++;
+  }
+  answered(s: Session<Q, C>, q: Q, ok: boolean, retried: boolean) {
+    const a = this.#a,
+      skill = a.skillOf(q),
+      at = s.missed.findIndex((m) => a.keyOf(m) === a.keyOf(q));
+    if (!ok || retried || !s.hint) record(s.skills, skill, ok && !retried);
+    s.round.push({ q, skill, ok, retried });
+    if (ok) {
+      if (at >= 0 && !retried) s.missed.splice(at, 1);
+    } else {
+      if (at < 0) s.missed.push(q);
+      this.#later.push({ q, due: this.#asked + COMES_BACK + Math.floor(Math.random() * 3) });
+    }
+    try {
+      localStorage.setItem(
+        a.storageKey,
+        JSON.stringify({ best: s.best, missed: s.missed, skills: s.skills }),
+      );
+    } catch {}
+  }
+  requeue(rs: Result<Q>[]) {
+    const at = this.#asked;
+    rs.forEach((r, i) => this.#later.push({ q: r.q, due: at + 2 * i }));
+  }
+}
+
+/**
+ * The Guide's exam: nothing is saved, a miss starts the run again, and the last questions are
+ * steered to a kind the run has not had yet.
+ */
+class ExamRun<Q, C> implements Mode<Q, C> {
+  readonly forgiving = false;
+  readonly #a: Adapter<Q, C>;
+
+  constructor(a: Adapter<Q, C>) {
+    this.#a = a;
+  }
+  restore() {}
+  setFull() {
+    return false;
+  }
+  passed(s: Session<Q, C>) {
+    const e = this.#a.exam;
+    return !!e && s.streak >= e.streak && e.needs.every((n) => s.seen.includes(n));
+  }
+  next(s: Session<Q, C>): Q {
+    const e = this.#a.exam!;
+    const lacking = e.needs.filter((n) => !s.seen.includes(n));
+    const steer = lacking.length > 0 && e.streak - s.streak <= lacking.length;
+    return e.make(steer ? lacking[0] : null, s.cur);
+  }
+  asking() {}
+  answered(s: Session<Q, C>, _q: Q, ok: boolean) {
+    if (!ok) s.seen = [];
+  }
+  requeue() {}
+}
+
 export class Session<Q, C> {
   readonly strict: boolean;
   streak = $state(0);
@@ -96,13 +222,11 @@ export class Session<Q, C> {
   /** The kinds of question answered right in this run (the exam wants them all). */
   seen = $state<string[]>([]);
   readonly #a: Adapter<Q, C>;
-  /** Missed questions on their way back, and how many questions have been asked. */
-  #later: Later<Q>[] = [];
-  #asked = 0;
+  readonly #mode: Mode<Q, C>;
 
   /** The set is complete: the next step is its summary. */
   get setFull() {
-    return !this.strict && this.round.length >= SET_SIZE;
+    return this.#mode.setFull(this);
   }
   /** The question just answered was only right on the second try. */
   get retried() {
@@ -129,10 +253,7 @@ export class Session<Q, C> {
 
   /** The exam is passed: enough in a row, every kind of question among them. */
   get passed() {
-    const e = this.#a.exam;
-    return (
-      !!e && this.strict && this.streak >= e.streak && e.needs.every((n) => this.seen.includes(n))
-    );
+    return this.#mode.passed(this);
   }
   /** What the exam wants among its run, for the checklist. */
   get needs() {
@@ -145,59 +266,17 @@ export class Session<Q, C> {
   constructor(adapter: Adapter<Q, C>, strict = false) {
     this.#a = adapter;
     this.strict = strict;
-    if (strict) return;
-    try {
-      const s = JSON.parse(localStorage.getItem(adapter.storageKey) || 'null');
-      if (s) {
-        this.best = s.best | 0;
-        this.missed = Array.isArray(s.missed) ? s.missed : [];
-        this.skills = parseSkills(s.skills);
-      }
-    } catch {}
-  }
-  #save() {
-    if (this.strict) return;
-    try {
-      localStorage.setItem(
-        this.#a.storageKey,
-        JSON.stringify({ best: this.best, missed: this.missed, skills: this.skills }),
-      );
-    } catch {}
+    this.#mode = strict ? new ExamRun(adapter) : new PracticeRun(adapter);
+    this.#mode.restore(this);
   }
 
-  /**
-   * The next question. In Practice: a missed one whose turn has come, now and then a saved one,
-   * otherwise the one that practises the weakest skill among a few new ones. The exam steers its last
-   * questions to a kind the run has not had yet.
-   */
-  #next(): Q {
-    const a = this.#a,
-      e = a.exam;
-    if (this.strict && e) {
-      const lacking = e.needs.filter((n) => !this.seen.includes(n));
-      const steer = lacking.length > 0 && e.streak - this.streak <= lacking.length;
-      return e.make(steer ? lacking[0] : null, this.cur);
-    }
-    const due = takeDue(this.#later, this.#asked);
-    if (due) return due;
-    const cur = this.cur,
-      others = this.missed.filter((m) => !cur || a.keyOf(m) !== a.keyOf(cur));
-    if (others.length && Math.random() < MISSED_CHANCE)
-      return others[Math.floor(Math.random() * others.length)];
-    const cands = Array.from({ length: CANDIDATES }, () => a.make(cur));
-    return pickByNeed(cands, a.skillOf, this.skills);
-  }
   /** Ask a question (the next one, unless given): a finished set begins a new one. */
-  start(q: Q = this.#next()) {
+  start(q: Q = this.#mode.next(this)) {
     // an open question hides the plane's answers, so asking one is a reveal change and plays it
     withPen(() => this.#ask(q));
   }
   #ask(q: Q) {
-    if (!this.strict) {
-      if (this.setFull) this.round = [];
-      this.summary = false;
-      this.#asked++;
-    }
+    this.#mode.asking(this);
     this.tries = 0;
     this.wrongPicks = [];
     this.cur = q;
@@ -222,12 +301,11 @@ export class Session<Q, C> {
   }
   /** Begin a set with the questions to go over from the last one first. */
   practiceReview() {
-    const at = this.#asked;
-    this.review.forEach((r, i) => this.#later.push({ q: r.q, due: at + 2 * i }));
+    this.#mode.requeue(this.review);
     this.start();
   }
   useHint() {
-    if (!this.cur || this.answered || this.strict) return;
+    if (!this.cur || this.answered || !this.#mode.forgiving) return;
     this.hint = true;
     this.#a.onHint?.(this.cur);
   }
@@ -251,7 +329,7 @@ export class Session<Q, C> {
   }
   /** A first wrong answer in Practice gets a second try; anything else ends the question. */
   #judge(ok: boolean) {
-    if (ok || this.strict || this.tries > 0) return this.#finish(ok);
+    if (ok || !this.#mode.forgiving || this.tries > 0) return this.#finish(ok);
     this.tries = 1;
     this.note = this.choices.length
       ? 'Not quite. The streak holds while you try once more: pick another answer.'
@@ -267,12 +345,6 @@ export class Session<Q, C> {
     this.answered = true;
     this.ok = ok;
     this.note = '';
-    const at = this.missed.findIndex((m) => a.keyOf(m) === a.keyOf(q));
-    if (!this.strict) {
-      const skill = a.skillOf(q);
-      if (!ok || retried || !this.hint) record(this.skills, skill, ok && !retried);
-      this.round.push({ q, skill, ok, retried });
-    }
     if (ok) {
       if (!this.hint && !retried) {
         this.streak++;
@@ -280,16 +352,8 @@ export class Session<Q, C> {
         const add = (a.exam?.needsOf(q) ?? []).filter((n) => !this.seen.includes(n));
         if (add.length) this.seen = [...this.seen, ...add];
       }
-      if (at >= 0 && !retried) this.missed.splice(at, 1);
-    } else {
-      this.streak = 0;
-      if (this.strict) this.seen = [];
-      else {
-        if (at < 0) this.missed.push(q);
-        this.#later.push({ q, due: this.#asked + COMES_BACK + Math.floor(Math.random() * 3) });
-      }
-    }
-    this.#save();
+    } else this.streak = 0;
+    this.#mode.answered(this, q, ok, retried);
     a.reveal?.(q, ok, this);
     if (this.passed) a.exam!.onPass();
   }
