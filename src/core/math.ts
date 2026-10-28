@@ -1,5 +1,62 @@
 // The app's one mathjs instance: the solver's algebra works on its expression trees, and angle
-// parsing evaluates typed input like "2pi/3" with it.
-import { create, all } from 'mathjs';
+// parsing evaluates typed input like "2pi/3" with it. Built from only the factories those need
+// (plus the everyday arithmetic and trig functions a typed angle might use) rather than all of
+// mathjs, so the rest is never bundled or instantiated at startup.
+import {
+  create,
+  parseDependencies,
+  evaluateDependencies,
+  simplifyDependencies,
+  unitDependencies,
+  addDependencies,
+  subtractDependencies,
+  multiplyDependencies,
+  divideDependencies,
+  powDependencies,
+  sqrtDependencies,
+  unaryMinusDependencies,
+  absDependencies,
+  sinDependencies,
+  cosDependencies,
+  tanDependencies,
+  secDependencies,
+  cscDependencies,
+  cotDependencies,
+  asinDependencies,
+  acosDependencies,
+  atanDependencies,
+  atan2Dependencies,
+  piDependencies,
+  tauDependencies,
+  eDependencies,
+  phiDependencies,
+} from 'mathjs';
 
-export const math = create(all);
+export const math = create({
+  parseDependencies,
+  evaluateDependencies,
+  simplifyDependencies,
+  unitDependencies,
+  addDependencies,
+  subtractDependencies,
+  multiplyDependencies,
+  divideDependencies,
+  powDependencies,
+  sqrtDependencies,
+  unaryMinusDependencies,
+  absDependencies,
+  sinDependencies,
+  cosDependencies,
+  tanDependencies,
+  secDependencies,
+  cscDependencies,
+  cotDependencies,
+  asinDependencies,
+  acosDependencies,
+  atanDependencies,
+  atan2Dependencies,
+  piDependencies,
+  tauDependencies,
+  eDependencies,
+  phiDependencies,
+});
