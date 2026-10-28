@@ -6,6 +6,7 @@
 // Part keys: `${key}` for the arc and `${key}:head` for the arrowhead.
 import type { Ctx, Drawn, Look, Pt, Timing } from './figure.ts';
 import { polar, timing } from './figure.ts';
+import { wrapTau } from '../core/trig.ts';
 
 export type AngleArcProps = Look &
   Timing & {
@@ -31,7 +32,7 @@ export function AngleArc(key: string, p: AngleArcProps, ctx: Ctx): Drawn {
     from = p.from ?? 0,
     color = p.color ?? 'var(--fg)',
     width = (p.width ?? 1) * sw;
-  const turn = p.ccw ? (((p.to - from) % TAU) + TAU) % TAU : wrap(p.to - from),
+  const turn = p.ccw ? wrapTau(p.to - from) : wrap(p.to - from),
     large = Math.abs(turn) > Math.PI ? 1 : 0,
     sweep = turn >= 0 ? 0 : 1;
   const path = (r: number) => {

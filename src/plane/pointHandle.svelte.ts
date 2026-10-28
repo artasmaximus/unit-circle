@@ -4,12 +4,12 @@
 // the angle a press would pick, so a topic can draw a preview there.
 import { S } from '../core/camera.svelte.ts';
 import { point } from '../core/point.svelte.ts';
-import { SPECIAL, snapDeg } from '../core/trig.ts';
+import { SPECIAL, deg, snapDeg } from '../core/trig.ts';
 import type { Pt } from '../figures/figure.ts';
 import type { Handle } from './handles.svelte.ts';
 
 /** The pointer's angle around the origin, in degrees. */
-export const angleOf = ([x, y]: Pt) => (Math.atan2(-y, x) * 180) / Math.PI;
+export const angleOf = ([x, y]: Pt) => deg(Math.atan2(-y, x));
 
 /** The snapped angle the pointer is aiming at near the ring (null when it is not), and whether the point is held. */
 export const ringHover = $state<{ deg: number | null; held: boolean }>({ deg: null, held: false });

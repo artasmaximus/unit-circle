@@ -6,7 +6,7 @@
 // point, so the two topics can hand it to each other.
 import { RANGE, compose, otherAngle, partnerAt, principal, snapValue, type InvFn } from './math.ts';
 import { Swing } from '../../core/swing.svelte.ts';
-import { norm, rad, snapDeg } from '../../core/trig.ts';
+import { deg, norm, rad, snapDeg } from '../../core/trig.ts';
 
 /**
  * Within this many degrees of straight up or down the ray counts as vertical, where the slope is
@@ -14,7 +14,6 @@ import { norm, rad, snapDeg } from '../../core/trig.ts';
  */
 const POLE = 0.1;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-const deg = (r: number) => (r * 180) / Math.PI;
 
 class Inverse {
   fn = $state<InvFn>('asin');
@@ -64,7 +63,7 @@ class Inverse {
   }
   /** Slide the probe to an angle, going the short way round. */
   moveProbe(a: number) {
-    const to = this.probeTo + ((((a - this.probeTo) % 360) + 540) % 360) - 180;
+    const to = this.probeTo + norm(a - this.probeTo + 180) - 180;
     this.probeTo = to;
     this.#probe.aim(rad(to));
   }
@@ -99,7 +98,7 @@ class Inverse {
     grain: (deg: number) => number = (d) => d,
   ): number {
     if (this.fn === 'atan') {
-      const a = snapDeg(grain((Math.atan2(-wy, wx) * 180) / Math.PI), snap.angle),
+      const a = snapDeg(grain(deg(Math.atan2(-wy, wx))), snap.angle),
         reduced = norm(a + 90) - 90; // into [-90, 270)
       return clamp(reduced > 90 ? reduced - 180 : reduced, -90, 90);
     }

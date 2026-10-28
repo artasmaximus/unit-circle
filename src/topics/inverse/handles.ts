@@ -3,7 +3,7 @@
 // quiz that sets the value itself offers nothing. A free probe (a composition question) can instead
 // be moved three ways, by the ring, the y-axis or the x-axis: a press takes whichever is closest.
 import { S } from '../../core/camera.svelte.ts';
-import { snapDeg } from '../../core/trig.ts';
+import { deg, rad, snapDeg } from '../../core/trig.ts';
 import type { Aim, Handle } from '../../plane/handles.svelte.ts';
 import { angleOf } from '../../plane/pointHandle.svelte.ts';
 import { snapValue } from './math.ts';
@@ -16,15 +16,15 @@ const step = (big: boolean, small: number, large: number) => (big ? large : smal
 /** The probe's angle for a pointer at `[x, y]`, moved by the ring or by one axis. */
 function probeAngle(by: 'ring' | 'y' | 'x', [x, y]: [number, number], a: Aim) {
   if (by === 'ring') return snapDeg(a.grain(angleOf([x, y])), a.angleRange);
-  const cur = (inverse.probeTo * Math.PI) / 180,
+  const cur = rad(inverse.probeTo),
     v = snapValue('asin', Math.max(-1, Math.min(1, by === 'y' ? -y / S : x / S)), a.valueRange);
   // a value sits at two angles; keep to the side the probe is already on
   if (by === 'y') {
-    const deg = (Math.asin(v) * 180) / Math.PI;
-    return Math.cos(cur) >= 0 ? deg : 180 - deg;
+    const d = deg(Math.asin(v));
+    return Math.cos(cur) >= 0 ? d : 180 - d;
   }
-  const deg = (Math.acos(v) * 180) / Math.PI;
-  return Math.sin(cur) >= 0 ? deg : -deg;
+  const d = deg(Math.acos(v));
+  return Math.sin(cur) >= 0 ? d : -d;
 }
 
 function probeHandles(): Handle[] {

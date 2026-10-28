@@ -14,7 +14,7 @@ import {
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
-import { wrapPi, rad } from '../../core/trig.ts';
+import { angDist } from '../../core/trig.ts';
 
 /** Practice and the exam: a run of Radians questions (see practice/session.svelte.ts). */
 const adapter: Adapter<RQ, number> = {
@@ -26,7 +26,7 @@ const adapter: Adapter<RQ, number> = {
   choices: (q) => (q.t === 3 ? [] : rChoices(q as RQ & { t: 1 | 2 })),
   isRight: (q, deg) => deg === q.deg,
   // placing: is the point at the angle?
-  check: (q) => Math.abs(wrapPi(rad(point.deg) - rad(q.deg))) < rad(1.5),
+  check: (q) => angDist(point.deg, q.deg) < 1.5,
   // a placing question starts with the point out of the way, so the angle is not already there
   stage: (q) => {
     ui.highlight = [];
@@ -63,11 +63,11 @@ class Radians extends GuideState<Feature> {
   /** The point is at the angle a drag task asks for. */
   atTarget = $derived.by(() => {
     const t = this.step.task;
-    return t.kind === 'drag' && Math.abs(wrapPi(rad(point.deg) - rad(t.deg))) < rad(t.tol);
+    return t.kind === 'drag' && angDist(point.deg, t.deg) < t.tol;
   });
   protected enter({ task: t }: Step<Feature>) {
     // a drag step starts with the point away from its target
-    if (t.kind === 'drag' && Math.abs(wrapPi(rad(point.deg) - rad(t.deg))) < rad(t.tol * 2))
+    if (t.kind === 'drag' && angDist(point.deg, t.deg) < t.tol * 2)
       point.set(t.deg > 180 ? 20 : 340, true);
   }
 }

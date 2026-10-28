@@ -9,6 +9,11 @@ for (let q = 0; q < 360; q += 90) for (const r of [0, 30, 45, 60]) SPECIAL.push(
 
 export const norm = (d: number) => ((d % 360) + 360) % 360;
 export const rad = (d: number) => (d * Math.PI) / 180;
+export const deg = (r: number) => (r * 180) / Math.PI;
+/** The gap between two angles in degrees, the short way round: 0..180. */
+export const angDist = (a: number, b: number) => Math.abs(norm(a - b + 180) - 180);
+/** A radian angle wrapped into [0, 2π). */
+export const wrapTau = (v: number) => ((v % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 export const wrapPi = (v: number) => {
   v = (v + Math.PI) % (2 * Math.PI);
   if (v < 0) v += 2 * Math.PI;
@@ -16,8 +21,7 @@ export const wrapPi = (v: number) => {
 };
 
 /** The special angle within 0.05° of d, if any. */
-export const specialOf = (d: number) =>
-  SPECIAL.find((a) => Math.abs(norm(d - a + 180) - 180) < 0.05);
+export const specialOf = (d: number) => SPECIAL.find((a) => angDist(d, a) < 0.05);
 /** Reference angle: distance to the nearest x-axis, 0..90. */
 export const refOf = (a: number) => {
   const r = norm(a) % 180;
@@ -38,7 +42,7 @@ export const SNAP_RANGE = input.snapRange;
 export function snapDeg(d: number, range = SNAP_RANGE) {
   d = norm(d);
   const s = nearestSpecial(d);
-  return Math.abs(norm(d - s + 180) - 180) <= range ? s : d;
+  return angDist(d, s) <= range ? s : d;
 }
 
 /**
@@ -133,7 +137,7 @@ export function parseAngle(t: string, plain: 'deg' | 'rad' = 'deg'): number | nu
     const d =
       typeof v === 'number'
         ? /pi/i.test(t) || (bare && plain === 'rad')
-          ? (v * 180) / Math.PI
+          ? deg(v)
           : v
         : v?.toNumber?.('deg');
     return Number.isFinite(d) ? d : null;

@@ -4,6 +4,7 @@
 // marks: its marks enter when it comes on and leave when it goes off), and that Explore turns on
 // all together.
 import { S } from '../../core/camera.svelte.ts';
+import { deg } from '../../core/trig.ts';
 import { piFraction, piTex } from '../../core/angles.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { polar, type Ctx } from '../../figures/figure.ts';
@@ -202,7 +203,7 @@ export function radiansScene(i: RadiansInput): Mark[] {
   // that follows the point.
   if (f.has('slices') && i.target > 0.004) {
     const T = i.target,
-      fr = piFraction((T * 180) / Math.PI),
+      fr = piFraction(deg(T)),
       whole = fr && fr[0] <= 12 ? fr : null;
     const [n, d] = whole ?? [1, 0],
       readout = !!whole && f.has('readout');

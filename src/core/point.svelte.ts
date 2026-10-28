@@ -1,6 +1,6 @@
 // The point on the unit circle, shared by every topic: where it is headed, and the spring that
 // carries it there (see swing.svelte.ts), with its dot size.
-import { norm, rad, snapDeg, specialOf } from './trig.ts';
+import { deg, norm, rad, snapDeg, specialOf } from './trig.ts';
 import { reduce } from './transition.ts';
 import { Swing } from './swing.svelte.ts';
 import * as T from './tuning.ts';
@@ -17,7 +17,7 @@ class Point {
    * Degrees of the target, and the special angle it sits on (labels read exact the moment it
    * snaps).
    */
-  deg = $derived(norm((this.target * 180) / Math.PI));
+  deg = $derived(norm(deg(this.target)));
   hit = $derived(specialOf(this.deg));
 
   #dotV = 0;

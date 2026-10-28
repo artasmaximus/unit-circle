@@ -10,11 +10,11 @@ import { quiz, quizExam } from './quiz.svelte.ts';
 import { solver } from '../../solver/solver.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { circleUi } from './ui.svelte.ts';
-import { norm, rad, wrapPi } from '../../core/trig.ts';
+import { angDist, norm } from '../../core/trig.ts';
 import type { Feature } from './features.ts';
 
 /** Is the point within `tol` degrees of `deg`? */
-const near = (deg: number, tol: number) => Math.abs(wrapPi(rad(point.deg) - rad(deg))) < rad(tol);
+const near = (deg: number, tol: number) => angDist(point.deg, deg) < tol;
 
 class UnitGuide extends GuideState<Feature> {
   topic = 'circle';

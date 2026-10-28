@@ -3,6 +3,7 @@ import ArrowLeftRight from '@lucide/svelte/icons/arrow-left-right';
 import { inverseHooks } from './guide.svelte.ts';
 import type { TopicDef } from '../../core/app.svelte.ts';
 import { inverseSession, stage } from './stage.svelte.ts';
+import { angDist } from '../../core/trig.ts';
 import InverseExplore from './InverseExplore.svelte';
 import InverseGuide from './InverseGuide.svelte';
 import InverseLayer from './InverseLayer.svelte';
@@ -22,7 +23,6 @@ export const inverseTopic: TopicDef = {
   layers: [{ component: InverseLayer }],
   // the topic writes the label for the angles it marks, so the ring leaves those out
   ring: () => ({
-    taken: (a) =>
-      stage.marked.some((m) => Math.abs(m - a) < 1e-4 || Math.abs(Math.abs(m - a) - 360) < 1e-4),
+    taken: (a) => stage.marked.some((m) => angDist(m, a) < 1e-4),
   }),
 };

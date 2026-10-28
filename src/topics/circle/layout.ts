@@ -5,7 +5,17 @@
 import { S } from '../../core/camera.svelte.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
 import { figure as tuning, tag as tagT } from '../../core/tuning.ts';
-import { colorOf, norm, refOf, specialOf, trigTex, type Fn } from '../../core/trig.ts';
+import {
+  colorOf,
+  deg as degOf,
+  norm,
+  rad,
+  refOf,
+  specialOf,
+  trigTex,
+  wrapPi,
+  type Fn,
+} from '../../core/trig.ts';
 import { texBox, type Rect } from '../../core/tex.svelte.ts';
 import { braceShape } from '../../figures/brace.ts';
 import type { Pt } from '../../figures/figure.ts';
@@ -82,7 +92,7 @@ export function buildLayout(p: LayoutInput) {
     s = Math.sin(ang),
     x = c * S,
     y = -s * S;
-  const deg = hit ?? norm((ang * 180) / Math.PI);
+  const deg = hit ?? norm(degOf(ang));
   const col = p.revealed ? colorOf(deg) : 'var(--fg)';
   const ctx = { sw: p.stroke, lb: p.labelBoost };
 
@@ -125,12 +135,11 @@ export function buildLayout(p: LayoutInput) {
       arc = null;
     if (hit > 90 && refDeg > 0) {
       const phiA = c >= -1e-9 ? 0 : Math.PI;
-      const diff =
-        ((((ang - phiA + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
+      const diff = wrapPi(ang - phiA);
       arc = { from: phiA, r: r0 * 1.3, swell: r0 };
       mid = phiA + diff / 2;
     } else if (hit > 90) {
-      mid = (hit * Math.PI) / 180;
+      mid = rad(hit);
     } else {
       mid = ang / 2;
       rr = tagT.refRadius - 4;
@@ -368,7 +377,7 @@ function placeChip(
     // glides instead of hopping
     const a0 = Math.atan2(o.pref[1], o.pref[0]);
     for (const off of OFFS) {
-      const an = a0 + (off * Math.PI) / 180,
+      const an = a0 + rad(off),
         ux = Math.cos(an),
         uy = Math.sin(an),
         d = standoff(ux, uy, hw, hh, g);

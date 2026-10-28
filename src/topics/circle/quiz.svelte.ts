@@ -4,7 +4,7 @@ import { angleTex } from '../../core/angles.ts';
 import { ui } from '../../core/app.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
-import { SPECIAL, type Fn } from '../../core/trig.ts';
+import { SPECIAL, angDist, type Fn } from '../../core/trig.ts';
 import { EXAM_STREAK, Session, type Adapter } from '../../practice/session.svelte.ts';
 import { makeChoices, pickQ, qKey, skillOf, trigTexAnswer, type Question } from './quiz.ts';
 import { rnd } from '../../core/random.ts';
@@ -28,7 +28,7 @@ function adapter(strict: boolean): Adapter<Question, string> {
     check: (q, s) => {
       if (q.t !== 2) return null;
       const d = point.deg,
-        hit = q.sols.find((a) => Math.min(Math.abs(d - a), 360 - Math.abs(d - a)) < 1.2);
+        hit = q.sols.find((a) => angDist(d, a) < 1.2);
       if (hit === undefined) return false;
       if (s.found.includes(hit)) {
         s.note = 'You already found that one. Look for the other angle.';

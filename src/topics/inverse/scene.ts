@@ -8,7 +8,7 @@ import { SPECIAL_VALUES, otherAngle, valueTex, type InvFn } from './math.ts';
 import { LABEL_R, S } from '../../core/camera.svelte.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
-import { rad } from '../../core/trig.ts';
+import { angDist, norm, rad } from '../../core/trig.ts';
 import { polar, type Ctx, type Pt } from '../../figures/figure.ts';
 import { AngleArc } from '../../figures/angleArc.ts';
 import { Arc } from '../../figures/arc.ts';
@@ -62,7 +62,7 @@ const DASH: [number, number] = [3, 4];
 /** A point on a circle at an angle in degrees. */
 const at = (deg: number, r = S): Pt => polar(rad(deg), r);
 /** Whether two angles are different points on the circle (at ±1 the two crossings meet). */
-const apart = (a: number, b: number) => Math.abs(((a - b + 540) % 360) - 180) > 1;
+const apart = (a: number, b: number) => angDist(a, b) > 1;
 
 export function inverseScene(i: InvInput): Mark[] {
   if (!i.active) return [];
@@ -509,7 +509,7 @@ export function inverseScene(i: InvInput): Mark[] {
       Label(
         'probe:angle',
         {
-          tex: ang(from + ((((pa - from) % 360) + 360) % 360)),
+          tex: ang(from + norm(pa - from)),
           size: 10.5,
           at: at(pa / 2, S * 0.36),
           color: fg,

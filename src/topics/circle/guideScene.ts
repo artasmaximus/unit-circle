@@ -5,7 +5,7 @@
 // the Guide is on, and this one asks for nothing otherwise.
 import { S } from '../../core/camera.svelte.ts';
 import { angleTex, type Unit } from '../../core/angles.ts';
-import { dec, refOf, trigTex, type Fn } from '../../core/trig.ts';
+import { dec, rad, refOf, trigTex, wrapTau, type Fn } from '../../core/trig.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { polar, type Ctx, type Look } from '../../figures/figure.ts';
 import { Arc } from '../../figures/arc.ts';
@@ -49,7 +49,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
     out.push(...d.marks);
     return d;
   };
-  const a = ((i.ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI),
+  const a = wrapTau(i.ang),
     c = Math.cos(a),
     s = Math.sin(a),
     [px, py] = polar(a, S);
@@ -59,7 +59,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
    */
   const val = (fn: Fn) => {
     if (f.has('exact')) return trigTex(fn, i.deg);
-    const r = (i.deg * Math.PI) / 180,
+    const r = rad(i.deg),
       v = fn === 'cos' ? Math.cos(r) : fn === 'sin' ? Math.sin(r) : Math.sin(r) / Math.cos(r);
     return dec(v);
   };

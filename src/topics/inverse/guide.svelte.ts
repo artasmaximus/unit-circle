@@ -10,7 +10,7 @@ import { GuideState, trackDrag } from '../../guide/run.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
-import { norm, rad, wrapPi } from '../../core/trig.ts';
+import { angDist, norm } from '../../core/trig.ts';
 import { SETUP, type Setup } from './guideSetup.ts';
 
 /** Move the plane to a step: the function, and where the control or the free point starts. */
@@ -19,9 +19,6 @@ function stage(s: Setup) {
   if (s.probe !== undefined) inverse.startProbe(s.probe);
   else inverse.setAngle(s.angle ?? 0);
 }
-
-/** How far (degrees) `a` is from `b` round the circle. */
-const apart = (a: number, b: number) => Math.abs(wrapPi(rad(a) - rad(b))) * (180 / Math.PI);
 
 class InverseGuide extends GuideState {
   topic = 'inverse';
@@ -33,7 +30,7 @@ class InverseGuide extends GuideState {
     const t = this.step.task;
     if (t.kind !== 'drag' || ui.mode !== 'guide' || ui.topic !== 'inverse') return false;
     const now = SETUP[this.step.id]?.probe !== undefined ? norm(inverse.probeTo) : inverse.target;
-    return [t.deg, ...(t.also ?? [])].some((d) => apart(now, d) < t.tol);
+    return [t.deg, ...(t.also ?? [])].some((d) => angDist(now, d) < t.tol);
   });
   protected enter({ id }: Step) {
     if (SETUP[id]) stage(SETUP[id]);

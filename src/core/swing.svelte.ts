@@ -1,7 +1,7 @@
 // The spring that carries an angle to where it is headed, and the colored tail it drags behind it.
 // The unit circle's point, the Inverse trig control and its probe all move with one of these, so
 // an angle feels the same on every topic.
-import { wrapPi } from './trig.ts';
+import { wrapPi, wrapTau } from './trig.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
 
@@ -74,7 +74,7 @@ export class Swing {
       this.#vel += (this.#k * this.#diff(this.target, ang) - this.#c * this.#vel) * h;
       ang += this.#vel * h;
     }
-    if (this.#wrap) ang = ((ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    if (this.#wrap) ang = wrapTau(ang);
     // the tail grows with the distance travelled and reels back in when the angle stops
     const tail =
       Math.max(-TRAIL_MAX, Math.min(TRAIL_MAX, this.tail + this.#diff(ang, this.#prev))) *

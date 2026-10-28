@@ -6,7 +6,7 @@
 // switch. When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
 import { S } from '../../core/camera.svelte.ts';
 import { DUR, after, figure as F } from '../../core/tuning.ts';
-import { rad, trigTex } from '../../core/trig.ts';
+import { deg, rad, trigTex } from '../../core/trig.ts';
 import type { Mark } from '../../plane/marks.ts';
 import { FOLLOW, polar, type Ctx, type Look, type Pt } from '../../figures/figure.ts';
 import { AngleArc } from '../../figures/angleArc.ts';
@@ -319,7 +319,7 @@ export function circleScene(i: CircleInput): Mark[] {
         r: S,
         head: lo.ang,
         length: lo.tail,
-        color: (a) => (lo.revealed ? trailColor((a * 180) / Math.PI) : 'var(--muted)'),
+        color: (a) => (lo.revealed ? trailColor(deg(a)) : 'var(--muted)'),
         z: 3,
       },
       ctx,
