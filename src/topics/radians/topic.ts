@@ -14,6 +14,8 @@ export const radiansTopic: TopicDef = {
   group: 'trig',
   order: 3,
   requires: ['circle'],
+  unlocks: 'radians',
+  color: 'var(--rad)',
   keywords: 'pi arc length',
   tab: { label: 'Radians', icon: Ruler },
   hooks: radiansHooks,

@@ -1,6 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fromSearch, search, sections, statusOf, toSearch, type NavTopic } from './nav.ts';
+import {
+  fromSearch,
+  openMode,
+  pending,
+  search,
+  sections,
+  statusOf,
+  toSearch,
+  type NavTopic,
+} from './nav.ts';
 
 const t = (id: string, group: string, extra: Partial<NavTopic> = {}): NavTopic => ({
   id,
@@ -69,4 +78,21 @@ test('writing the address keeps everything else in it', () => {
     toSearch('?unlock=radians&topic=a&mode=guide&teacher', 'b', 'practice'),
     '?unlock=radians&topic=b&mode=practice&teacher=',
   );
+});
+
+test('pending lists the topics not yet completed, and nothing when there are none', () => {
+  assert.deepEqual(pending(['a', 'b'], { a: true }), ['b']);
+  assert.deepEqual(pending(['a'], { a: true }), []);
+  assert.deepEqual(pending(undefined, {}), []);
+});
+
+test('a topic opens in its Guide until that is done, then in the mode last used', () => {
+  const guided = t('g', 'trig'),
+    plain = t('p', 'trig', { views: {} });
+  assert.equal(openMode(guided, {}, 'practice'), 'guide');
+  assert.equal(openMode(guided, { g: true }, 'practice'), 'practice');
+  assert.equal(openMode(guided, { g: true }, 'guide'), 'guide');
+  // a topic without a Guide is never in Guide mode
+  assert.equal(openMode(plain, {}, 'guide'), 'explore');
+  assert.equal(openMode(plain, {}, 'practice'), 'practice');
 });

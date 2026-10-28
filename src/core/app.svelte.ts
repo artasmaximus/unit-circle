@@ -4,7 +4,7 @@
 import type { Component } from 'svelte';
 import { Tween } from 'svelte/motion';
 import type { Unit } from './angles.ts';
-import { sections, statusOf, fromSearch, type Status } from './nav.ts';
+import { sections, statusOf, fromSearch, openMode, type Status } from './nav.ts';
 import { progress } from './progress.svelte.ts';
 import { reduce } from './transition.ts';
 import * as T from './tuning.ts';
@@ -36,6 +36,15 @@ export type TopicDef = {
    */
   requires?: Topic[];
   strict?: boolean;
+  /**
+   * Topics worth doing alongside or after this one: its Guide's opening note points at those not
+   * yet completed.
+   */
+  suggests?: Topic[];
+  /** What completing its Guide unlocks, by name (`progress.has`): e.g. 'radians' opens the unit switch. */
+  unlocks?: string;
+  /** Its accent colour, which the notes pointing at it use. */
+  color?: string;
   /** Extra words the switcher's search matches (synonyms, what the topic is about). */
   keywords?: string;
   /** Its entry in the tab bar. */
@@ -65,6 +74,11 @@ export type TopicDef = {
 const registry: TopicDef[] = [];
 export function registerTopics(...defs: TopicDef[]) {
   registry.push(...defs);
+  // the app opens on the first topic, in the mode a learner who has not finished it starts in
+  if (!ui.topic) {
+    ui.topic = registry[0].id;
+    ui.mode = defaultMode(ui.topic, 'practice');
+  }
 }
 const groupList: { id: string; title: string }[] = [];
 /** Name the courses or units topics are listed under, in the order they are shown. */
@@ -81,13 +95,12 @@ export const topicStatus = (t: TopicDef): Status => statusOf(t, progress.complet
 export const topicDef = (id: Topic): TopicDef => registry.find((t) => t.id === id) ?? registry[0];
 /** Whether a topic has a Guide. */
 export const hasGuide = (id: Topic) => !!topicDef(id).views.guide;
-/** The topic the app opens on. */
-export const HOME: Topic = 'circle';
+progress.unlocksOf = (t) => registry.find((d) => d.id === t)?.unlocks;
 export const ui = $state({
-  /** The concept on the plane, picked in the tab bar. */
-  topic: HOME,
-  /** A learner who has not finished the unit circle's Guide starts in it. */
-  mode: (progress.completed.circle ? 'practice' : 'guide') as Mode,
+  /** The concept on the plane, picked in the tab bar; the first topic registered until then. */
+  topic: '' as Topic,
+  /** A learner who has not finished the first topic's Guide starts in it. */
+  mode: 'guide' as Mode,
   /** Snap points drawn larger: the angles found in Practice. */
   highlight: [] as number[],
 });
@@ -170,12 +183,7 @@ export function startApp() {
 }
 
 /** The mode a topic opens in: its Guide until that is done, else `last` (never Guide without one). */
-const defaultMode = (t: Topic, last: Mode): Mode =>
-  hasGuide(t) && !progress.completed[t]
-    ? 'guide'
-    : last === 'guide' && !hasGuide(t)
-      ? 'explore'
-      : last;
+const defaultMode = (t: Topic, last: Mode): Mode => openMode(topicDef(t), progress.completed, last);
 
 export function setTopic(t: Topic) {
   if (ui.topic === t || topicStatus(topicDef(t)).state === 'locked') return;

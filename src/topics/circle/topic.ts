@@ -15,6 +15,8 @@ export const circleTopic: TopicDef = {
   title: 'Unit Circle',
   group: 'trig',
   order: 1,
+  suggests: ['radians'],
+  color: 'var(--cos)',
   keywords: 'sine cosine tangent angle degrees',
   tab: { label: 'Unit circle', icon: CircleDot },
   hooks: circleHooks,

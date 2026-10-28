@@ -15,6 +15,7 @@ export const inverseTopic: TopicDef = {
   group: 'trig',
   order: 2,
   requires: ['circle'],
+  color: 'var(--slope)',
   keywords: 'arcsin arccos arctan',
   tab: { label: 'Inverse trig', icon: ArrowLeftRight },
   hooks: inverseHooks,

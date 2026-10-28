@@ -40,6 +40,20 @@ export function statusOf(t: NavTopic, completed: Partial<Record<Topic, boolean>>
   return { state: !missing.length ? 'open' : t.strict ? 'locked' : 'recommended', missing };
 }
 
+/** Of these topics, the ones whose Guide has not been completed. */
+export const pending = (ids: readonly Topic[] = [], completed: Partial<Record<Topic, boolean>>) =>
+  ids.filter((id) => !completed[id]);
+
+/** The mode a topic opens in: its Guide until that is done, else `last` (never Guide without one). */
+export function openMode(
+  t: NavTopic,
+  completed: Partial<Record<Topic, boolean>>,
+  last: Mode,
+): Mode {
+  const guide = !!t.views.guide;
+  return guide && !completed[t.id] ? 'guide' : last === 'guide' && !guide ? 'explore' : last;
+}
+
 /**
  * The topics matching what was typed: every word of the query must appear (in any order, any case)
  * in the title, tab label, heading or keywords. An empty query matches everything.
