@@ -6,8 +6,8 @@ import type { Mark } from './marks.ts';
 
 export type GridInput = {
   /**
-   * The viewport in world units, the zoom (px per world unit), the phone line-width boost, and
-   * whether this is a wide screen.
+   * The window to cover in world units (see gridWindow.ts), the zoom (px per world unit), the phone
+   * line-width boost, and whether this is a wide screen.
    */
   view: { x: number; y: number; w: number; h: number };
   k: number;
