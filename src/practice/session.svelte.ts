@@ -27,6 +27,8 @@ import {
   type Skills,
 } from './skills.ts';
 
+/** How many in a row a Guide exam asks for. */
+export const EXAM_STREAK = 10;
 /** How many candidate questions to draw from, to choose the next by what the learner needs. */
 const CANDIDATES = 6;
 /** The chance that the next question is a random one from the saved missed list. */
@@ -57,7 +59,6 @@ export type Adapter<Q, C> = {
   stage?(q: Q, s: Session<Q, C>): void;
   /** Show the answer, and for a wrong one where the right answer lives on the plane. */
   reveal?(q: Q, ok: boolean, s: Session<Q, C>): void;
-  onHint?(q: Q): void;
   /** What the exam wants: how many in a row, and which kinds of question among them. */
   exam?: {
     streak: number;
@@ -86,7 +87,6 @@ export class Session<Q, C> {
   cur = $state<Q | null>(null);
   choices = $state<C[]>([]);
   answered = $state(false);
-  picked = $state<number | null>(null);
   hint = $state(false);
   ok = $state(false);
   /** A short message in the action row ("already found that one"). */
@@ -107,10 +107,6 @@ export class Session<Q, C> {
   /** The question just answered was only right on the second try. */
   get retried() {
     return this.ok && this.tries > 0;
-  }
-  /** The second try is on: the question was wrong once and is still open. */
-  get retrying() {
-    return this.tries > 0 && !this.answered;
   }
   /** What the set's summary lists to go over: questions missed, or only got on a second try. */
   get review(): Result<Q>[] {
@@ -203,7 +199,6 @@ export class Session<Q, C> {
     this.cur = q;
     this.answered = false;
     this.hint = false;
-    this.picked = null;
     this.note = '';
     this.found = [];
     this.choices = this.#a.choices(q);
@@ -229,7 +224,6 @@ export class Session<Q, C> {
   useHint() {
     if (!this.cur || this.answered || this.strict) return;
     this.hint = true;
-    this.#a.onHint?.(this.cur);
   }
   isRight(choice: C) {
     return !!this.cur && this.#a.isRight(this.cur, choice);
@@ -237,7 +231,6 @@ export class Session<Q, C> {
   answer(i: number) {
     const q = this.cur;
     if (!q || this.answered || !this.choices.length) return;
-    this.picked = i;
     const ok = this.#a.isRight(q, this.choices[i]);
     if (!ok) this.wrongPicks.push(i);
     this.#judge(ok);

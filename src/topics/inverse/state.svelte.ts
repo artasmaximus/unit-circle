@@ -4,17 +4,7 @@
 // value being inverted (its sin, cos or tan, which is where the handle sits) and the other angle
 // with the same value. Because it is a plain angle, it is the same quantity as the unit circle's
 // point, so the two topics can hand it to each other.
-import {
-  INV_NAME,
-  PARTNER,
-  RANGE,
-  compose,
-  otherAngle,
-  partnerAt,
-  principal,
-  snapValue,
-  type InvFn,
-} from './math.ts';
+import { RANGE, compose, otherAngle, partnerAt, principal, snapValue, type InvFn } from './math.ts';
 import { Swing } from '../../core/swing.svelte.ts';
 import { norm, rad, snapDeg } from '../../core/trig.ts';
 
@@ -49,7 +39,6 @@ class Inverse {
    */
   poleTo = $derived(this.fn === 'atan' && Math.abs(this.target) > 90 - POLE);
   valueTo = $derived(this.poleTo ? NaN : (partnerAt(this.fn, this.target) ?? NaN));
-  angleTo = $derived(this.target);
   /** The other angle with the same value (outside the principal range). */
   other = $derived(otherAngle(this.fn, this.angle));
   /**
@@ -81,8 +70,6 @@ class Inverse {
   }
   /** The learner's Other angle switch: it counts only while exploring (see stage.svelte.ts). */
   showOther = $state(false);
-  name = $derived(INV_NAME[this.fn]);
-  partner = $derived(PARTNER[this.fn]);
 
   /**
    * Aim the control at a principal angle (clamped to what the function answers); it springs there,

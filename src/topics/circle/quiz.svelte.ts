@@ -5,11 +5,10 @@ import { ui } from '../../core/app.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { SPECIAL, type Fn } from '../../core/trig.ts';
-import { Session, type Adapter } from '../../practice/session.svelte.ts';
+import { EXAM_STREAK, Session, type Adapter } from '../../practice/session.svelte.ts';
 import { makeChoices, pickQ, qKey, skillOf, trigTexAnswer, type Question } from './quiz.ts';
 
 /** How many in a row the exam wants, and the functions it wants among them. */
-export const EXAM_STREAK = 10;
 export const EXAM_FNS: Fn[] = ['sin', 'cos', 'tan'];
 const rnd = (n: number) => Math.floor(Math.random() * n);
 

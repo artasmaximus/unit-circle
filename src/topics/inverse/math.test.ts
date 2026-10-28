@@ -1,14 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  compose,
-  inRange,
-  otherAngle,
-  principal,
-  snapValue,
-  solutionsIn,
-  valueTex,
-} from './math.ts';
+import { compose, otherAngle, principal, snapValue, valueTex } from './math.ts';
 
 const near = (a: number | null, b: number) =>
   assert.ok(a !== null && Math.abs(a - b) < 1e-9, `${a} should be ${b}`);
@@ -28,17 +20,6 @@ test('the other angle shares the partner value', () => {
   near(otherAngle('atan', 45), 225); // tan 45° = tan 225°
 });
 
-test('solutions in [0, 360)', () => {
-  assert.deepEqual(solutionsIn('asin', 0.5).map(Math.round), [30, 150]);
-  assert.deepEqual(solutionsIn('asin', -0.5).map(Math.round), [210, 330]);
-  assert.deepEqual(solutionsIn('acos', -0.5).map(Math.round), [120, 240]);
-  assert.deepEqual(solutionsIn('atan', 1).map(Math.round), [45, 225]);
-  assert.deepEqual(solutionsIn('asin', 1).map(Math.round), [90]); // the two meet
-  assert.deepEqual(solutionsIn('acos', 1).map(Math.round), [0]);
-  assert.deepEqual(solutionsIn('asin', 0.5, -180).map(Math.round), [30, 150]);
-  assert.deepEqual(solutionsIn('asin', -0.5, -180).map(Math.round), [-150, -30]);
-});
-
 test('composition hands back the principal angle, not θ', () => {
   near(compose('asin', 210), -30); // arcsin(sin 210°)
   near(compose('asin', 150), 30);
@@ -49,13 +30,6 @@ test('composition hands back the principal angle, not θ', () => {
   near(compose('atan', 225), 45);
   assert.equal(compose('atan', 90), null);
   assert.equal(compose('atan', 270), null);
-});
-
-test('range membership', () => {
-  assert.ok(inRange('asin', 30) && inRange('asin', -90) && !inRange('asin', 150));
-  assert.ok(inRange('acos', 0) && inRange('acos', 180) && !inRange('acos', -30));
-  assert.ok(inRange('atan', 45) && !inRange('atan', 90) && !inRange('atan', 135));
-  assert.ok(inRange('asin', 330)); // 330° is −30° around the circle
 });
 
 test('special values snap and read exactly, un-rationalized', () => {

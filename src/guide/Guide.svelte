@@ -5,7 +5,7 @@
   import type { Step } from './guide.ts';
   /**
    * What a topic's Guide state offers (topics/radians/state.svelte.ts,
-   * topics/circle/guide.svelte.ts).
+   * topics/circle/guide.svelte.ts, topics/inverse/guide.svelte.ts).
    */
   export type GuideRun = {
     steps: Step[];

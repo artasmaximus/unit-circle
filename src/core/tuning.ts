@@ -62,7 +62,7 @@ export const pen = {
 
 /**
  * How the figure reacts during a mode switch, as windows [from, to] of the switch's 0 → 1 clock
- * (Figure.svelte).
+ * (circle/scene.ts).
  */
 export const figure = {
   arcWash: [0, 0.5] as [number, number],
@@ -113,7 +113,7 @@ export const input = {
   wheelZoom: 0.0015,
   pinchZoom: 0.01,
   /**
-   * Hover growth of a snap dot aimed at, and the ring's pulse during a mode switch (Ring.svelte).
+   * Hover growth of a snap dot aimed at, and the ring's pulse during a mode switch (plane/ringScene.ts).
    */
   aimGrow: 1.6,
   pulseShare: 0.4,

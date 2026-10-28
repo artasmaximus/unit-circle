@@ -62,14 +62,14 @@
       <!-- straight up or down has no slope, and arctan only ever gets closer to ±90° -->
       <div class="big"><Tex latex={`m=\\text{undefined}`} /></div>
       <div class="why">
-        <Tex latex={`${n}()`} /> never reaches <Tex latex={deg(inverse.angleTo)} />. It only gets
+        <Tex latex={`${n}()`} /> never reaches <Tex latex={deg(inverse.target)} />. It only gets
         closer as the slope gets bigger.
       </div>
     {:else}
       <div class="big">
-        <Tex latex={`${n}\\left(${v}\\right)=${deg(inverse.angleTo)}`} />
+        <Tex latex={`${n}\\left(${v}\\right)=${deg(inverse.target)}`} />
         <InfoTip label="Check it the other way round"
-          ><Tex latex={`${trig(inverse.angleTo)}=${v}`} /></InfoTip
+          ><Tex latex={`${trig(inverse.target)}=${v}`} /></InfoTip
         >
       </div>
     {/if}
@@ -89,8 +89,8 @@
       /> value ({fn === 'asin' ? 'y-value' : fn === 'acos' ? 'x-value' : 'AKA slope'}) appears once.
     </p>
     {#if !inverse.poleTo}<p class="note other">
-        <Tex latex={`${trig(otherAngle(fn, inverse.angleTo))}=${v}`} /> too, but <Tex
-          latex={deg(otherAngle(fn, inverse.angleTo))}
+        <Tex latex={`${trig(otherAngle(fn, inverse.target))}=${v}`} /> too, but <Tex
+          latex={deg(otherAngle(fn, inverse.target))}
         /> is outside the range, so <Tex latex={`${n}()`} /> never gives it.
       </p>{/if}
   </div>

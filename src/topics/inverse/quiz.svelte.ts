@@ -5,12 +5,11 @@
 import { inverse } from './state.svelte.ts';
 import { partnerAt, type InvFn } from './math.ts';
 import { FNS, answerOf, iqKey, makeChoices, makeQ, pickQ, skillOf, type IQ } from './quiz.ts';
-import { Session, type Adapter } from '../../practice/session.svelte.ts';
+import { EXAM_STREAK, Session, type Adapter } from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { ui } from '../../core/app.svelte.ts';
 
 /** How many in a row the exam wants. */
-export const EXAM_STREAK = 10;
 /** What the exam wants among its run: each function, and a composition question. */
 export type Need = InvFn | 'compose';
 export const EXAM_NEEDS: Need[] = [...FNS, 'compose'];
@@ -25,9 +24,10 @@ function stage(q: IQ) {
   inverse.switchTo(q.fn);
   // a composition question hands you a free point to work with: move it by the ring or either axis
   // and read what it shows
-  if (q.t === 2) inverse.startProbe(q.theta);
-  if (q.t === 2) inverse.setValue(partnerAt(q.fn, q.theta)!);
-  else inverse.setValue(0);
+  if (q.t === 2) {
+    inverse.startProbe(q.theta);
+    inverse.setValue(partnerAt(q.fn, q.theta)!);
+  } else inverse.setValue(0);
 }
 /** Move the control to the answer. */
 function reveal(q: IQ) {
@@ -54,7 +54,7 @@ const adapter: Adapter<IQ, number> = {
   exam: {
     streak: EXAM_STREAK,
     needs: EXAM_NEEDS,
-    needsOf: needsOf,
+    needsOf,
     make: (need, cur) => {
       if (need) return need === 'compose' ? makeQ({ t: 2 }) : makeQ({ fn: need as InvFn });
       let q: IQ,

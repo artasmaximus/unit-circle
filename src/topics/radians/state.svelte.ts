@@ -5,14 +5,17 @@ import { RADIANS_GUIDE } from './guideSteps.ts';
 import type { Step } from '../../guide/guide.ts';
 import { type Feature } from './features.ts';
 import { R_TYPES, makeRQ, pickRQ, rChoices, rSkillOf, rqKey, type RQ } from './quiz.ts';
-import { Session as PracticeSession, type Adapter } from '../../practice/session.svelte.ts';
+import {
+  EXAM_STREAK,
+  Session as PracticeSession,
+  type Adapter,
+} from '../../practice/session.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { wrapPi, rad } from '../../core/trig.ts';
 
 /** How many in a row the exam wants. */
-export const EXAM_STREAK = 10;
 
 /** Practice and the exam: a run of Radians questions (see practice/session.svelte.ts). */
 const adapter: Adapter<RQ, number> = {
@@ -63,8 +66,6 @@ class Radians {
   chosen = $state<number | null>(null);
   steps: Step<Feature>[] = RADIANS_GUIDE;
   step = $derived(this.steps[Math.min(this.stepIndex, this.steps.length - 1)]);
-  /** Whether the exam step's task is satisfied. */
-  examPassed = $derived(this.exam.passed);
   /** Whether the step's task lets the learner go on. */
   canGo = $derived.by(() => {
     const t = this.step.task;

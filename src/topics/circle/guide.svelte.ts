@@ -78,16 +78,13 @@ $effect.root(() => {
 });
 
 function apply(m: Mode) {
-  if (m === 'guide') {
-    ui.highlight = [];
-    solver.close();
-    unitGuide.goTo(progress.step.circle ?? 0);
-  } else if (m === 'practice') {
+  if (m === 'practice') {
     if (!quiz.cur || quiz.answered) quiz.start();
-  } else {
-    ui.highlight = [];
-    solver.close();
+    return;
   }
+  ui.highlight = [];
+  solver.close();
+  if (m === 'guide') unitGuide.goTo(progress.step.circle ?? 0);
 }
 export const circleHooks: TopicHooks = {
   mode: apply,

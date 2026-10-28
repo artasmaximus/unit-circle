@@ -68,10 +68,6 @@ class Progress {
     this.pick = u;
     this.#save();
   }
-  unlockRadians() {
-    this.radiansUnlocked = true;
-    this.#save();
-  }
   setStep(t: GuideTopic, i: number) {
     this.step[t] = i;
     this.#save();

@@ -100,6 +100,6 @@ export const inverseHooks: TopicHooks = {
   },
   // leaving the exploration for the unit circle, its point takes the control's angle and slides to it
   leave: (to, m) => {
-    if (to === 'circle' && m === 'explore') point.set(norm(inverse.angleTo), true);
+    if (to === 'circle' && m === 'explore') point.set(norm(inverse.target), true);
   },
 };

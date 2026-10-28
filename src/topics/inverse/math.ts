@@ -2,7 +2,7 @@
 // only because each is cut down to one stretch of the circle where its partner never repeats (the
 // "principal range"): arcsin keeps the right half, arccos the upper half, arctan the right half
 // without its ends.
-import { dec, norm } from '../../core/trig.ts';
+import { dec } from '../../core/trig.ts';
 
 export type InvFn = 'asin' | 'acos' | 'atan';
 /** The ordinary function each inverse undoes. */
@@ -16,8 +16,6 @@ export const RANGE = {
   acos: { lo: 0, hi: 180, open: false },
   atan: { lo: -90, hi: 90, open: true },
 } as const;
-/** The values each inverse accepts. */
-export const DOMAIN = { asin: [-1, 1], acos: [-1, 1], atan: [-Infinity, Infinity] } as const;
 
 /** arcsin, arccos or arctan of `v`, in degrees. `v` outside the domain is clamped to it. */
 export function principal(fn: InvFn, v: number): number {
@@ -41,17 +39,6 @@ export function partnerAt(fn: InvFn, deg: number): number | null {
 export const otherAngle = (fn: InvFn, deg: number) =>
   fn === 'asin' ? 180 - deg : fn === 'acos' ? -deg : deg + 180;
 
-/** Every angle in [from, from + 360) whose partner value is `v`, ascending. */
-export function solutionsIn(fn: InvFn, v: number, from = 0): number[] {
-  const p = principal(fn, v),
-    out = [p, otherAngle(fn, p)].map((a) => from + norm(a - from));
-  const uniq = out.filter(
-    (a, i) =>
-      out.findIndex((b) => Math.abs(b - a) < 1e-9 || Math.abs(Math.abs(b - a) - 360) < 1e-9) === i,
-  );
-  return uniq.sort((a, b) => a - b);
-}
-
 /**
  * arcsin(sin θ), arccos(cos θ) or arctan(tan θ): the principal angle that has the same partner
  * value as θ. null if undefined.
@@ -59,14 +46,6 @@ export function solutionsIn(fn: InvFn, v: number, from = 0): number[] {
 export function compose(fn: InvFn, deg: number): number | null {
   const v = partnerAt(fn, deg);
   return v === null ? null : principal(fn, v);
-}
-
-/** Does θ sit in the principal range (so the inverse hands θ back)? */
-export function inRange(fn: InvFn, deg: number): boolean {
-  let a = norm(deg + 180) - 180; // into (-180, 180]
-  if (a < -180 + 1e-9) a = 180;
-  const { lo, hi, open } = RANGE[fn];
-  return open ? a > lo + 1e-9 && a < hi - 1e-9 : a >= lo - 1e-9 && a <= hi + 1e-9;
 }
 
 // ---- special values ----

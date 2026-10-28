@@ -54,11 +54,6 @@ class Camera {
     return { x: left, y: 0, w: this.vw - left, h: this.vh - bottom };
   });
   /**
-   * World-unit box the drawing needs around the circle (ring labels, chips). Phones have less to
-   * spare, and the chips shuffle to wherever they fit, so the circle may take more of the screen
-   * there.
-   */
-  /**
    * A topic that draws beyond the circle asks for room: `extra` more world units of height to fit
    * in, and `dy` to slide the circle up by (so the extra sits below it). It glides, so the circle
    * makes way when the extra drawing arrives and takes its place back when it leaves.
@@ -70,6 +65,11 @@ class Camera {
   set frame(v: { dy: number; extra: number }) {
     this.#frame.set(v, reduce ? { duration: 0 } : undefined);
   }
+  /**
+   * World-unit box the drawing needs around the circle (ring labels, chips). Phones have less to
+   * spare, and the chips shuffle to wherever they fit, so the circle may take more of the screen
+   * there.
+   */
   need = $derived.by(() => {
     const n = this.wide ? T.need : T.needNarrow;
     return { w: n.w, h: n.h + this.#frame.current.extra };
@@ -106,7 +106,6 @@ class Camera {
     x: (px - this.ox) / this.k,
     y: (py - this.oy) / this.k,
   });
-  toScreen = (x: number, y: number) => ({ x: this.ox + x * this.k, y: this.oy + y * this.k });
   /** The whole viewport, in world units (the grid fills it). */
   view = $derived({
     x: -this.ox / this.k,
