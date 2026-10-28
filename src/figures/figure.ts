@@ -6,6 +6,7 @@
 // Keys: the figure's main mark takes the key it is given, and any other parts add a suffix
 // (`ug:ref` is the arc, `ug:ref:label` its label), so two figures on one plane never collide.
 import type { Mark, Verb } from '../plane/marks.ts';
+import { DUR } from '../core/tuning.ts';
 
 export type Pt = [number, number];
 
@@ -51,6 +52,12 @@ export type Timing = {
   curve?: (p: number) => number;
   fadeBy?: number;
 };
+
+/**
+ * Marks that follow a changing value frame by frame (a wash front, a trail behind a moving point)
+ * take no time to arrive or leave.
+ */
+export const FOLLOW = { dur: DUR.instant, exitDur: DUR.instant, enter: 'fade' } as const;
 
 /** A figure's timing, copied onto a mark. */
 export const timing = (p: Timing) => ({

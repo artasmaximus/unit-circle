@@ -6,9 +6,9 @@
 // switch. When the topic is not the unit circle it asks for nothing, so every mark plays its exit.
 import { S } from '../../core/camera.svelte.ts';
 import { DUR, after, figure as F } from '../../core/tuning.ts';
-import { colorOf, rad, trigTex } from '../../core/trig.ts';
+import { rad, trigTex } from '../../core/trig.ts';
 import type { Mark } from '../../plane/marks.ts';
-import { polar, type Ctx, type Look, type Pt } from '../../figures/figure.ts';
+import { FOLLOW, polar, type Ctx, type Look, type Pt } from '../../figures/figure.ts';
 import { AngleArc } from '../../figures/angleArc.ts';
 import { Brace } from '../../figures/brace.ts';
 import { Label } from '../../figures/label.ts';
@@ -51,10 +51,17 @@ export const give = (u: number) => {
   );
 };
 /**
- * Marks that follow a changing value frame by frame (a wash front, the half of a dash pattern left
- * behind) take no time to arrive or leave.
+ * `colorOf` for the trail's pieces, which ask for 28 new colors every frame while the tail is
+ * showing: the mix is kept to a tenth of a percent, so each distinct string is built once.
  */
-const NOW = { dur: DUR.instant, exitDur: DUR.instant, enter: 'fade' } as const;
+const trailColors = new Map<number, string>();
+const trailColor = (deg: number) => {
+  const k = Math.round(Math.cos(rad(deg)) ** 2 * 1000);
+  let c = trailColors.get(k);
+  if (!c)
+    trailColors.set(k, (c = `color-mix(in oklch, var(--cos) ${(k / 10).toFixed(1)}%, var(--sin))`));
+  return c;
+};
 const ends = (g: Seg): { from: Pt; to: Pt } => ({ from: [g[0], g[1]], to: [g[2], g[3]] });
 
 export function circleScene(i: CircleInput): Mark[] {
@@ -137,7 +144,8 @@ export function circleScene(i: CircleInput): Mark[] {
       ctx,
     ),
   );
-  if (moving) add(AngleArc('wedge:wash', { ...wedge, color: lo.col, part: arcWash, ...NOW }, ctx));
+  if (moving)
+    add(AngleArc('wedge:wash', { ...wedge, color: lo.col, part: arcWash, ...FOLLOW }, ctx));
 
   // ---- the legs: dashes that tick through a mode switch, the new color filling along each leg in
   // step with it
@@ -162,7 +170,7 @@ export function circleScene(i: CircleInput): Mark[] {
             ...look,
             color: legBefore(leg.fn),
             dashOffset: tick(9) + wash * len,
-            ...NOW,
+            ...FOLLOW,
           },
           ctx,
         ),
@@ -221,7 +229,7 @@ export function circleScene(i: CircleInput): Mark[] {
     add(
       Segment(
         'ray:wash',
-        { ...ray, to: [lo.x * rayWash, lo.y * rayWash], color: lo.col, ...NOW },
+        { ...ray, to: [lo.x * rayWash, lo.y * rayWash], color: lo.col, ...FOLLOW },
         ctx,
       ),
     );
@@ -248,7 +256,7 @@ export function circleScene(i: CircleInput): Mark[] {
     );
     // the brace stays put; only its new color draws in, from both ends toward the tip
     if (moving)
-      add(Brace(`brace:${fn}:wash`, { ...brace, color: now, part: braceDraw, ...NOW }, ctx));
+      add(Brace(`brace:${fn}:wash`, { ...brace, color: now, part: braceDraw, ...FOLLOW }, ctx));
     const { at } = leg.label;
     add(
       Label(
@@ -311,10 +319,8 @@ export function circleScene(i: CircleInput): Mark[] {
         r: S,
         head: lo.ang,
         length: lo.tail,
-        steps: 28,
-        color: (a) => (lo.revealed ? colorOf((a * 180) / Math.PI) : 'var(--muted)'),
+        color: (a) => (lo.revealed ? trailColor((a * 180) / Math.PI) : 'var(--muted)'),
         z: 3,
-        ...NOW,
       },
       ctx,
     ),
