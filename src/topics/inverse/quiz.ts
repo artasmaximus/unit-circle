@@ -15,6 +15,8 @@ import {
 import { angleTex, angleText, trigOf, type Unit } from '../../core/angles.ts';
 import { SPECIAL } from '../../core/trig.ts';
 import type { Rich } from '../../core/rich.ts';
+import { pick, rnd, shuffle } from '../../core/random.ts';
+import { m } from '../../core/rich.ts';
 
 /**
  * The stretch of angles θ may come from, in degrees. `closed` says whether the top end is included
@@ -32,17 +34,7 @@ export type IQ =
   | { t: 2; fn: InvFn; theta: number; dom: Domain }
   | { t: 3; fn: InvFn; ang: number };
 
-const rnd = (n: number) => Math.floor(Math.random() * n);
-const pick = <T>(a: readonly T[]) => a[rnd(a.length)];
-const shuffle = <T>(arr: T[]) => {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = rnd(i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
 const r = (x: number) => Math.round(x * 1e6) / 1e6;
-const m = (t: string) => ({ m: t });
 
 export const DOMAINS: Domain[] = [
   { lo: 0, hi: 360, closed: false },

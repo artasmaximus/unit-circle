@@ -5,6 +5,7 @@
 // other with delays, which is how a feature says "this line, then this point, then that ray".
 import type { Rect } from '../core/tex.svelte.ts';
 import { DUR } from '../core/tuning.ts';
+import { clamp01 } from '../core/num.ts';
 
 /** Typeset math with its box on the plane (world units). */
 export type Label = { latex: string; size: number; rect: Rect; color: string };
@@ -159,7 +160,6 @@ export const DEFAULTS = {
   z: 5,
 } as const;
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /** How a line draws: quick off the mark, slow into the end. `power` is 1 for linear. */
 export const drawCurve = (p: number, power = 4) => 1 - (1 - clamp01(p)) ** power;
 /** Grows 0 → 1 with a little overshoot, for a dot that pops in. */

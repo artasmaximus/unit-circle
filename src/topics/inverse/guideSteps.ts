@@ -6,8 +6,7 @@
 import type { Unit } from '../../core/angles.ts';
 import { angleTex } from '../../core/angles.ts';
 import type { Step } from '../../guide/guide.ts';
-
-const m = (t: string) => ({ m: t });
+import { m } from '../../core/rich.ts';
 
 export function inverseGuide(u: Unit): Step[] {
   const at = (deg: number) => angleTex(deg, u),

@@ -7,8 +7,7 @@ import type { Unit } from '../../core/angles.ts';
 import { angleTex, angleText } from '../../core/angles.ts';
 import type { Step } from '../../guide/guide.ts';
 import type { Feature } from './features.ts';
-
-const m = (t: string) => ({ m: t });
+import { m } from '../../core/rich.ts';
 
 export function unitCircleGuide(u: Unit): Step<Feature>[] {
   const a = (deg: number) => m(angleTex(deg, u)),

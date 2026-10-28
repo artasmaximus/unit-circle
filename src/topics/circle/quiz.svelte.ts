@@ -7,10 +7,10 @@ import { progress } from '../../core/progress.svelte.ts';
 import { SPECIAL, type Fn } from '../../core/trig.ts';
 import { EXAM_STREAK, Session, type Adapter } from '../../practice/session.svelte.ts';
 import { makeChoices, pickQ, qKey, skillOf, trigTexAnswer, type Question } from './quiz.ts';
+import { rnd } from '../../core/random.ts';
 
 /** How many in a row the exam wants, and the functions it wants among them. */
 export const EXAM_FNS: Fn[] = ['sin', 'cos', 'tan'];
-const rnd = (n: number) => Math.floor(Math.random() * n);
 
 /**
  * Practice hides the answer on the plane until the question is answered; the exam only moves the

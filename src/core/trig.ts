@@ -23,10 +23,11 @@ export const refOf = (a: number) => {
   const r = norm(a) % 180;
   return r > 90 ? 180 - r : r;
 };
+const SPECIAL_AND_FULL = [...SPECIAL, 360];
 export const nearestSpecial = (d: number) => {
   let best = 0,
     bd = 1e9;
-  for (const a of [...SPECIAL, 360])
+  for (const a of SPECIAL_AND_FULL)
     if (Math.abs(a - d) < bd) {
       bd = Math.abs(a - d);
       best = a;

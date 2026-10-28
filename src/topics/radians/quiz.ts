@@ -4,6 +4,8 @@
 import { angleTex, piFraction, piTex } from '../../core/angles.ts';
 import type { Rich } from '../../core/rich.ts';
 import { SPECIAL } from '../../core/trig.ts';
+import { pick, rnd, shuffle } from '../../core/random.ts';
+import { m } from '../../core/rich.ts';
 
 /**
  * The question types:
@@ -13,17 +15,6 @@ import { SPECIAL } from '../../core/trig.ts';
  */
 export type RQ = { t: 1 | 2 | 3; deg: number };
 export const R_TYPES = [1, 2, 3] as const;
-
-const rnd = (n: number) => Math.floor(Math.random() * n);
-const pick = <T>(a: readonly T[]) => a[rnd(a.length)];
-const shuffle = <T>(arr: T[]) => {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = rnd(i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
-const m = (t: string) => ({ m: t });
 
 /** The angles asked about: the special angles, past zero. */
 export const R_ANGLES = SPECIAL.filter((a) => a > 0);

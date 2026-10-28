@@ -3,6 +3,7 @@
      the mark just follows the geometry it is given (which is already animated by whatever state
      produced it). Features hand this a list; they never track presence themselves. -->
 <script lang="ts">
+  import { clamp01 } from '../core/num.ts';
   import { DUR, SWITCH } from '../core/tuning.ts';
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
@@ -159,7 +160,6 @@
       typeof v === 'function' ? 'fn' : typeof v === 'number' ? Math.round(v * 100) / 100 : v,
     );
 
-  const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
   /**
    * Everything a mark's drawing needs from how far through its verb it is, worked out once so each
    * mark costs one derived, not seven.

@@ -16,6 +16,7 @@ import { Point } from '../../figures/point.ts';
 import { Segment } from '../../figures/segment.ts';
 import { Trail } from '../../figures/trail.ts';
 import type { Layout, Seg } from './layout.ts';
+import { clamp01 } from '../../core/num.ts';
 
 export type CircleInput = {
   active: boolean;
@@ -35,7 +36,6 @@ export type CircleInput = {
   k: number;
 };
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 /**
  * An underdamped spring sampled as a pop curve (settles in `refSettle` seconds, overshoots a
  * little), for the reference angle.

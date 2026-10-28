@@ -2,6 +2,8 @@
 import { angleText, angleTex, trigOf, type Unit } from '../../core/angles.ts';
 import { SPECIAL, refOf, trigTex, UNDEF, type Fn } from '../../core/trig.ts';
 import type { Rich } from '../../core/rich.ts';
+import { rnd, shuffle } from '../../core/random.ts';
+import { m } from '../../core/rich.ts';
 
 /**
  * The question types:
@@ -11,18 +13,9 @@ import type { Rich } from '../../core/rich.ts';
 export type Question = { t: 1; fn: Fn; a: number } | { t: 2; fn: Fn; val: string; sols: number[] };
 
 /** Running text with inline math: plain strings, and { m } parts that are typeset. */
-const m = (t: string) => ({ m: t });
 
 export const FN_TEX: Record<Fn, string> = { sin: '\\sin', cos: '\\cos', tan: '\\tan' };
 const QN = ['I', 'II', 'III', 'IV'];
-const rnd = (n: number) => Math.floor(Math.random() * n);
-const shuffle = <T>(arr: T[]) => {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = rnd(i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-};
 const flipSign = (t: string) =>
   t === '0' || t.startsWith('\\text') ? t : t[0] === '-' ? t.slice(1) : '-' + t;
 

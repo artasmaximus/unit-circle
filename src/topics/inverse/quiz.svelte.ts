@@ -6,6 +6,7 @@ import { inverse } from './state.svelte.ts';
 import { partnerAt, type InvFn } from './math.ts';
 import { FNS, answerOf, iqKey, makeChoices, makeQ, pickQ, skillOf, type IQ } from './quiz.ts';
 import { EXAM_STREAK, Session, type Adapter } from '../../practice/session.svelte.ts';
+import { norm } from '../../core/trig.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { ui } from '../../core/app.svelte.ts';
 
@@ -34,9 +35,8 @@ function reveal(q: IQ) {
   if (q.t === 1) inverse.setValue(q.v);
   if (q.t === 3) inverse.setAngle(q.ang);
   // the ring marks the answer's angle larger (in Practice)
-  if (ui.mode === 'practice') ui.highlight = [wrap360(q.t === 3 ? q.ang : answerOf(q))];
+  if (ui.mode === 'practice') ui.highlight = [norm(q.t === 3 ? q.ang : answerOf(q))];
 }
-const wrap360 = (deg: number) => ((deg % 360) + 360) % 360;
 
 const adapter: Adapter<IQ, number> = {
   storageKey: 'ucq-inv',

@@ -4,8 +4,7 @@
 // π/3 and π/2.
 import type { Step } from '../../guide/guide.ts';
 import type { Feature } from './features.ts';
-
-const m = (t: string) => ({ m: t });
+import { m } from '../../core/rich.ts';
 
 export const RADIANS_GUIDE: Step<Feature>[] = [
   {
