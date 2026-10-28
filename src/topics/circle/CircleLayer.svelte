@@ -11,22 +11,27 @@
   import { useHandles } from '../../plane/handles.svelte.ts';
   import { pointHandle } from '../../plane/pointHandle.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
+  import { NO_MARKS } from '../../plane/marks.ts';
 
   // on the unit circle, in every mode, a press near the ring turns the point
   useHandles(() => (ui.topic === 'circle' ? [pointHandle] : []));
+  // while another topic is up the layout is not even read, so its frames cost nothing here
+  const on = $derived(ui.topic === 'circle' && !stage.now.guide);
   const marks = $derived(
-    circleScene({
-      active: ui.topic === 'circle' && !stage.now.guide,
-      layout: circleView.layout,
-      t: penClock.current,
-      pen: pen.current,
-      wasRevealed: penFrom.revealed,
-      hintAt: circleView.hintAt,
-      dotR: point.dotR,
-      sw: camera.stroke,
-      lb: camera.labelBoost,
-      k: camera.k,
-    }),
+    on
+      ? circleScene({
+          active: true,
+          layout: circleView.layout,
+          t: penClock.current,
+          pen: pen.current,
+          wasRevealed: penFrom.revealed,
+          hintAt: circleView.hintAt,
+          dotR: point.dotR,
+          sw: camera.stroke,
+          lb: camera.labelBoost,
+          k: camera.k,
+        })
+      : NO_MARKS,
   );
 </script>
 

@@ -9,17 +9,21 @@
   import { stage } from './stage.svelte.ts';
   import { unitGuideScene } from './guideScene.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
+  import { NO_MARKS } from '../../plane/marks.ts';
 
+  const on = $derived(ui.topic === 'circle' && stage.now.guide);
   const marks = $derived(
-    unitGuideScene({
-      active: ui.topic === 'circle' && stage.now.guide,
-      features: unitGuide.features,
-      ang: point.ang,
-      deg: point.deg,
-      unit: progress.unit,
-      sw: camera.stroke,
-      lb: camera.labelBoost,
-    }),
+    on
+      ? unitGuideScene({
+          active: true,
+          features: unitGuide.features,
+          ang: point.ang,
+          deg: point.deg,
+          unit: progress.unit,
+          sw: camera.stroke,
+          lb: camera.labelBoost,
+        })
+      : NO_MARKS,
   );
 </script>
 

@@ -14,8 +14,12 @@ const cache = new Map<string, TexBox>();
 export function texBox(latex: string): TexBox | null {
   if (!math.ready) return null;
   let b = cache.get(latex);
-  if (!b) {
-    if (cache.size > 800) cache.clear();
+  if (b) {
+    // keep the labels in use at the back, so a full cache drops the ones not drawn lately
+    cache.delete(latex);
+    cache.set(latex, b);
+  } else {
+    if (cache.size > 800) for (const k of [...cache.keys()].slice(0, 200)) cache.delete(k);
     const svg = (window as any).MathJax.tex2svg('\\displaystyle ' + latex, {
       display: false,
     }).querySelector('svg') as SVGSVGElement;

@@ -171,3 +171,6 @@ export const popCurve = (u: number) => 1 + 2.7 * (u - 1) ** 3 + 1.7 * (u - 1) **
  */
 export const verbFor = (m: Mark, leaving: boolean): Verb =>
   leaving ? (m.exit ?? m.enter ?? DEFAULTS.enter) : (m.enter ?? DEFAULTS.enter);
+
+/** What a layer hands the plane while it has nothing to draw; one shared list, so nothing re-runs. */
+export const NO_MARKS: Mark[] = [];

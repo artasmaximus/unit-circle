@@ -9,6 +9,7 @@
   import { point } from '../../core/point.svelte.ts';
   import { ui } from '../../core/app.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
+  import { NO_MARKS } from '../../plane/marks.ts';
   import { useHandles } from '../../plane/handles.svelte.ts';
   import { pointHandle } from '../../plane/pointHandle.svelte.ts';
 
@@ -18,17 +19,20 @@
   let { under = false }: { under?: boolean } = $props();
   // in Radians a press near the ring turns the point (the layer is mounted twice; one offers it)
   useHandles(() => (ui.topic === 'radians' && !under ? [pointHandle] : []));
+  const on = $derived(ui.topic === 'radians');
   const marks = $derived(
-    radiansScene({
-      active: ui.topic === 'radians',
-      features: stage.now.features,
-      ang: point.ang,
-      tail: point.tail,
-      plays: radians.plays,
-      target: point.target,
-      sw: camera.stroke,
-      lb: camera.labelBoost,
-    }).filter((m) => (m.z ?? 5) <= 3 === under),
+    on
+      ? radiansScene({
+          active: true,
+          features: stage.now.features,
+          ang: point.ang,
+          tail: point.tail,
+          plays: radians.plays,
+          target: point.target,
+          sw: camera.stroke,
+          lb: camera.labelBoost,
+        }).filter((m) => (m.z ?? 5) <= 3 === under)
+      : NO_MARKS,
   );
 </script>
 

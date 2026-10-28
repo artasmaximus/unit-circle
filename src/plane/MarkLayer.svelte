@@ -129,8 +129,10 @@
           e.update(m);
           log?.a.push(m.key);
         } else if (!e.leaving) {
-          if (log && !same(e.mark, m)) log.c.push(m.key);
-          e.update(m);
+          if (!same(e.mark, m)) {
+            log?.c.push(m.key);
+            e.update(m);
+          }
         }
         e.show();
       }
