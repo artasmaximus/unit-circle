@@ -19,14 +19,14 @@
 </script>
 
 <section class="defs" aria-labelledby="defs-h">
-  <div class="head">
-    <h2 id="defs-h">Definitions</h2>
+  <div class="p-head">
+    <h2 class="p-title" id="defs-h">Definitions</h2>
     {@render trailing?.()}
   </div>
   <div class="row">
     {#each KEYS as k (k)}
       <div
-        class="card"
+        class="p-card card"
         style:--c={HUE[k]}
         data-tip="Answers like 1/√2 stay as they are (not √2/2), so you can see each one is just its partner flipped upside down."
       >
@@ -42,38 +42,21 @@
     display: grid;
     gap: 8px;
   }
-  .head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  h2 {
-    margin: 0 0 2px;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
   .row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
-  /* tinted glass with a soft tinted edge, like the slope chip; fixed height, so a tall fraction
-     never resizes the card */
+  /* a soft tinted edge, like the slope chip; fixed height, so a tall fraction never resizes the
+     card */
   .card {
+    --tint: 12%;
     position: relative;
-    display: grid;
     gap: 2px;
     align-content: start;
     padding: 12px 12px 14px;
     height: 96px;
     box-sizing: border-box;
-    border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--c) 12%, var(--glass));
   }
   .eq {
     height: 20px;
