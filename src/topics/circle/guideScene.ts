@@ -75,31 +75,27 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
     add(Sector('ug:quads:sin', { from: 0, to: Math.PI, fill: SIN, ...tint, delay: after(1) }, ctx));
   }
 
-  // ---- the point's mirror images in the other quadrants, each with its own faint triangle
+  // ---- the point's mirror images in the other quadrants. As in Explore, the lines already there
+  // run on to the reflected points rather than a new one being drawn beneath: the drop line across
+  // the y-axis, the radius through the centre, and the upright side down below the axis.
   if (f.has('mirror')) {
     (
       [
-        [-1, 1],
-        [-1, -1],
-        [1, -1],
+        { at: [-px, py], from: [0, py] },
+        { at: [-px, -py], from: [0, 0] },
+        { at: [px, -py], from: [px, 0] },
       ] as const
-    ).forEach(([mx, my], k) => {
-      const x = px * mx,
-        y = py * my;
+    ).forEach(({ at, from }, k) => {
       add(
-        Polygon(
-          `ug:mirror:tri:${k}`,
+        Segment(
+          `ug:mirror:line:${k}`,
           {
-            points: [
-              [0, 0],
-              [x, 0],
-              [x, y],
-            ],
+            from: [...from],
+            to: [...at],
             color: 'var(--muted)',
-            fill: 'color-mix(in srgb, var(--fg) 7%, transparent)',
-            opacity: 0.6,
-            z: 2,
-            enter: 'fade',
+            ...DASHED,
+            z: 3,
+            enter: 'draw',
             delay: STAGGER.labels * k,
             dur: DUR.base,
           },
@@ -110,7 +106,7 @@ export function unitGuideScene(i: UnitGuideInput): Mark[] {
         Point(
           `ug:mirror:dot:${k}`,
           {
-            at: [x, y],
+            at: [...at],
             r: 4.5,
             fill: 'var(--bg)',
             stroke: 'var(--muted)',
