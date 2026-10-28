@@ -1,0 +1,53 @@
+/* What the Explore panels share (Panel.svelte imports this): a heading with something to its right,
+   and tinted glass cards in the topic's color (--c) holding rows of label and value, a big readout
+   and a note. A panel sets its own heights and anything that is only its own; --tint is the
+   card's share of --c, and --k-w the label column's width. */
+.p-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.p-title {
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* tinted glass like the slope chip, in the topic's color */
+.p-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--c) var(--tint, 10%), var(--glass));
+}
+.p-big {
+  font-size: 1.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.p-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  height: 1.7rem;
+}
+.p-k {
+  width: var(--k-w, 4.5rem);
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.p-note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--muted);
+}

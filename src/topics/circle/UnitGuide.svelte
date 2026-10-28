@@ -2,14 +2,14 @@
      ten in a row, with sin, cos and tan all among them. -->
 <script lang="ts">
   import { progress } from '../../core/progress.svelte.ts';
-  import { setMode, setTopic } from '../../core/app.svelte.ts';
+  import { setTopic } from '../../core/app.svelte.ts';
   import { unitGuide } from './guide.svelte.ts';
   import Practice from '../../practice/Practice.svelte';
   import { circleView } from './practiceView.ts';
   import Guide from '../../guide/Guide.svelte';
+  import ExamResult from '../../guide/ExamResult.svelte';
 
   const ex = unitGuide.exam;
-  const done = $derived(!!progress.completed.circle);
 </script>
 
 <Guide run={unitGuide} label="Unit circle guide" color="var(--cos)">
@@ -23,18 +23,13 @@
     {/if}
   {/snippet}
   {#snippet exam()}
-    {#if !done || ex.passed}<Practice session={ex} view={circleView} />{/if}
-    {#if done}
-      <p class="fb">
-        Unit circle complete. Explore shows the full figure, and Practice also asks you to find both
-        angles that share a value.
-      </p>
-      <div class="after">
-        <button class="primary" onclick={() => setMode('explore')}>Explore</button><button
-          onclick={() => setMode('practice')}>Practice</button
-        >
-      </div>
-    {/if}
+    <ExamResult
+      topic="circle"
+      passed={ex.passed}
+      message="Unit circle complete. Explore shows the full figure, and Practice also asks you to find both angles that share a value."
+    >
+      <Practice session={ex} view={circleView} />
+    </ExamResult>
   {/snippet}
 </Guide>
 
@@ -56,15 +51,5 @@
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
-  }
-  .fb {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.5;
-    color: var(--ok);
-  }
-  .after {
-    display: flex;
-    gap: 8px;
   }
 </style>

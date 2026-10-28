@@ -15,6 +15,7 @@
   import { hasGuide, topicDef } from '../core/app.svelte.ts';
   import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down';
   import { topicMenu } from '../ui/topicMenu.svelte.ts';
+  import './cards.css';
 
   const topic = $derived(topicDef(ui.topic));
   const angleInput = $derived(topic.angleInput?.());

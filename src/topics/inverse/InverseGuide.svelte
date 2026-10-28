@@ -2,12 +2,11 @@
      questions: ten in a row, with arcsin, arccos, arctan and a composition among them. -->
 <script lang="ts">
   import { progress } from '../../core/progress.svelte.ts';
-  import { setMode, setTopic } from '../../core/app.svelte.ts';
+  import { setTopic } from '../../core/app.svelte.ts';
   import Guide from '../../guide/Guide.svelte';
+  import ExamResult from '../../guide/ExamResult.svelte';
   import { inverseGuideRun as run } from './guide.svelte.ts';
   import InverseQuiz from './InverseQuiz.svelte';
-
-  const done = $derived(!!progress.completed.inverse);
 </script>
 
 <Guide {run} label="Inverse trig guide" color="var(--slope)">
@@ -21,20 +20,13 @@
     {/if}
   {/snippet}
   {#snippet exam()}
-    <!-- the run stays on screen through its last answer; coming back later, only the result
-         shows -->
-    {#if !done || run.exam.passed}<InverseQuiz session={run.exam} />{/if}
-    {#if done}
-      <p class="fb good">
-        Inverse trig complete. Explore lets you try any value, and Practice mixes all the question
-        types.
-      </p>
-      <div class="after">
-        <button class="primary" onclick={() => setMode('explore')}>Explore</button><button
-          onclick={() => setMode('practice')}>Practice</button
-        >
-      </div>
-    {/if}
+    <ExamResult
+      topic="inverse"
+      passed={run.exam.passed}
+      message="Inverse trig complete. Explore lets you try any value, and Practice mixes all the question types."
+    >
+      <InverseQuiz session={run.exam} />
+    </ExamResult>
   {/snippet}
 </Guide>
 
@@ -56,15 +48,5 @@
     text-decoration: underline;
     text-underline-offset: 3px;
     cursor: pointer;
-  }
-  .fb {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.5;
-    color: var(--ok);
-  }
-  .after {
-    display: flex;
-    gap: 8px;
   }
 </style>
