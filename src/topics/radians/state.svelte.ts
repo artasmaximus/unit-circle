@@ -3,6 +3,7 @@
 // core/app.svelte.ts what a mode or topic switch means for it.
 import { RADIANS_GUIDE } from './guideSteps.ts';
 import type { Step } from '../../guide/guide.ts';
+import { GuideState, trackDrag } from '../../guide/run.svelte.ts';
 import { type Feature } from './features.ts';
 import { R_TYPES, makeRQ, pickRQ, rChoices, rSkillOf, rqKey, type RQ } from './quiz.ts';
 import {
@@ -14,8 +15,6 @@ import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
 import { wrapPi, rad } from '../../core/trig.ts';
-
-/** How many in a row the exam wants. */
 
 /** Practice and the exam: a run of Radians questions (see practice/session.svelte.ts). */
 const adapter: Adapter<RQ, number> = {
@@ -51,72 +50,29 @@ const adapter: Adapter<RQ, number> = {
 };
 export type Session = PracticeSession<RQ, number>;
 
-class Radians {
+class Radians extends GuideState<Feature> {
+  topic = 'radians';
   practice: Session = new PracticeSession(adapter);
   exam: Session = new PracticeSession(adapter, true);
-  /** Which Guide step the learner is on, and whether its task is done. */
-  stepIndex = $state(0);
   /** How many times a step's animation has been replayed; keys its marks so they draw again. */
   plays = $state(0);
   replay() {
     this.plays++;
   }
-  solved = $state(false);
-  /** A choice task: the choice picked last, to show how it went. */
-  chosen = $state<number | null>(null);
   steps: Step<Feature>[] = RADIANS_GUIDE;
-  step = $derived(this.steps[Math.min(this.stepIndex, this.steps.length - 1)]);
-  /** Whether the step's task lets the learner go on. */
-  canGo = $derived.by(() => {
-    const t = this.step.task;
-    return (
-      t.kind === 'read' ||
-      (t.kind === 'exam' ? this.exam.passed || !!progress.completed.radians : this.solved)
-    );
-  });
   /** The point is at the angle a drag task asks for. */
   atTarget = $derived.by(() => {
     const t = this.step.task;
     return t.kind === 'drag' && Math.abs(wrapPi(rad(point.deg) - rad(t.deg))) < rad(t.tol);
   });
-
-  goTo(i: number) {
-    this.stepIndex = Math.max(0, Math.min(this.steps.length - 1, i));
-    this.solved = false;
-    this.chosen = null;
-    progress.setStep('radians', this.stepIndex);
-    const t = this.step.task;
-    if (t.kind === 'exam') {
-      this.exam.reset();
-      this.exam.start();
-    }
+  protected enter({ task: t }: Step<Feature>) {
     // a drag step starts with the point away from its target
     if (t.kind === 'drag' && Math.abs(wrapPi(rad(point.deg) - rad(t.deg))) < rad(t.tol * 2))
       point.set(t.deg > 180 ? 20 : 340, true);
   }
-  next() {
-    if (this.canGo) this.goTo(this.stepIndex + 1);
-  }
-  back() {
-    this.goTo(this.stepIndex - 1);
-  }
-  /** A choice task: pick one. */
-  choose(i: number) {
-    const t = this.step.task;
-    if (t.kind !== 'choice' || this.solved) return;
-    this.chosen = i;
-    if (i === t.answer) this.solved = true;
-  }
 }
 export const radians = new Radians();
-
-// a drag step counts as done only while the point sits on its target, and goes back to undone when
-// it is moved off
-$effect.root(() => {
-  $effect(() => {
-    if (radians.step.task.kind === 'drag') radians.solved = radians.atTarget;
-  });
-});
+trackDrag(radians);
 
 function apply(m: Mode) {
   ui.highlight = [];

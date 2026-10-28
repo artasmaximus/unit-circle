@@ -6,6 +6,7 @@ import { inverseGuide } from './guideSteps.ts';
 import { inverse } from './state.svelte.ts';
 import { invExam, invQuiz } from './quiz.svelte.ts';
 import type { Step } from '../../guide/guide.ts';
+import { GuideState, trackDrag } from '../../guide/run.svelte.ts';
 import { progress } from '../../core/progress.svelte.ts';
 import { point } from '../../core/point.svelte.ts';
 import { ui, type Mode, type TopicHooks } from '../../core/app.svelte.ts';
@@ -22,21 +23,11 @@ function stage(s: Setup) {
 /** How far (degrees) `a` is from `b` round the circle. */
 const apart = (a: number, b: number) => Math.abs(wrapPi(rad(a) - rad(b))) * (180 / Math.PI);
 
-class InverseGuide {
+class InverseGuide extends GuideState {
+  topic = 'inverse';
   exam = invExam;
-  stepIndex = $state(0);
-  solved = $state(false);
-  chosen = $state<number | null>(null);
   /** The steps are written in the learner's unit, so they are rebuilt when it changes. */
   steps = $derived<Step[]>(inverseGuide(progress.unit));
-  step = $derived(this.steps[Math.min(this.stepIndex, this.steps.length - 1)]);
-  canGo = $derived.by(() => {
-    const t = this.step.task;
-    return (
-      t.kind === 'read' ||
-      (t.kind === 'exam' ? this.exam.passed || !!progress.completed.inverse : this.solved)
-    );
-  });
   /** A drag step's target is reached: the free point's angle, or the control's. */
   atTarget = $derived.by(() => {
     const t = this.step.task;
@@ -44,41 +35,12 @@ class InverseGuide {
     const now = SETUP[this.step.id]?.probe !== undefined ? norm(inverse.probeTo) : inverse.target;
     return [t.deg, ...(t.also ?? [])].some((d) => apart(now, d) < t.tol);
   });
-
-  goTo(i: number) {
-    this.stepIndex = Math.max(0, Math.min(this.steps.length - 1, i));
-    this.solved = false;
-    this.chosen = null;
-    progress.setStep('inverse', this.stepIndex);
-    const id = this.step.id;
-    if (this.step.task.kind === 'exam') {
-      this.exam.reset();
-      this.exam.start();
-    } else if (SETUP[id]) stage(SETUP[id]);
-  }
-  next() {
-    if (this.canGo) this.goTo(this.stepIndex + 1);
-  }
-  back() {
-    this.goTo(this.stepIndex - 1);
-  }
-  choose(i: number) {
-    const t = this.step.task;
-    if (t.kind !== 'choice' || this.solved) return;
-    this.chosen = i;
-    if (i === t.answer) this.solved = true;
+  protected enter({ id }: Step) {
+    if (SETUP[id]) stage(SETUP[id]);
   }
 }
 export const inverseGuideRun = new InverseGuide();
-
-// a drag step counts as done only while the point sits on its target, and goes back to undone when
-// it is moved off
-$effect.root(() => {
-  $effect(() => {
-    if (inverseGuideRun.step.task.kind === 'drag')
-      inverseGuideRun.solved = inverseGuideRun.atTarget;
-  });
-});
+trackDrag(inverseGuideRun);
 
 // what switching to this topic, or switching mode inside it, does to the plane
 function apply(m: Mode) {
