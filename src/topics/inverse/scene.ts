@@ -59,8 +59,6 @@ export type InvInput = {
 const COLORS = { asin: 'var(--sin)', acos: 'var(--cos)', atan: 'var(--slope)' } as const;
 /** The dash the topic uses for guide lines, in stroke units. */
 const DASH: [number, number] = [3, 4];
-/** A trail sticks to the instant it moves: no entrance or exit of its own. */
-const NOW = { dur: DUR.instant, exitDur: DUR.instant, enter: 'fade' } as const;
 /** A point on a circle at an angle in degrees. */
 const at = (deg: number, r = S): Pt => polar(rad(deg), r);
 /** Whether two angles are different points on the circle (at ±1 the two crossings meet). */
@@ -240,13 +238,7 @@ export function inverseScene(i: InvInput): Mark[] {
         ctx,
       ),
     );
-    add(
-      Trail(
-        'trail',
-        { r: S, head: rad(i.angle), length: i.tail, steps: 28, color: () => c, z: 3, ...NOW },
-        ctx,
-      ),
-    );
+    add(Trail('trail', { r: S, head: rad(i.angle), length: i.tail, color: () => c, z: 3 }, ctx));
     add(
       AngleArc(
         'arc',
@@ -435,7 +427,7 @@ export function inverseScene(i: InvInput): Mark[] {
     add(
       Trail(
         'probe:trail',
-        { r: S, head: rad(pa), length: i.probeTail, steps: 28, color: () => fg, z: 3, ...NOW },
+        { r: S, head: rad(pa), length: i.probeTail, color: () => fg, z: 3 },
         ctx,
       ),
     );
