@@ -338,18 +338,20 @@ export function inverseScene(i: InvInput): Mark[] {
     );
   }
 
-  // ---- the other angle, as a sequence that reads as a consequence: the line carries on from the
-  // answer's point to the other crossing, the point lands there, and (for arcsin and arccos) a ray
+  // ---- the other angle, as a sequence that reads as a consequence: the answer's guide carries on
+  // past the axis to the other crossing, the point lands there, and (for arcsin and arccos) a ray
   // grows from it back to the origin. Leaving runs it backwards.
   if (i.shown && i.showOther && twin) {
     const faint = { color: c, width: 1.25, dash: DASH, opacity: 0.5, enter: 'draw' } as const;
+    // the chord is the guide's own continuation, so it matches the guide rather than fading
+    const chord = { ...faint, opacity: 1 } as const;
     add(
       Segment(
         'other:chord',
         {
-          from: fn === 'atan' ? [0, 0] : P,
+          from: fn === 'atan' ? [0, 0] : (handle ?? P),
           to: Q,
-          ...faint,
+          ...chord,
           z: 5,
           dur: DUR.base,
           exitDelay: after(1),
