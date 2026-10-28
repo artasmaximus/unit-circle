@@ -2,12 +2,8 @@
      play their exits when the topic is left; it just asks for no marks then (see
      scene.ts). -->
 <script lang="ts">
-  import { camera } from '../../core/camera.svelte.ts';
-  import { radians } from './state.svelte.ts';
-  import { stage } from './stage.svelte.ts';
-  import { radiansScene } from './scene.ts';
-  import { point } from '../../core/point.svelte.ts';
   import { ui } from '../../core/app.svelte.ts';
+  import { radiansMarks } from './marks.svelte.ts';
   import MarkLayer from '../../plane/MarkLayer.svelte';
   import { useHandles } from '../../plane/handles.svelte.ts';
   import { pointHandle } from '../../plane/pointHandle.svelte.ts';
@@ -18,18 +14,7 @@
   let { under = false }: { under?: boolean } = $props();
   // in Radians a press near the ring turns the point (the layer is mounted twice; one offers it)
   useHandles(() => (ui.topic === 'radians' && !under ? [pointHandle] : []));
-  const marks = $derived(
-    radiansScene({
-      active: ui.topic === 'radians',
-      features: stage.now.features,
-      ang: point.ang,
-      tail: point.tail,
-      plays: radians.plays,
-      target: point.target,
-      sw: camera.stroke,
-      lb: camera.labelBoost,
-    }).filter((m) => (m.z ?? 5) <= 3 === under),
-  );
+  const marks = $derived(radiansMarks(under));
 </script>
 
 {#if under}
